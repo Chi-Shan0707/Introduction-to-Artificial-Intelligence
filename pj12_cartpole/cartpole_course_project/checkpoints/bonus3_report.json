@@ -65,9 +65,37 @@
         "std": 125.8,
         "median": 279
       }
+    },
+    "AdaptiveGrad": {
+      "0.0": {
+        "mean": 1906.04,
+        "std": 244.16141873768672,
+        "median": 2000.0
+      },
+      "0.05": {
+        "mean": 1865.8,
+        "std": 315.0825923468322,
+        "median": 2000.0
+      }
+    },
+    "AdaptiveTD": {
+      "0.0": {
+        "mean": 145.64,
+        "std": 47.11804749774761,
+        "median": 138.5
+      },
+      "0.05": {
+        "mean": 127.21,
+        "std": 36.74732507271788,
+        "median": 126.0
+      }
     }
   },
   "threshold_30pct": 252.33,
-  "smooth_pass_30pct": true,
-  "hedge_pass_30pct": true
+  "pass_30pct": {
+    "Smooth": true,
+    "Hedge": true,
+    "AdaptiveGrad": true,
+    "AdaptiveTD": false
+  }
 }
