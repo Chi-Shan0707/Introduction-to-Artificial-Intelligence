@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 6: Unsupervised Learning — Clustering, PCA, and GMM <span class="cn">聚类、主成分分析与高斯混合模型</span></title>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --text: #333;
+            --muted: #7f8c8d;
+            --code-bg: #f8f9fa;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar header {
+            background: transparent;
+            padding: 2rem 1.5rem 1.5rem;
+            text-align: left;
+        }
+
+        .sidebar header h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .sidebar header .subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc {
+            flex: 1;
+            padding: 0 1.5rem 2rem;
+            background: transparent;
+            border: none;
+            overflow-y: auto;
+        }
+
+        .sidebar .toc h2 {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.8rem;
+            border: none;
+            padding: 0;
+        }
+
+        .sidebar .toc ul {
+            columns: 1;
+            list-style: none;
+        }
+
+        .sidebar .toc li {
+            margin-bottom: 0.15rem;
+        }
+
+        .sidebar .toc a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc a:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            min-width: 0;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+        }
+
+        .main-wrapper main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        .main-wrapper footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        /* Header & TOC now in sidebar */
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        h3 {
+            color: var(--dark);
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        h4 {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin: 1.2rem 0 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Math blocks */
+        .math-block {
+            background: var(--code-bg);
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        /* Code / Pseudocode */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        th, td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background: var(--light);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight-box h4 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Philosophy blockquote */
+        blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--dark);
+            background: var(--light);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 0.5rem;
+            font-style: normal;
+            color: var(--muted);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .sidebar header {
+                width: 100%;
+                padding: 1.5rem;
+            }
+            .sidebar .toc {
+                width: 100%;
+                padding: 0 1.5rem 1rem;
+            }
+            .sidebar .toc ul {
+                columns: 2;
+            }
+            .main-wrapper main {
+                padding: 1.5rem;
+            }
+            .main-wrapper footer {
+                padding: 1.5rem;
+            }
+            table {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Algorithm pseudocode specific */
+        .algorithm {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .algorithm .keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .algorithm .function {
+            color: #dcdcaa;
+        }
+
+        .algorithm .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        /* Anchor offset for fixed header if needed */
+        section[id] {
+            scroll-margin-top: 20px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .sidebar {
+                position: relative;
+                height: auto;
+                width: 200px;
+                min-width: 200px;
+            }
+            .main-wrapper {
+                box-shadow: none;
+            }
+        }
+    
+        /* ===== Bilingual Toggle ===== */
+        .lang-toggle {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .lang-toggle button {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .lang-toggle button:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+        }
+        .lang-toggle button.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+        }
+        .cn { display: none; }
+        body.lang-cn .cn { display: inline; }
+        body.lang-cn .en { display: none; }
+        body.lang-cn .cn-block { display: block; }
+        body.lang-cn .en-block { display: none; }
+        .cn-block { display: none; }
+        /* Keep math, code, tables always visible */
+        .cn .MathJax, .cn code, .cn pre, .cn .math-block,
+        .cn .algorithm, .cn table { display: revert; }
+        body.lang-cn .en .MathJax,
+        body.lang-cn .en code,
+        body.lang-cn .en pre { display: revert; }
+        @media (max-width: 768px) {
+            .lang-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .lang-toggle button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+        <div class="lang-toggle">
+            <button id="btn-en">EN</button>
+            <button id="btn-cn">中文</button>
+        </div>
+
+    <div class="layout">
+        <div class="sidebar">
+        <header>
+            <h1>Lecture 6: Unsupervised Learning <span class="cn">第六讲：无监督学习</span></h1>
+            <p class="subtitle">Clustering, Principal Component Analysis, and Gaussian Mixture Models</p>
+            <p class="subtitle">Introduction to Artificial Intelligence <span class="cn">人工智能导论</span></p>
+        </header>
+
+        <nav class="toc">
+            <h2>Table of Contents </h2>
+            <ul>
+                <li><a href="#overview">1. Overview and Main Themes</a></li>
+                <li><a href="#supervised-vs-unsupervised">2. Supervised vs. Unsupervised Learning</a></li>
+                <li><a href="#clustering">3. Clustering</a>
+                    <ul>
+                        <li><a href="#k-means">3.1 K-Means Algorithm</a></li>
+                        <li><span class="en"><a href="#kmeans-practical">3.2 K-Means++ and Elbow Method</a></li></span>
+                        <li><a href="#dbscan">3.3 DBSCAN</a></li>
+                        <li><a href="#modern-clustering">3.4 Modern Clustering Methods</a></li>
+                    </ul>
+                </li>
+                <li><a href="#pca">4. Principal Component Analysis</a>
+                    <ul>
+                        <li><a href="#pca-intuition">4.1 Intuition and Motivation</a></li>
+                        <li><a href="#pca-derivation">4.2 Mathematical Derivation</a></li>
+                        <li><a href="#pca-reconstruction">4.3 Equivalence to Reconstruction Error</a></li>
+                        <li><a href="#pca-svd">4.4 SVD and Eigenvalue Decomposition</a></li>
+                        <li><a href="#pca-procedure">4.5 Algorithm and Pseudocode</a></li>
+                        <li><a href="#pca-practical">4.6 Practical Notes</a></li>
+                    </ul>
+                </li>
+                <li><a href="#gmm">5. Gaussian Mixture Models &amp; EM</a>
+                    <ul>
+                        <li><a href="#gmm-gaussian">5.1 Gaussian Distribution Review</a></li>
+                        <li><a href="#gmm-model">5.2 Model Definition</a></li>
+                        <li><a href="#em-algorithm">5.3 EM Algorithm Derivation</a></li>
+                        <li><span class="en"><a href="#gmm-pseudocode">5.4 GMM-EM Pseudocode</a></li></span>
+                        <li><a href="#gmm-properties">5.5 Properties</a></li>
+                        <li><span class="en"><a href="#kmeans-gmm">5.6 K-Means vs. GMM</a></li></span>
+                    </ul>
+                </li>
+                <li><a href="#visualization">6. Nonlinear Dimensionality Reduction</a>
+                    <ul>
+                        <li><a href="#tsne">6.1 t-SNE</a></li>
+                        <li><a href="#umap">6.2 UMAP</a></li>
+                    </ul>
+                </li>
+                <li><a href="#representation">7. Representation Learning</a>
+                    <ul>
+                        <li><a href="#autoencoders">7.1 Autoencoders</a></li>
+                        <li><a href="#ae-pca">7.2 Autoencoders and PCA</a></li>
+                        <li><a href="#philosophy">7.3 Philosophical Perspectives</a></li>
+                    </ul>
+                </li>
+                <li><a href="#unification">8. Unified Perspective</a></li>
+                <li><a href="#summary">9. Summary</a></li>
+            </ul>
+        </nav>
+
+        </div>
+        <div class="main-wrapper">
+        <main>
+            <!-- ============================================================ -->
+            <!-- Section 1: Overview -->
+            <!-- ============================================================ -->
+            <section id="overview">
+                <h2>1. Overview and Main Themes <span class="cn">1. 概述与主线</span></h2>
+                <p>This lecture addresses the fundamental challenge of <strong>unsupervised learning</strong>: discovering structure in data without labeled examples. The core themes can be summarized by two principles:</p>
+
+                <div class="highlight-box">
+                    <h4>Core Principles</h4>
+                    <ul>
+                        <li><strong>Simplification <span class="cn">(化繁为简)</span>:</strong> Compress high-dimensional, complex data into simpler, more manageable forms.
+                            <ul>
+                                <li><em>Clustering:</em> Group similar data points together.</li>
+                                <span class="en"><li><em>Dimensionality Reduction:</em> Remove redundant features while preserving essential structure.</li></span><span class="cn">2.2 降维（Dimensionality Reduction）</span>
+                            </ul>
+                        </li>
+                        <li><strong>Generation <span class="cn">(无中生有)</span>:</strong> Use generative models to explain where data comes from.
+                            <ul>
+                                <li><em>Gaussian Mixture Models (GMM):</em> Model data as generated from multiple distributions; once we have the distribution, we can sample new data points.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <p>The essential difference from supervised learning is the <strong>absence of labels</strong>. The model must rely solely on the features themselves to discover patterns and structure. This means the critical questions become:</p>
+                <ol>
+                    <span class="en"><li>What features represent the data?</li></span><span class="cn">- 图像分割时，可以根据颜色、纹理、亮度等特征判断像素是否属于同一区域 - 分子分类时，可以根据 atomic features 判断原子或分子是否属于同类</span>
+                    <li>What similarity metric captures the relationship between data points?</li>
+                    <li>What model organizes these relationships into useful structure?</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>Key Insight:</strong> Similarity is not intrinsic to data — it is defined by the choice of features and distance metrics. For example, image segmentation may group pixels by color, texture, or brightness; molecular classification may use atomic features. The first step in unsupervised learning is therefore not the algorithm itself, but "what features to use and how to measure distance."
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 2: Supervised vs. Unsupervised -->
+            <!-- ============================================================ -->
+            <section id="supervised-vs-unsupervised">
+                <h2>2. Supervised vs. Unsupervised Learning <span class="cn">2. 监督学习与无监督学习</span></h2>
+
+                <p>In supervised learning, the model learns from paired examples \((x, y)\). Each training sample comes with a label that tells the model the "correct answer." In unsupervised learning, only inputs \(\{x_1, x_2, \ldots, x_n\}\) are provided — no labels — and the model must find structure without guidance.</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Supervised Learning</th>
+                            <th>Unsupervised Learning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Data</strong></td>
+                            <td>\(\{(x_i, y_i)\}_{i=1}^n\)</td>
+                            <td>\(\{x_i\}_{i=1}^n\)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Goal</strong></td>
+                            <td>Learn mapping \(f(x) \approx y\)</td>
+                            <td>Discover structure in data itself</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Key Factor</strong></td>
+                            <td>Label quality determines upper bound</td>
+                            <td>Feature selection and similarity definition determine upper bound</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Example Tasks</strong></td>
+                            <td>Classification, regression</td>
+                            <td>Clustering, dimensionality reduction, density estimation</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Evaluation</strong></td>
+                            <td>Compare predictions to ground truth labels</td>
+                            <td>Intrinsic metrics (silhouette, reconstruction error) or downstream task performance</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Core Observation:</strong> In supervised learning, labels define "what is correct." In unsupervised learning, the choice of features and distance defines "what is similar." Two different feature representations of the same data can lead to completely different cluster structures.
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 3: Clustering -->
+            <!-- ============================================================ -->
+            <section id="clustering">
+                <h2>3. Clustering <span class="cn">3. 聚类</span></h2>
+                <p>Clustering is the task of grouping a set of objects such that objects in the same group (cluster) are more similar to each other than to those in other groups. It is the most direct form of "simplification" in unsupervised learning.</p>
+
+                <!-- ==================== K-Means ==================== -->
+                <h3 id="k-means">3.1 K-Means Algorithm <span class="cn">算法</span></h3>
+                <p>K-Means is one of the most widely used clustering algorithms. Its objective is to partition \(n\) observations into \(K\) clusters, minimizing the within-cluster sum of squares (WCSS). The core idea is intuitive:</p>
+                <ol>
+                    <li>Choose \(K\) initial center points (centroids).</li>
+                    <li>Assign each sample to the nearest centroid.</li>
+                    <li>Update each centroid to the mean of its assigned points.</li>
+                    <li>Repeat until convergence.</li>
+                </ol>
+
+                <h4>3.1.1 Objective Function</h4>
+                <span class="en"><p>Given a dataset:</p></span><span class="cn">第6讲：无监督学习、K-Means、PCA 与 GMM</span>
+                <div class="math-block">
+                    $$X = \{x_1, x_2, \ldots, x_n\}, \quad x_i \in \mathbb{R}^d$$
+                </div>
+                <span class="en"><p>Let \(z_i \in \{1, 2, \ldots, K\}\) denote the cluster assignment of sample \(x_i\), and \(\mu_k\) denote the centroid of cluster \(k\). The K-Means objective is to minimize the within-cluster sum of squares:</p></span><span class="cn">- $z_i \in \{1,2,\dots,K\}$ 表示样本 $x_i$ 的簇编号 - $\mu_k$ 表示第 $k$ 个簇的中心</span>
+                <div class="math-block">
+                    $$J = \sum_{i=1}^n \|x_i - \mu_{z_i}\|^2 = \sum_{k=1}^K \sum_{i: z_i=k} \|x_i - \mu_k\|^2$$
+                </div>
+                <p>This objective says: make every sample as close as possible to the center of its own cluster.</p>
+
+                <h4>3.1.2 Alternating Optimization (Coordinate Descent)</h4>
+                <span class="en"><p>Since the objective is non-convex in both assignments and centroids simultaneously, K-Means uses an alternating optimization strategy — analogous to the E-step/M-step pattern in EM:</p></span><span class="cn">| 算法 | 任务 | 输出 | 关键思想 | 优点 | 局限 | |---|---|---|---|---|---| | K-Means | 聚类 | 簇标签、中心 | 最近中心 + 均值更新 | 简单快速 | 只能处理近似球形簇 | | PCA | 降维 | 低维表示、投影矩阵 | 最大方差 / 最小重构误差 | 数学清晰、可解释性强 | 只能学线性结构 | | GMM | 生成建模 / 软聚类 | 混合参数、责任度 | 概率生成 + EM | 表达能力强 | 计算更重、易陷局部最优 |</span>
+
+                <span class="en"><p><strong>Assignment Step (E-step analog):</strong> Given fixed centroids, assign each point to its nearest centroid. For each sample \(x_i\):</p></span><span class="cn">这一步叫 **E-step**，即 **Expectation step**。它做的事情不是直接改参数，而是计算“当前参数下，隐变量最可能是什么”。</span>
+                <div class="math-block">
+                    $$z_i = \arg\min_{k} \|x_i - \mu_k\|^2$$
+                </div>
+                <p>This is the "nearest center" rule. When centroids are fixed, the objective decomposes over individual points, and each point independently chooses its closest center.</p>
+
+                <p><strong>Update Step (M-step analog):</strong> Given fixed assignments, update each centroid as the mean of its assigned points. For cluster \(k\) with \(n_k\) points:</p>
+                <div class="math-block">
+                    $$\mu_k = \frac{1}{n_k} \sum_{i: z_i=k} x_i$$
+                </div>
+
+                <h4>3.1.3 Derivation of the Centroid Update</h4>
+                <p>The centroid update is not arbitrary — it is the <em>exact minimizer</em> of the per-cluster objective. For cluster \(k\), define:</p>
+                <div class="math-block">
+                    $$J_k(\mu_k) = \sum_{i: z_i=k} \|x_i - \mu_k\|^2$$
+                </div>
+                <p>Take the gradient with respect to \(\mu_k\) and set it to zero:</p>
+                <div class="math-block">
+                    $$\frac{\partial J_k}{\partial \mu_k} = \sum_{i: z_i=k} 2(\mu_k - x_i) = 2n_k\mu_k - 2\sum_{i: z_i=k} x_i = 0$$
+                </div>
+                <p>Solving yields:</p>
+                <div class="math-block">
+                    $$\mu_k = \frac{1}{n_k}\sum_{i: z_i=k} x_i$$
+                </div>
+                <p>This confirms that <strong>the optimal centroid is the mean of its cluster members</strong>. Since each step (assignment or update) decreases or maintains the objective \(J\), and \(J \geq 0\), the algorithm is guaranteed to converge — though only to a local optimum.</p>
+
+                <h4>3.1.4 K-Means Pseudocode</h4>
+                <div class="algorithm">
+<span class="keyword">Algorithm</span> <span class="function">K-Means</span>(X, K, max_iter, tol)<br>
+<span class="comment">// Input: Data matrix X (n x d), number of clusters K</span><br>
+<span class="comment">// Output: Cluster labels z and centroids mu</span><br>
+<br>
+1.  mu = <span class="function">InitializeCentroids</span>(X, K)   <span class="comment">// Random or K-Means++</span><br>
+2.  <span class="keyword">for</span> iter = 1 <span class="keyword">to</span> max_iter <span class="keyword">do</span><br>
+3.      mu_old = copy(mu)<br>
+4.      <span class="comment">// Assignment Step</span><br>
+5.      <span class="keyword">for</span> each x_i <span class="keyword">in</span> X <span class="keyword">do</span><br>
+6.          z_i = argmin_k ||x_i - mu_k||^2<br>
+7.      <span class="keyword">end for</span><br>
+8.      <span class="comment">// Update Step</span><br>
+9.      <span class="keyword">for</span> k = 1 <span class="keyword">to</span> K <span class="keyword">do</span><br>
+10.         C_k = {x_i : z_i = k}<br>
+11.         <span class="keyword">if</span> |C_k| &gt; 0 <span class="keyword">then</span><br>
+12.             mu_k = (1/|C_k|) * sum(C_k)<br>
+13.         <span class="keyword">else</span><br>
+14.             mu_k = <span class="function">Reinitialize</span>(X)   <span class="comment">// Handle empty cluster</span><br>
+15.         <span class="keyword">end if</span><br>
+16.     <span class="keyword">end for</span><br>
+17.     <span class="keyword">if</span> ||mu - mu_old|| &lt; tol <span class="keyword">then</span><br>
+18.         <span class="keyword">break</span><br>
+19.     <span class="keyword">end if</span><br>
+20. <span class="keyword">end for</span><br>
+21. <span class="keyword">return</span> z, mu
+                </div>
+
+                <h4>3.1.5 Properties <span class="cn">性质</span> of K-Means</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Advantages</th>
+                            <th>Disadvantages</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Simple and intuitive</td>
+                            <td>Requires pre-specifying \(K\)</td>
+                        </tr>
+                        <tr>
+                            <td>Computationally efficient — \(O(nKd)\) per iteration</td>
+                            <td>Sensitive to initialization</td>
+                        </tr>
+                        <tr>
+                            <td>Guaranteed convergence (to local optimum)</td>
+                            <td>Converges to local optimum only</td>
+                        </tr>
+                        <tr>
+                            <td>Easy to implement</td>
+                            <td>Assumes spherical (isotropic) clusters</td>
+                        </tr>
+                        <tr>
+                            <td>Scales well to large datasets</td>
+                            <td>Sensitive to outliers (outliers pull centroids)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- ==================== K-Means++ & Elbow ==================== -->
+                <h3 id="kmeans-practical">3.2 K-Means++ and the Elbow Method</h3>
+
+                <h4>3.2.1 K-Means++ Initialization</h4>
+                <p>Random initialization can lead to poor convergence. <strong>K-Means++</strong> (Arthur &amp; Vassilvitskii, 2007) chooses initial centroids that are spread apart:</p>
+                <div class="algorithm">
+<span class="keyword">Algorithm</span> <span class="function">K-Means++</span>(X, K)<br>
+1.  Choose first centroid mu_1 uniformly at random from X<br>
+2.  <span class="keyword">for</span> k = 2 <span class="keyword">to</span> K <span class="keyword">do</span><br>
+3.      For each x in X, compute D(x) = min_j ||x - mu_j||^2<br>
+4.      Choose next centroid mu_k with probability proportional to D(x)^2<br>
+5.  <span class="keyword">end for</span><br>
+6.  <span class="keyword">return</span> {mu_1, ..., mu_K}
+                </div>
+                <p>This ensures initial centroids are far from each other, giving K-Means a much better starting point. K-Means++ guarantees an expected approximation ratio of \(O(\log K)\) on the objective.</p>
+
+                <h4>3.2.2 The Elbow Method</h4>
+                <p>To choose \(K\), run K-Means for a range of \(K\) values and plot the objective \(J(K)\). The "elbow" — where the rate of decrease sharply changes — suggests a good \(K\). Additional criteria include:</p>
+                <ul>
+                    <li><strong>Silhouette Score:</strong> Measures how similar a point is to its own cluster vs. other clusters. Range \([-1, 1]\); higher is better.</li>
+                    <li><strong>Business/domain knowledge:</strong> Sometimes \(K\) is determined by the application (e.g., number of customer segments desired).</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>Practical Note:</strong> When feature scales differ significantly, standardization (zero mean, unit variance) is essential before running K-Means. Otherwise, features with larger scales dominate the Euclidean distance. K-Means++ initialization is strongly recommended.
+                </div>
+
+                <!-- ==================== DBSCAN ==================== -->
+                <h3 id="dbscan">3.3 DBSCAN: Density-Based Clustering <span class="cn">聚类</span></h3>
+                <p>DBSCAN (Density-Based Spatial Clustering of Applications with Noise) is a density-based algorithm that discovers clusters of arbitrary shape and identifies outliers. Unlike K-Means, it does not require specifying \(K\) in advance.</p>
+
+                <h4>3.3.1 Core Concepts</h4>
+                <ul>
+                    <li><strong>\(\varepsilon\)-neighborhood:</strong> The set of points within distance \(\varepsilon\) of a given point: \(N_\varepsilon(p) = \{q \mid d(p, q) \leq \varepsilon\}\).</li>
+                    <span class="en"><li><strong>Core point:</strong> A point \(p\) with at least \(\text{MinPts}\) neighbors within its \(\varepsilon\)-neighborhood: \(|N_\varepsilon(p)| \geq \text{MinPts}\).</li></span><span class="cn">EM 是 **Expectation-Maximization** 的缩写，中文一般叫**期望最大化算法**。</span>
+                    <li><strong>Directly density-reachable:</strong> Point \(q\) is directly density-reachable from core point \(p\) if \(q \in N_\varepsilon(p)\).</li>
+                    <li><strong>Density-reachable:</strong> A chain of directly density-reachable points forms a density-reachable path.</li>
+                    <li><strong>Density-connected:</strong> Two points \(p\) and \(q\) are density-connected if there exists a point \(o\) such that both \(p\) and \(q\) are density-reachable from \(o\).</li>
+                </ul>
+
+                <h4>3.3.2 DBSCAN Pseudocode</h4>
+                <div class="algorithm">
+<span class="keyword">Algorithm</span> <span class="function">DBSCAN</span>(DB, eps, MinPts)<br>
+<span class="comment">// Input: Database DB, radius eps, minimum points MinPts</span><br>
+<span class="comment">// Output: Cluster labels</span><br>
+<br>
+1.  C = 0   <span class="comment">// Cluster counter</span><br>
+2.  <span class="keyword">for</span> each unvisited point P <span class="keyword">in</span> DB <span class="keyword">do</span><br>
+3.      mark P as visited<br>
+4.      Neighbors = <span class="function">RegionQuery</span>(P, eps)<br>
+5.      <span class="keyword">if</span> |Neighbors| &lt; MinPts <span class="keyword">then</span><br>
+6.          mark P as NOISE<br>
+7.      <span class="keyword">else</span><br>
+8.          C = C + 1<br>
+9.          <span class="function">ExpandCluster</span>(P, Neighbors, C, eps, MinPts)<br>
+10.     <span class="keyword">end if</span><br>
+11. <span class="keyword">end for</span><br>
+<br>
+<span class="keyword">Function</span> <span class="function">ExpandCluster</span>(P, Neighbors, C, eps, MinPts)<br>
+1.  assign P to cluster C<br>
+2.  <span class="keyword">for</span> each point Q <span class="keyword">in</span> Neighbors <span class="keyword">do</span><br>
+3.      <span class="keyword">if</span> Q is not visited <span class="keyword">then</span><br>
+4.          mark Q as visited<br>
+5.          Neighbors_Q = <span class="function">RegionQuery</span>(Q, eps)<br>
+6.          <span class="keyword">if</span> |Neighbors_Q| &ge; MinPts <span class="keyword">then</span><br>
+7.              Neighbors = Neighbors UNION Neighbors_Q<br>
+8.          <span class="keyword">end if</span><br>
+9.      <span class="keyword">end if</span><br>
+10.     <span class="keyword">if</span> Q is not yet assigned to any cluster <span class="keyword">then</span><br>
+11.         assign Q to cluster C<br>
+12.     <span class="keyword">end if</span><br>
+13. <span class="keyword">end for</span>
+                </div>
+
+                <h4>3.3.3 Advantages <span class="cn">优点</span> and Limitations</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Advantages</th>
+                            <th>Limitations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>No need to specify \(K\)</td>
+                            <td>Sensitive to parameters \(\varepsilon\) and \(\text{MinPts}\)</td>
+                        </tr>
+                        <tr>
+                            <td>Discovers arbitrary-shaped clusters</td>
+                            <td>Struggles with varying density clusters</td>
+                        </tr>
+                        <tr>
+                            <td>Robust to outliers (explicitly identifies noise)</td>
+                            <td>Curse of dimensionality in high-dimensional spaces</td>
+                        </tr>
+                        <tr>
+                            <td>Deterministic for core and noise points</td>
+                            <td>Border points may be ambiguous (order-dependent)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- ==================== Modern Clustering ==================== -->
+                <h3 id="modern-clustering">3.4 Modern Clustering <span class="cn">聚类</span> Methods</h3>
+
+                <h4>3.4.1 HDBSCAN*</h4>
+                <p>HDBSCAN* (Hierarchical DBSCAN, Campello, Moulavi &amp; Sander 2013/2015) extends DBSCAN to address its key limitations:</p>
+                <ul>
+                    <li>Eliminates the notion of border points — only core points form clusters.</li>
+                    <li>Produces a <strong>hierarchical clustering</strong> (dendrogram) instead of a flat partition.</li>
+                    <li>Extracts the most prominent clusters from the hierarchy using cluster stability.</li>
+                    <li>More robust to parameter choices: only needs \(\text{MinPts}\); \(\varepsilon\) is derived automatically.</li>
+                    <li>Handles varying-density clusters naturally.</li>
+                </ul>
+
+                <h4>3.4.2 Spectral Clustering <span class="cn">聚类</span></h4>
+                <p>Spectral clustering uses the spectrum (eigenvalues) of a similarity matrix to perform dimensionality reduction before clustering. It can discover non-convex clusters that K-Means cannot:</p>
+                <ol>
+                    <span class="en"><li>Construct a similarity graph (adjacency matrix \(A\)) from data, e.g., using an RBF kernel: \(A_{ij} = \exp(-\|x_i - x_j\|^2 / 2\sigma^2)\).</li></span><span class="cn">- $\pi_k \ge 0$，且 $\sum_{k=1}^K \pi_k = 1$ - $\mu_k$ 是第 $k$ 个高斯的均值 - $\Sigma_k$ 是协方差矩阵</span>
+                    <span class="en"><li>Compute the degree matrix \(D = \text{diag}(d_1, \ldots, d_n)\) where \(d_i = \sum_j A_{ij}\).</li></span><span class="cn">&gt; 根据 `transcript.md` 整理，并补充课堂中对应的算法推导与伪代码。</span>
+                    <span class="en"><li>Compute the graph Laplacian: \(L = D - A\).</li></span><span class="cn">2.2 降维（Dimensionality Reduction）</span>
+                    <li>Compute the first \(k\) eigenvectors of \(L\) (corresponding to the \(k\) smallest eigenvalues).</li>
+                    <li>Embed data into the \(k\)-dimensional eigenspace and apply K-Means in this reduced space.</li>
+                </ol>
+                <p>The normalized Laplacian is \(L^{\text{sym}} = I - D^{-1/2}AD^{-1/2}\). Spectral clustering is closely related to normalized cuts (Shi &amp; Malik, 2000). Computational cost: \(O(n^3)\) for dense graphs, but \(O(n)\) for sparse graphs with \(k \ll n\).</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 4: PCA -->
+            <!-- ============================================================ -->
+            <section id="pca">
+                <h2>4. Principal Component Analysis <span class="cn">4. 主成分分析 (PCA)</span> (PCA)</h2>
+                <p>PCA is the most important mathematical tool in this lecture. It is a fundamental linear dimensionality reduction technique that finds a new orthogonal coordinate system such that the greatest variance lies on the first coordinate (first principal component), the second greatest variance on the second coordinate, and so on.</p>
+
+                <div class="info-box">
+                    <strong>Two Equivalent Views of PCA:</strong>
+                    <ol>
+                        <li><strong>Maximize projected variance:</strong> Find directions along which data varies the most.</li>
+                        <li><strong>Minimize reconstruction error:</strong> Find the subspace that loses the least information when projecting and reconstructing.</li>
+                    </ol>
+                    These two objectives are mathematically equivalent.
+                </div>
+
+                <h3 id="pca-intuition">4.1 Intuition and Motivation</h3>
+                <p>Consider data in \(\mathbb{R}^d\) that actually lies near a lower-dimensional subspace. For example, points in 3D that lie close to a plane. PCA finds this plane by identifying the directions of maximum spread. The intuition is: <em>the directions of maximum variance carry the most information about the data's structure</em>.</p>
+
+                <h3 id="pca-derivation">4.2 Mathematical Derivation</h3>
+
+                <h4>4.2.1 Centering</h4>
+                <span class="en"><p>Given data matrix \(X \in \mathbb{R}^{n \times d}\) (each row is a sample), first center the data:</p></span><span class="cn">2.3 生成建模（Generative Modeling）</span>
+                <div class="math-block">
+                    $$\bar{x} = \frac{1}{n}\sum_{i=1}^n x_i, \quad \tilde{x}_i = x_i - \bar{x}$$
+                </div>
+                <p>Let \(X_c\) be the centered data matrix. Centering removes the mean offset so PCA captures variation around the mean, not the absolute position.</p>
+
+                <h4>4.2.2 Maximizing Projected Variance</h4>
+                <span class="en"><p>Seek a unit vector \(w\) (\(\|w\| = 1\)) that maximizes the variance of projections \(y_i = w^T\tilde{x}_i\):</p></span><span class="cn">2.2 降维（Dimensionality Reduction）</span>
+                <div class="math-block">
+                    $$\text{Var}(y) = \frac{1}{n}\sum_{i=1}^n (w^T\tilde{x}_i)^2 = w^T\left(\frac{1}{n}\sum_{i=1}^n \tilde{x}_i\tilde{x}_i^T\right)w = w^T S w$$
+                </div>
+                <span class="en"><p>where \(S = \frac{1}{n}X_c^T X_c\) is the <strong>sample covariance matrix</strong>. The optimization problem is:</p></span><span class="cn">这一步叫 **E-step**，即 **Expectation step**。它做的事情不是直接改参数，而是计算“当前参数下，隐变量最可能是什么”。</span>
+                <div class="math-block">
+                    $$\max_{\|w\|=1} w^T S w$$
+                </div>
+                <span class="en"><p>This is a <strong>Rayleigh quotient</strong> maximization problem.</p></span><span class="cn">这就是一个标准的 Rayleigh quotient 最大化问题。</span>
+
+                <h4>4.2.3 Lagrangian and Eigenvalue Problem</h4>
+                <p>Form the Lagrangian with multiplier \(\lambda\) for the unit-norm constraint:</p>
+                <div class="math-block">
+                    $$\mathcal{L}(w, \lambda) = w^T S w - \lambda(w^T w - 1)$$
+                </div>
+                <p>Taking the derivative and setting to zero:</p>
+                <div class="math-block">
+                    $$\frac{\partial \mathcal{L}}{\partial w} = 2Sw - 2\lambda w = 0 \implies Sw = \lambda w$$
+                </div>
+                <p>This is an <strong>eigenvalue equation</strong>! The optimal \(w\) must be an eigenvector of \(S\), and the projected variance equals the eigenvalue: \(w^T S w = \lambda\). To maximize variance, choose the eigenvector corresponding to the <strong>largest eigenvalue</strong>.</p>
+
+                <div class="success-box">
+                    <strong>Fundamental Result:</strong> The principal components are the eigenvectors of the covariance matrix \(S\), ordered by decreasing eigenvalues. The first principal component \(w_1\) corresponds to the largest eigenvalue \(\lambda_1\), and \(\lambda_1\) equals the variance along that direction.
+                </div>
+
+                <h4>4.2.4 Extension to \(k\) Dimensions</h4>
+                <span class="en"><p>To reduce to \(k\) dimensions, form matrix \(W = [w_1, w_2, \ldots, w_k] \in \mathbb{R}^{d \times k}\) with orthonormal columns (\(W^T W = I_k\)). The projected data is:</p></span><span class="cn">2.3 生成建模（Generative Modeling）</span>
+                <div class="math-block">
+                    $$Z = X_c W \in \mathbb{R}^{n \times k}$$
+                </div>
+                <span class="en"><p>The total variance retained is:</p></span><span class="cn">高斯分布（Gaussian distribution）是最常见的连续概率分布之一。单变量形式为：</span>
+                <div class="math-block">
+                    $$\text{tr}(W^T S W) = \sum_{j=1}^k w_j^T S w_j = \sum_{j=1}^k \lambda_j$$
+                </div>
+                <p>The optimization becomes:</p>
+                <div class="math-block">
+                    $$\max_{W^T W = I} \text{tr}(W^T S W)$$
+                </div>
+                <span class="en"><p>The optimal solution is: <strong>take the top \(k\) eigenvectors of \(S\)</strong>, i.e., those corresponding to the \(k\) largest eigenvalues.</p></span><span class="cn">- 图像分割时，可以根据颜色、纹理、亮度等特征判断像素是否属于同一区域 - 分子分类时，可以根据 atomic features 判断原子或分子是否属于同类</span>
+
+                <h3 id="pca-reconstruction">4.3 Equivalence to Minimizing Reconstruction Error</h3>
+                <p>PCA is also equivalent to minimizing the reconstruction error. After projecting to \(k\) dimensions, reconstruct in the original space:</p>
+                <div class="math-block">
+                    $$\hat{x}_i = W W^T \tilde{x}_i$$
+                </div>
+                <p>The reconstruction error in Frobenius norm:</p>
+                <div class="math-block">
+                    $$\|X_c - X_c W W^T\|_F^2 = \sum_{i=1}^n \|\tilde{x}_i - \hat{x}_i\|^2$$
+                </div>
+                <p>Since \(W\) has orthonormal columns, the projection and residual are orthogonal and complementary:</p>
+                <div class="math-block">
+                    $$\|\tilde{x}_i\|^2 = \|W W^T \tilde{x}_i\|^2 + \|(I - W W^T)\tilde{x}_i\|^2$$
+                </div>
+                <p>Therefore, maximizing retained variance is mathematically equivalent to minimizing lost reconstruction error. This duality provides both geometric intuition and computational flexibility.</p>
+
+                <h3 id="pca-svd">4.4 SVD and Eigenvalue Decomposition</h3>
+
+                <h4>4.4.1 Eigenvalue Decomposition of the Covariance Matrix</h4>
+                <div class="math-block">
+                    $$S = U \Lambda U^T$$
+                </div>
+                <p>where \(\Lambda = \text{diag}(\lambda_1, \lambda_2, \ldots, \lambda_d)\) with \(\lambda_1 \geq \lambda_2 \geq \cdots \geq \lambda_d \geq 0\), and \(U\) contains orthonormal eigenvectors. The top \(k\) principal components are the first \(k\) columns of \(U\).</p>
+
+                <h4>4.4.2 Singular Value Decomposition (SVD)</h4>
+                <p>In practice, it is often better to directly decompose the centered data matrix via SVD rather than forming the covariance matrix explicitly (which can lose numerical precision):</p>
+                <div class="math-block">
+                    $$X_c = U \Sigma V^T$$
+                </div>
+                <p>where \(\Sigma\) contains singular values \(\sigma_1 \geq \sigma_2 \geq \cdots \geq 0\). The principal components are the columns of \(V\), and:</p>
+                <div class="math-block">
+                    $$\lambda_j = \frac{\sigma_j^2}{n}$$
+                </div>
+                <p>SVD is numerically more stable than explicit covariance computation and is the preferred method in practice (e.g., <code>numpy.linalg.svd</code>, <code>sklearn.decomposition.PCA</code>).</p>
+
+                <h4>4.4.3 Explained Variance Ratio</h4>
+                <p>The proportion of variance explained by the first \(k\) components:</p>
+                <div class="math-block">
+                    $$\text{EVR}(k) = \frac{\sum_{j=1}^k \lambda_j}{\sum_{j=1}^d \lambda_j} = \frac{\sum_{j=1}^k \sigma_j^2}{\sum_{j=1}^d \sigma_j^2}$$
+                </div>
+                <p>This ratio helps determine how many dimensions to retain. Common heuristics:</p>
+                <ul>
+                    <li>Choose \(k\) such that \(\text{EVR} \geq 95\%\).</li>
+                    <li>Plot the eigenvalues (scree plot) and look for an "elbow."</li>
+                    <span class="en"><li>Use cross-validation on a downstream task.</li></span><span class="cn">2.2 降维（Dimensionality Reduction）</span>
+                </ul>
+
+                <h3 id="pca-procedure">4.5 PCA Algorithm <span class="cn">算法</span> and Pseudocode</h3>
+                <div class="algorithm">
+<span class="keyword">Algorithm</span> <span class="function">PCA</span>(X, k)<br>
+<span class="comment">// Input: Data matrix X (n x d), target dimension k</span><br>
+<span class="comment">// Output: Projected data Z, projection matrix W, reconstruction X_hat</span><br>
+<br>
+1.  x_mean = mean(X, axis=0)<br>
+2.  Xc = X - x_mean                    <span class="comment">// Center the data</span><br>
+3.  <span class="comment">// Method 1: Covariance + Eigendecomposition</span><br>
+4.  S = (Xc^T @ Xc) / n               <span class="comment">// Covariance matrix (d x d)</span><br>
+5.  eigvals, eigvecs = <span class="function">eig</span>(S)       <span class="comment">// Eigen decomposition</span><br>
+6.  idx = <span class="function">argsort</span>(eigvals, descending=True)<br>
+7.  W = eigvecs[:, idx[0:k]]          <span class="comment">// Top k eigenvectors</span><br>
+8.  <span class="comment">// Method 2: SVD (preferred for numerical stability)</span><br>
+9.  <span class="comment">// U, Sigma, Vt = svd(Xc); W = Vt.T[:, 0:k]</span><br>
+10. Z = Xc @ W                         <span class="comment">// Project to k dimensions</span><br>
+11. X_hat = Z @ W.T + x_mean          <span class="comment">// Optional reconstruction</span><br>
+12. <span class="keyword">return</span> Z, W, X_hat
+                </div>
+
+                <h3 id="pca-practical">4.6 Practical Note <span class="cn">注意</span>s on PCA</h3>
+                <ul>
+                    <li><strong>Standardization:</strong> If features have different units or scales, standardize (zero mean, unit variance) before PCA. Otherwise, features with large variance dominate.</li>
+                    <li><strong>Linearity:</strong> PCA is a <em>linear</em> method. It can only capture linear relationships. For nonlinear structure, consider kernel PCA, autoencoders, or manifold learning (t-SNE, UMAP).</li>
+                    <li><strong>Interpretability:</strong> Each principal component is a linear combination of original features. The loadings (elements of \(w_j\)) indicate feature importance.</li>
+                    <li><strong>Whitening:</strong> Dividing projected data by \(\sqrt{\lambda_j}\) decorrelates and normalizes the features: \(Z_{\text{white}} = Z \Lambda^{-1/2}\).</li>
+                    <span class="en"><li><strong>Computational cost:</strong> \(O(nd^2 + d^3)\) for eigendecomposition, or \(O(ndk)\) for truncated SVD when \(k \ll d\).</li></span><span class="cn">- $z_i \in \{1,2,\dots,K\}$ 表示样本 $x_i$ 的簇编号 - $\mu_k$ 表示第 $k$ 个簇的中心</span>
+                </ul>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 5: GMM & EM -->
+            <!-- ============================================================ -->
+            <section id="gmm">
+                <h2>5. Gaussian Mixture Models <span class="cn">5. 高斯混合模型 (GMM)</span> and the EM Algorithm</h2>
+                <p>While K-Means performs "hard" assignment (each point belongs to exactly one cluster), Gaussian Mixture Models (GMM) provide a probabilistic framework for "soft" clustering, where each point has a probability of belonging to each cluster. GMM also serves as a <strong>generative model</strong> — once fitted, we can sample new data points from the learned distribution.</p>
+
+                <h3 id="gmm-gaussian">5.1 Gaussian Distribution Review</h3>
+                <span class="en"><p>The Gaussian (normal) distribution is the most widely used continuous probability distribution. Its univariate form is:</p></span><span class="cn">高斯分布（Gaussian distribution）是最常见的连续概率分布之一。单变量形式为：</span>
+                <div class="math-block">
+                    $$\mathcal{N}(x \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi}\sigma} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$$
+                </div>
+                <span class="en"><p>The multivariate form for \(x \in \mathbb{R}^d\) is:</p></span><span class="cn">2.3 生成建模（Generative Modeling）</span>
+                <div class="math-block">
+                    $$\mathcal{N}(x \mid \mu, \Sigma) = \frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}} \exp\left(-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\right)$$
+                </div>
+                <p>where:</p>
+                <ul>
+                    <li>\(\mu \in \mathbb{R}^d\) controls the center (mean) of the distribution.</li>
+                    <li>\(\Sigma \in \mathbb{R}^{d \times d}\) is the covariance matrix, controlling the shape and orientation of the probability "ellipsoid."</li>
+                    <li>\(|\Sigma|\) is the determinant of \(\Sigma\), and \(\Sigma^{-1}\) is its inverse.</li>
+                </ul>
+                <p>If we fit a single Gaussian to a dataset, we are essentially fitting an "ellipsoidal" probability model to the data cloud. The maximum likelihood estimates are simply the sample mean and sample covariance:</p>
+                <div class="math-block">
+                    $$\hat{\mu} = \frac{1}{n}\sum_{i=1}^n x_i, \quad \hat{\Sigma} = \frac{1}{n}\sum_{i=1}^n (x_i - \hat{\mu})(x_i - \hat{\mu})^T$$
+                </div>
+
+                <h3 id="gmm-model">5.2 GMM Model Definition <span class="cn">定义</span></h3>
+                <span class="en"><p>A GMM assumes data is generated from a mixture of \(K\) Gaussian components:</p></span><span class="cn">第6讲：无监督学习、K-Means、PCA 与 GMM</span>
+                <div class="math-block">
+                    $$p(x) = \sum_{k=1}^K \pi_k \mathcal{N}(x \mid \mu_k, \Sigma_k)$$
+                </div>
+                <p>where:</p>
+                <ul>
+                    <li>\(\pi_k \geq 0\) and \(\sum_{k=1}^K \pi_k = 1\) are the <strong>mixing coefficients</strong> (prior probabilities of each component).</li>
+                    <li>\(\mu_k \in \mathbb{R}^d\) is the mean of component \(k\).</li>
+                    <li>\(\Sigma_k \in \mathbb{R}^{d \times d}\) is the covariance matrix of component \(k\).</li>
+                </ul>
+
+                <span class="en"><p>Introduce a latent (hidden) variable \(z_i \in \{1, \ldots, K\}\) indicating which component generated \(x_i\):</p></span><span class="cn">- $z_i \in \{1,2,\dots,K\}$ 表示样本 $x_i$ 的簇编号 - $\mu_k$ 表示第 $k$ 个簇的中心</span>
+                <div class="math-block">
+                    $$p(z_i = k) = \pi_k, \quad p(x_i \mid z_i = k) = \mathcal{N}(x_i \mid \mu_k, \Sigma_k)$$
+                </div>
+                <span class="en"><p>The generative story is: first sample a component \(z_i\) from the categorical distribution \(\text{Cat}(\pi_1, \ldots, \pi_K)\), then sample \(x_i\) from the corresponding Gaussian.</p></span><span class="cn">高斯分布（Gaussian distribution）是最常见的连续概率分布之一。单变量形式为：</span>
+
+                <h3 id="em-algorithm">5.3 The Expectation-Maximization Algorithm <span class="cn">算法</span></h3>
+                <p>EM is an iterative algorithm for maximum likelihood estimation in models with latent variables. The log-likelihood of the observed data is:</p>
+                <div class="math-block">
+                    $$\log p(X \mid \theta) = \sum_{i=1}^n \log \left(\sum_{k=1}^K \pi_k \mathcal{N}(x_i \mid \mu_k, \Sigma_k)\right)$$
+                </div>
+                <p>The sum inside the log makes direct optimization difficult. EM resolves this by iteratively optimizing a lower bound (the ELBO).</p>
+
+                <div class="info-box">
+                    <strong>Why EM?</strong> Directly maximizing \(\log p(X \mid \theta)\) with latent variables \(Z\) is intractable due to the sum inside the log. EM constructs a lower bound (Evidence Lower Bound, ELBO) and maximizes it iteratively. Each EM iteration is guaranteed <strong>not to decrease</strong> the likelihood — it monotonically converges to a local optimum.
+                </div>
+
+                <h4>5.3.1 E-Step: Compute Responsibilities</h4>
+                <p>The <strong>responsibility</strong> \(\gamma_{ik}\) is the posterior probability that sample \(i\) belongs to component \(k\), given current parameter estimates:</p>
+                <div class="math-block">
+                    $$\gamma_{ik} = p(z_i = k \mid x_i, \theta^{\text{old}}) = \frac{\pi_k \mathcal{N}(x_i \mid \mu_k, \Sigma_k)}{\sum_{j=1}^K \pi_j \mathcal{N}(x_i \mid \mu_j, \Sigma_j)}$$
+                </div>
+                <p>Intuitively: if \(x_i\) is closer to component \(k\) (in Mahalanobis distance), \(\gamma_{ik}\) is larger. All responsibilities for a given point sum to 1: \(\sum_{k=1}^K \gamma_{ik} = 1\). This step does not change parameters — it estimates the "hidden information" (which component each point likely came from).</p>
+
+                <h4>5.3.2 M-Step: Update Parameters</h4>
+                <p>Using the responsibilities from the E-step, define the <strong>effective number of points</strong> assigned to component \(k\):</p>
+                <div class="math-block">
+                    $$N_k = \sum_{i=1}^n \gamma_{ik}$$
+                </div>
+                <p>Update mixing coefficients:</p>
+                <div class="math-block">
+                    $$\pi_k^{\text{new}} = \frac{N_k}{n}$$
+                </div>
+                <p>Update means (weighted average using responsibilities):</p>
+                <div class="math-block">
+                    $$\mu_k^{\text{new}} = \frac{1}{N_k}\sum_{i=1}^n \gamma_{ik} x_i$$
+                </div>
+                <p>Update covariances (weighted scatter):</p>
+                <div class="math-block">
+                    $$\Sigma_k^{\text{new}} = \frac{1}{N_k}\sum_{i=1}^n \gamma_{ik} (x_i - \mu_k^{\text{new}})(x_i - \mu_k^{\text{new}})^T$$
+                </div>
+
+                <p>The M-step formulas are exactly the weighted versions of the standard maximum likelihood estimates for a Gaussian. If responsibilities were hard (0 or 1), these reduce to the usual sample mean and covariance.</p>
+
+                <h4>5.3.3 EM as "Assign then Optimize"</h4>
+                <p>The EM procedure can be summarized as:</p>
+                <ul>
+                    <li><strong>E-step:</strong> Estimate the hidden information — "which component likely generated each point?"</li>
+                    <li><strong>M-step:</strong> Given this estimate, optimize the parameters — "what are the best means, covariances, and mixing weights?"</li>
+                    <li>Repeat until convergence.</li>
+                </ul>
+                <p>This is analogous to K-Means' alternating optimization, but with <em>soft</em> assignments instead of hard ones. K-Means is the limiting case of GMM-EM when all covariances are \(\sigma^2 I\) and \(\sigma^2 \to 0\).</p>
+
+                <h3 id="gmm-pseudocode">5.4 GMM-EM Pseudocode</h3>
+                <div class="algorithm">
+<span class="keyword">Algorithm</span> <span class="function">GMM-EM</span>(X, K, max_iter, tol)<br>
+<span class="comment">// Input: Data X, number of components K</span><br>
+<span class="comment">// Output: Parameters pi, mu, Sigma, responsibilities gamma</span><br>
+<br>
+1.  pi, mu, Sigma = <span class="function">InitializeGMM</span>(X, K)  <span class="comment">// e.g., from K-Means</span><br>
+2.  <span class="keyword">for</span> iter = 1 <span class="keyword">to</span> max_iter <span class="keyword">do</span><br>
+3.      <span class="comment">// E-Step: Compute responsibilities</span><br>
+4.      <span class="keyword">for</span> i = 1 <span class="keyword">to</span> n <span class="keyword">do</span><br>
+5.          <span class="keyword">for</span> k = 1 <span class="keyword">to</span> K <span class="keyword">do</span><br>
+6.              gamma[i,k] = pi[k] * N(x_i | mu[k], Sigma[k])<br>
+7.          <span class="keyword">end for</span><br>
+8.          gamma[i,:] = gamma[i,:] / sum(gamma[i,:])<br>
+9.      <span class="keyword">end for</span><br>
+10.     <span class="comment">// M-Step: Update parameters</span><br>
+11.     <span class="keyword">for</span> k = 1 <span class="keyword">to</span> K <span class="keyword">do</span><br>
+12.         N_k = sum(gamma[:, k])<br>
+13.         pi[k] = N_k / n<br>
+14.         mu[k] = (1/N_k) * sum_i(gamma[i,k] * x_i)<br>
+15.         Sigma[k] = (1/N_k) * sum_i(gamma[i,k] * (x_i - mu[k]) * (x_i - mu[k])^T)<br>
+16.     <span class="keyword">end for</span><br>
+17.     <span class="keyword">if</span> log_likelihood_converged(tol) <span class="keyword">then</span><br>
+18.         <span class="keyword">break</span><br>
+19.     <span class="keyword">end if</span><br>
+20. <span class="keyword">end for</span><br>
+21. <span class="keyword">return</span> pi, mu, Sigma, gamma
+                </div>
+
+                <h3 id="gmm-properties">5.5 Properties <span class="cn">性质</span> of GMM</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Soft clustering</strong></td>
+                            <td>Each point has a probability distribution over clusters — uncertainty is preserved.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ellipsoidal clusters</strong></td>
+                            <td>Covariance matrices allow different shapes, sizes, and orientations.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Generative model</strong></td>
+                            <td>Can generate new samples by sampling from the mixture distribution.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Richer expressiveness</strong></td>
+                            <td>Subsumes K-Means as a limiting case.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Monotone convergence</strong></td>
+                            <td>Each EM iteration never decreases the log-likelihood.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Limitations:</strong>
+                    <ul>
+                        <li>Sensitive to initialization — poor init can lead to bad local optima.</li>
+                        <span class="en"><li>Singular covariances when \(N_k\) is small (regularization: add \(\epsilon I\) to \(\Sigma_k\)).</li></span><span class="cn">- $z_i \in \{1,2,\dots,K\}$ 表示样本 $x_i$ 的簇编号 - $\mu_k$ 表示第 $k$ 个簇的中心</span>
+                        <span class="en"><li>Higher computational cost than K-Means (matrix inversions, determinant computations).</li></span><span class="cn">第6讲：无监督学习、K-Means、PCA 与 GMM</span>
+                        <li>Number of components \(K\) must still be chosen.</li>
+                    </ul>
+                </div>
+
+                <h3 id="kmeans-gmm">5.6 K-Means vs. GMM: A Detailed Comparison <span class="cn">对比</span></h3>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>K-Means</th>
+                            <th>GMM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Assignment</strong></td>
+                            <td>Hard (0 or 1)</td>
+                            <td>Soft (probabilities \(\gamma_{ik}\))</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cluster Shape</strong></td>
+                            <td>Spherical (isotropic, \(\Sigma = \sigma^2 I\))</td>
+                            <td>Ellipsoidal (arbitrary \(\Sigma_k\))</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Objective</strong></td>
+                            <td>Minimize WCSS: \(\sum_i \|x_i - \mu_{z_i}\|^2\)</td>
+                            <td>Maximize log-likelihood: \(\sum_i \log p(x_i)\)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Optimization</strong></td>
+                            <td>Coordinate descent (alternating assignment &amp; update)</td>
+                            <td>EM algorithm (alternating E-step &amp; M-step)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Generative</strong></td>
+                            <td>No</td>
+                            <td>Yes — can sample new data</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Speed</strong></td>
+                            <td>Faster</td>
+                            <td>Slower (covariance updates)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Relationship</strong></td>
+                            <td colspan="2">K-Means ≈ GMM with \(\Sigma_k = \sigma^2 I\) and \(\sigma^2 \to 0\)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="success-box">
+                    <strong>Key Insight:</strong> K-Means can be viewed as the hard-limit of GMM where all covariances are equal, spherical, and infinitely tight. In this limit, the soft responsibilities \(\gamma_{ik}\) become hard 0/1 assignments, and the M-step mean update coincides with the K-Means centroid update. This reveals that K-Means and GMM-EM share the same alternating optimization structure.
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 6: Nonlinear Dim Reduction -->
+            <!-- ============================================================ -->
+            <section id="visualization">
+                <h2>6. Nonlinear Dimensionality Reduction <span class="cn">6. 非线性降维</span> for Visualization</h2>
+                <p>PCA is a powerful linear method, but real-world data often lies on nonlinear manifolds (e.g., a Swiss roll in 3D). Two modern methods are essential for visualizing high-dimensional data in 2D or 3D:</p>
+
+                <h3 id="tsne">6.1 t-SNE (t-Distributed Stochastic Neighbor Embedding)</h3>
+                <p>t-SNE, developed by van der Maaten and Hinton (2008), is a nonlinear technique for visualizing high-dimensional data in 2D or 3D. It preserves <strong>local neighborhood structure</strong> — nearby points in high-D stay nearby in low-D.</p>
+
+                <h4>6.1.1 Core Idea</h4>
+                <p>t-SNE constructs probability distributions over pairs of points in both high-D and low-D spaces, then minimizes their divergence:</p>
+
+                <p><strong>Step 1 — High-dimensional similarities:</strong> Define conditional probabilities using Gaussian kernels:</p>
+                <div class="math-block">
+                    $$p_{j|i} = \frac{\exp(-\|x_i - x_j\|^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-\|x_i - x_k\|^2 / 2\sigma_i^2)}$$
+                </div>
+                <p>The bandwidth \(\sigma_i\) is adapted to the local density around point \(i\) via the <strong>perplexity</strong> parameter (typically 5–50). Symmetrize to get joint probabilities:</p>
+                <div class="math-block">
+                    $$p_{ij} = \frac{p_{j|i} + p_{i|j}}{2n}$$
+                </div>
+
+                <p><strong>Step 2 — Low-dimensional similarities:</strong> Define \(q_{ij}\) using a Student t-distribution with one degree of freedom (heavy tails):</p>
+                <div class="math-block">
+                    $$q_{ij} = \frac{(1 + \|y_i - y_j\|^2)^{-1}}{\sum_{k \neq l}(1 + \|y_k - y_l\|^2)^{-1}}$$
+                </div>
+                <p>The heavy-tailed t-distribution in the low-dimensional space alleviates the <strong>"crowding problem"</strong> — the tendency of points to collapse into a single cluster when mapping from high to low dimensions.</p>
+
+                <p><strong>Step 3 — Optimization:</strong> Minimize the Kullback-Leibler (KL) divergence:</p>
+                <div class="math-block">
+                    $$\text{KL}(P \| Q) = \sum_{i \neq j} p_{ij} \log\frac{p_{ij}}{q_{ij}}$$
+                </div>
+                <p>KL divergence is asymmetric: it heavily penalizes placing distant points together (\(p_{ij}\) large, \(q_{ij}\) small), but is lenient about placing dissimilar points close. This is why t-SNE preserves local neighborhoods well but may distort global structure.</p>
+
+                <h4>6.1.2 Perplexity</h4>
+                <p>Perplexity can be interpreted as a smooth measure of the effective number of neighbors. Low perplexity (e.g., 5) focuses on very local structure; high perplexity (e.g., 50) considers broader neighborhoods. There is no single "correct" value — it depends on the dataset.</p>
+
+                <h4>6.1.3 Caveats</h4>
+                <ul>
+                    <li><strong>Cluster sizes and inter-cluster distances</strong> in the visualization may not reflect true structure.</li>
+                    <li>Results depend strongly on perplexity and are non-deterministic (different runs yield different layouts).</li>
+                    <li>Cannot transform new data points — the entire dataset must be re-embedded.</li>
+                    <li>Computational cost: \(O(n^2)\) time and space; Barnes-Hut approximation reduces to \(O(n \log n)\).</li>
+                </ul>
+
+                <h3 id="umap">6.2 UMAP (Uniform Manifold Approximation and Projection)</h3>
+                <span class="en"><p>UMAP, developed by McInnes, Healy, and Melville (2018), is a newer dimensionality reduction technique based on manifold learning and topological data analysis. It is often preferred over t-SNE for larger datasets.</p></span><span class="cn">2.2 降维（Dimensionality Reduction）</span>
+
+                <h4>6.2.1 Theoretical Foundation</h4>
+                <p>UMAP assumes:</p>
+                <ol>
+                    <span class="en"><li>Data is uniformly distributed on a Riemannian manifold.</li></span><span class="cn">高斯分布（Gaussian distribution）是最常见的连续概率分布之一。单变量形式为：</span>
+                    <li>The Riemannian metric is locally constant (the manifold is locally flat).</li>
+                    <span class="en"><li>The manifold is locally connected.</li></span><span class="cn">高斯分布（Gaussian distribution）是最常见的连续概率分布之一。单变量形式为：</span>
+                </ol>
+                <p>From these assumptions, UMAP constructs a <strong>fuzzy topological structure</strong> (a weighted graph) in high-D and seeks a low-D embedding that preserves this structure. The optimization uses cross-entropy (not KL divergence), which tends to preserve both local and global structure better.</p>
+
+                <h4>6.2.2 Key Parameters</h4>
+                <ul>
+                    <li><strong><code>n_neighbors</code></strong> (default 15): Controls the balance between local and global structure. Smaller values focus on local detail.</li>
+                    <li><strong><code>min_dist</code></strong> (default 0.1): Controls how tightly points are packed in the embedding. Smaller values produce tighter clusters.</li>
+                </ul>
+
+                <h4>6.2.3 UMAP vs. t-SNE</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>t-SNE</th>
+                            <th>UMAP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Speed</strong></td>
+                            <td>Slower (\(O(n^2)\) or \(O(n \log n)\))</td>
+                            <td>Faster (scales better, empirically \(O(n^{1.14})\))</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Global structure</strong></td>
+                            <td>Primarily local preservation</td>
+                            <td>Better global structure preservation</td>
+                        </tr>
+                        <tr>
+                            <td><strong>New data</strong></td>
+                            <td>Cannot transform new points</td>
+                            <td>Can transform new points via <code>transform()</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Parameters</strong></td>
+                            <td>Perplexity (one main parameter)</td>
+                            <td>n_neighbors, min_dist (two parameters)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Distances</strong></td>
+                            <td>Inter-cluster distances unreliable</td>
+                            <td>More meaningful inter-cluster distances</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Theory</strong></td>
+                            <td>Information-theoretic (KL divergence)</td>
+                            <td>Topological / manifold-based (cross-entropy)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Practical Recommendation:</strong> For exploratory visualization, both t-SNE and UMAP are excellent. UMAP is generally preferred for larger datasets and when preserving global structure matters. For strict cluster validation, neither should be used as the sole clustering method — they are visualization tools, not clustering algorithms.
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 7: Representation Learning -->
+            <!-- ============================================================ -->
+            <section id="representation">
+                <h2>7. Representation Learning <span class="cn">7. 表示学习</span></h2>
+                <p>Representation learning asks: <em>Does data have a simpler, more essential form beneath its surface?</em> All unsupervised methods in this lecture can be viewed as finding useful representations. Autoencoders provide a neural-network framework for learning such representations, generalizing PCA to nonlinear settings.</p>
+
+                <h3 id="autoencoders">7.1 Autoencoders as Nonlinear Representation Learning <span class="cn">表示学习</span></h3>
+                <p>An <strong>autoencoder</strong> is a neural network trained to copy its input to its output through an intermediate compressed representation. It consists of:</p>
+                <ul>
+                    <span class="en"><li><strong>Encoder:</strong> \(z = E_\phi(x)\) maps input to a lower-dimensional latent code.</li></span><span class="cn">EM 是 **Expectation-Maximization** 的缩写，中文一般叫**期望最大化算法**。</span>
+                    <span class="en"><li><strong>Decoder:</strong> \(\hat{x} = D_\theta(z)\) reconstructs the input from the code.</li></span><span class="cn">- $z_i \in \{1,2,\dots,K\}$ 表示样本 $x_i$ 的簇编号 - $\mu_k$ 表示第 $k$ 个簇的中心</span>
+                </ul>
+
+                <p>The objective is to minimize reconstruction error:</p>
+                <div class="math-block">
+                    $$\min_{\phi, \theta} \frac{1}{n}\sum_{i=1}^n \|x_i - D_\theta(E_\phi(x_i))\|^2$$
+                </div>
+
+                <p>When the code dimension \(k < d\), the autoencoder performs <strong>nonlinear dimensionality reduction</strong>, learning features that capture the most salient structure. Unlike PCA, the encoder and decoder can be arbitrary nonlinear functions (deep neural networks).</p>
+
+                <h4>7.1.1 Key Variants</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Variant</th>
+                            <th>Key Idea</th>
+                            <th>Application</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Denoising Autoencoder (DAE)</strong></td>
+                            <td>Reconstruct clean input from a corrupted version (add noise to input, train to recover original)</td>
+                            <td>Robust feature learning, denoising</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sparse Autoencoder</strong></td>
+                            <td>Enforce sparsity constraint on latent code (most activations are zero)</td>
+                            <td>Interpretable, overcomplete representations</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Variational Autoencoder (VAE)</strong></td>
+                            <td>Latent space is a probability distribution \(q(z|x) = \mathcal{N}(\mu(x), \sigma^2(x))\); trained with ELBO objective</td>
+                            <td>Generative modeling, smooth latent space</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Contractive Autoencoder</strong></td>
+                            <td>Penalize the Frobenius norm of the encoder Jacobian</td>
+                            <td>Locally invariant features</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 id="ae-pca">7.2 Autoencoders and PCA</h3>
+                <span class="en"><p>A deep connection exists between autoencoders and PCA:</p></span><span class="cn">第6讲：无监督学习、K-Means、PCA 与 GMM</span>
+                <div class="success-box">
+                    <strong>Equivalence Theorem:</strong> A linear autoencoder (encoder and decoder are both single linear layers) with squared error loss and tied weights (\(D = E^T\)) learns the same subspace as PCA. The optimal encoder weight matrix spans the top \(k\) principal components. Deep autoencoders with nonlinear activations generalize this to nonlinear manifolds.
+                </div>
+                <p>This means PCA can be seen as the simplest possible autoencoder — one with no hidden nonlinearities. Each additional layer of nonlinearity allows the autoencoder to capture more complex structure that PCA cannot.</p>
+
+                <h3 id="philosophy">7.3 Philosophical Perspectives on Representation Learning <span class="cn">表示学习</span></h3>
+                <p>Representation learning connects to fundamental questions in epistemology:</p>
+                <ul>
+                    <li><strong>Plato's Theory of Forms:</strong> Observations are imperfect projections of stable abstract structures. The latent representation \(z\) is the "Form" — the essential truth behind the noisy data \(x\).</li>
+                    <li><strong>Occam's Razor:</strong> A good representation captures maximal essence with minimal parameters. Compressing \(d\) dimensions to \(k\) forces the model to find what truly matters.</li>
+                    <li><strong>Encoding-Decoding Symmetry:</strong> A valid representation must be both <em>compressible</em> (encoder) and <em>reconstructible</em> (decoder). If you cannot reconstruct the original from a representation, that representation has lost something essential.</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>Human Cognition:</strong> The human brain performs unsupervised learning constantly — transforming pixels into objects, waveforms into meaning. This reflects a historical shift in AI: from <strong>human-defined features</strong> (hand-crafted rules) to <strong>data-defined features</strong> (learned representations).
+                </div>
+
+                <blockquote>
+                    "If intelligence is a cake, unsupervised learning is the cake itself, supervised learning is the icing, and reinforcement learning is the cherry on top."
+                    <cite>— Yann LeCun</cite>
+                </blockquote>
+
+                <div class="highlight-box">
+                    <p><strong>The Open Question:</strong> Does an "optimal representation" of the world exist independently of any task, or is every representation task-relative? This touches the core of epistemology: Is our understanding the world as it truly is, or merely an efficient compression our brains construct?</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 8: Unified Perspective -->
+            <!-- ============================================================ -->
+            <section id="unification">
+                <h2>8. Unified Perspective <span class="cn">8. 统一视角</span>: Unsupervised Learning as Dimensionality Reduction</h2>
+                <p>All the methods discussed in this lecture — clustering, PCA, GMM, and autoencoders — can be understood through a single lens: <strong>compressing high-dimensional data into a more essential, lower-dimensional representation</strong>.</p>
+
+                <h3>8.1 Four Forms of Compression</h3>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Input</th>
+                            <th>Output</th>
+                            <th>Type of Compression</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PCA</strong></td>
+                            <td>\(d\)-dimensional continuous data</td>
+                            <td>\(k\)-dimensional projection (\(k \ll d\))</td>
+                            <td>Linear, continuous</td>
+                        </tr>
+                        <tr>
+                            <td><strong>K-Means</strong></td>
+                            <td>\(d\)-dimensional continuous data</td>
+                            <td>Discrete cluster label \(z_i \in \{1, \ldots, K\}\)</td>
+                            <td>Discrete, hard assignment</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GMM</strong></td>
+                            <td>\(d\)-dimensional continuous data</td>
+                            <td>\(K\)-dimensional probability vector \(\gamma_i\)</td>
+                            <td>Probabilistic, soft assignment</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Autoencoder</strong></td>
+                            <td>\(d\)-dimensional data</td>
+                            <td>\(k\)-dimensional nonlinear embedding</td>
+                            <td>Nonlinear, continuous</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box" style="background: white; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 2rem;">
+                    <div style="font-weight: bold; margin-bottom: 1rem;">High-Dimensional Raw Data (redundant, noisy)</div>
+                    <div style="font-size: 1.5rem; margin: 0.5rem 0;">&darr;</div>
+                    <div style="background: var(--light); padding: 0.8rem 2rem; border-radius: 4px; border: 1px solid var(--secondary); margin-bottom: 1rem;">Unsupervised Learning Algorithm</div>
+                    <div style="display: flex; justify-content: space-around; width: 100%; text-align: center;">
+                        <div>&swarr;<br><strong>PCA</strong><br><small>Linear<br>Continuous</small></div>
+                        <div>&darr;<br><strong>K-Means</strong><br><small>Discrete<br>Hard</small></div>
+                        <div>&darr;<br><strong>GMM</strong><br><small>Probabilistic<br>Soft</small></div>
+                        <div>&searr;<br><strong>Autoencoder</strong><br><small>Nonlinear<br>Deep</small></div>
+                    </div>
+                </div>
+
+                <p>Despite different appearances, all these methods share a common goal: finding a representation \(z\) of \(x\) such that \(\dim(z) \ll \dim(x)\) while preserving essential structure. The methods differ in:</p>
+                <ul>
+                    <li><strong>Linearity:</strong> PCA is linear; autoencoders are nonlinear.</li>
+                    <span class="en"><li><strong>Continuity:</strong> PCA and autoencoders produce continuous embeddings; K-Means produces discrete labels.</li></span><span class="cn">第6讲：无监督学习、K-Means、PCA 与 GMM</span>
+                    <span class="en"><li><strong>Probabilistic vs. deterministic:</strong> GMM is probabilistic; K-Means and PCA are deterministic.</li></span><span class="cn">第6讲：无监督学习、K-Means、PCA 与 GMM</span>
+                </ul>
+
+                <h3>8.2 The Algorithm <span class="cn">算法</span>ic Landscape</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Task</th>
+                            <th>Key Idea</th>
+                            <th>Advantage</th>
+                            <th>Limitation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>K-Means</strong></td>
+                            <td>Clustering</td>
+                            <td>Nearest center + mean update</td>
+                            <td>Simple, fast</td>
+                            <td>Spherical clusters only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PCA</strong></td>
+                            <td>Dimensionality reduction</td>
+                            <td>Max variance / min reconstruction</td>
+                            <td>Mathematically clean, interpretable</td>
+                            <td>Linear only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GMM + EM</strong></td>
+                            <td>Soft clustering / density estimation</td>
+                            <td>Probabilistic generative model</td>
+                            <td>Flexible cluster shapes, soft assignments</td>
+                            <td>Higher cost, local optima</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DBSCAN</strong></td>
+                            <td>Clustering</td>
+                            <td>Density connectivity</td>
+                            <td>Arbitrary shapes, handles noise</td>
+                            <td>Struggles with varying density</td>
+                        </tr>
+                        <tr>
+                            <td><strong>t-SNE / UMAP</strong></td>
+                            <td>Visualization</td>
+                            <td>Preserve neighborhood structure</td>
+                            <td>Excellent for 2D/3D visualization</td>
+                            <td>Visualization only, not clustering</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Autoencoder</strong></td>
+                            <td>Representation learning</td>
+                            <td>Encode-decode with bottleneck</td>
+                            <td>Nonlinear, flexible</td>
+                            <td>Requires training, less interpretable</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Section 9: Summary -->
+            <!-- ============================================================ -->
+            <section id="summary">
+                <h2>9. Summary <span class="cn">9. 本讲总结</span></h2>
+
+                <p>This lecture explored unsupervised learning as a journey from raw data to essential structure. By stripping away labels, we force our models to discover the intrinsic geometry and statistical distributions that define "similarity."</p>
+
+                <div class="success-box">
+                    <h4>Core Takeaways</h4>
+                    <ol>
+                        <li><strong>K-Means:</strong> Geometric clustering via hard centroid assignment. Minimizes WCSS by alternating between assignment and mean update. Simple, fast, but assumes spherical clusters.</li>
+                        <li><strong>PCA:</strong> Linear dimensionality reduction via variance maximization (equivalently, reconstruction error minimization). Principal components are eigenvectors of the covariance matrix. SVD is the preferred computation method.</li>
+                        <span class="en"><li><strong>GMM + EM:</strong> Probabilistic soft clustering via latent variable modeling. EM alternates between estimating responsibilities (E-step) and updating parameters (M-step). Subsumes K-Means as a limiting case.</li></span><span class="cn">| 算法 | 任务 | 输出 | 关键思想 | 优点 | 局限 | |---|---|---|---|---|---| | K-Means | 聚类 | 簇标签、中心 | 最近中心 + 均值更新 | 简单快速 | 只能处理近似球形簇 | | PCA | 降维 | 低维表示、投影矩阵 | 最大方差 / 最小重构误差 | 数学清晰、可解释性强 | 只能学线性结构 | | GMM | 生成建模 / 软聚类 | 混合参数、责任度 | 概率生成 + EM | 表达能力强 | 计算更重、易陷局部最优 |</span>
+                        <li><strong>DBSCAN:</strong> Density-based discovery of arbitrary-shaped clusters with explicit noise handling. No need to specify \(K\).</li>
+                        <li><strong>t-SNE / UMAP:</strong> Manifold learning for high-dimensional visualization. t-SNE uses KL divergence on heavy-tailed distributions; UMAP uses cross-entropy on fuzzy topological structures.</li>
+                        <li><strong>Autoencoders:</strong> Nonlinear generalization of PCA through neural network encode-decode architectures. Linear autoencoders are equivalent to PCA; deep autoencoders capture nonlinear manifolds.</li>
+                    </ol>
+                </div>
+
+                <h3>The One Equation to Remember</h3>
+                <div class="math-block">
+                    $$\max_{\|w\|=1} w^T S w \quad \Longrightarrow \quad Sw = \lambda w$$
+                </div>
+                <p>This is PCA's core: <strong>principal components are eigenvectors of the covariance matrix, ordered by eigenvalue magnitude.</strong></p>
+
+                <h3>Method Selection Guide</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Goal</th>
+                            <th>Recommended Method</th>
+                            <th>Key Advantage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Simple Grouping</td>
+                            <td>K-Means</td>
+                            <td>Efficiency, ease of use</td>
+                        </tr>
+                        <tr>
+                            <td>Irregular Shapes</td>
+                            <td>DBSCAN / HDBSCAN</td>
+                            <td>Handles noise, no \(K\) needed</td>
+                        </tr>
+                        <tr>
+                            <td>Density Modeling / Soft Clustering</td>
+                            <td>GMM</td>
+                            <td>Probabilistic, generative</td>
+                        </tr>
+                        <tr>
+                            <td>Linear Compression</td>
+                            <td>PCA</td>
+                            <td>Optimal linear subspace</td>
+                        </tr>
+                        <tr>
+                            <td>Nonlinear Compression</td>
+                            <td>Autoencoder</td>
+                            <td>Flexible, deep representations</td>
+                        </tr>
+                        <tr>
+                            <td>2D/3D Visualization</td>
+                            <td>t-SNE / UMAP</td>
+                            <td>Preserves local neighborhoods</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <h4>The Single Most Important <span class="cn">重要</span> Conclusion</h4>
+                    <p>The core of unsupervised learning is not "having no labels" — it is <strong>"how to define structure."</strong> K-Means solves "how to group," PCA solves "how to compress information," GMM solves "how data is generated and how to assign softly." The choice of features and similarity metrics determines everything.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Lecture 6 Notes — Introduction to Artificial Intelligence</p>
+            <span class="en"><p>Topics: K-Means, DBSCAN, HDBSCAN, Spectral Clustering, PCA, SVD, GMM, EM Algorithm, t-SNE, UMAP, Autoencoders, Representation Learning</p></span><span class="cn">| 算法 | 任务 | 输出 | 关键思想 | 优点 | 局限 | |---|---|---|---|---|---| | K-Means | 聚类 | 簇标签、中心 | 最近中心 + 均值更新 | 简单快速 | 只能处理近似球形簇 | | PCA | 降维 | 低维表示、投影矩阵 | 最大方差 / 最小重构误差 | 数学清晰、可解释性强 | 只能学线性结构 | | GMM | 生成建模 / 软聚类 | 混合参数、责任度 | 概率生成 + EM | 表达能力强 | 计算更重、易陷局部最优 |</span>
+        </footer>
+        </div>
+        </div>
+
+    // Language Toggle
+    (function() {
+        var body = document.body;
+        var btnEN = document.getElementById('btn-en');
+        var btnCN = document.getElementById('btn-cn');
+        var saved = localStorage.getItem('lang') || 'en';
+        if (saved === 'cn') {
+            body.classList.add('lang-cn');
+            if (btnCN) btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+        } else {
+            if (btnEN) btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+        }
+        if (btnEN) btnEN.addEventListener('click', function() {
+            body.classList.remove('lang-cn');
+            btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+            localStorage.setItem('lang', 'en');
+        });
+        if (btnCN) btnCN.addEventListener('click', function() {
+            body.classList.add('lang-cn');
+            btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+            localStorage.setItem('lang', 'cn');
+        });
+    })();
+
+</body>
+</html>

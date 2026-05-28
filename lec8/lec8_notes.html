@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 8: CNN Architecture &amp; Evaluation Metrics</title>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --text: #333;
+            --muted: #7f8c8d;
+            --code-bg: #f8f9fa;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar header {
+            background: transparent;
+            padding: 2rem 1.5rem 1.5rem;
+            text-align: left;
+        }
+
+        .sidebar header h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .sidebar header .subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc {
+            flex: 1;
+            padding: 0 1.5rem 2rem;
+            background: transparent;
+            border: none;
+            overflow-y: auto;
+        }
+
+        .sidebar .toc h2 {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.8rem;
+            border: none;
+            padding: 0;
+        }
+
+        .sidebar .toc ul {
+            columns: 1;
+            list-style: none;
+        }
+
+        .sidebar .toc li {
+            margin-bottom: 0.15rem;
+        }
+
+        .sidebar .toc a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc a:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            min-width: 0;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+        }
+
+        .main-wrapper main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        .main-wrapper footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        /* Header & TOC now in sidebar */
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        h3 {
+            color: var(--dark);
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        h4 {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin: 1.2rem 0 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Math blocks */
+        .math-block {
+            background: var(--code-bg);
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        /* Code / Pseudocode */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        th, td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background: var(--light);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight-box h4 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Philosophy blockquote */
+        blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--dark);
+            background: var(--light);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 0.5rem;
+            font-style: normal;
+            color: var(--muted);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .sidebar header {
+                width: 100%;
+                padding: 1.5rem;
+            }
+            .sidebar .toc {
+                width: 100%;
+                padding: 0 1.5rem 1rem;
+            }
+            .sidebar .toc ul {
+                columns: 2;
+            }
+            .main-wrapper main {
+                padding: 1.5rem;
+            }
+            .main-wrapper footer {
+                padding: 1.5rem;
+            }
+            table {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Algorithm pseudocode specific */
+        .algorithm {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .algorithm .keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .algorithm .function {
+            color: #dcdcaa;
+        }
+
+        .algorithm .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        /* Anchor offset for fixed header if needed */
+        section[id] {
+            scroll-margin-top: 20px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .sidebar {
+                position: relative;
+                height: auto;
+                width: 200px;
+                min-width: 200px;
+            }
+            .main-wrapper {
+                box-shadow: none;
+            }
+        }
+    
+        /* ===== Bilingual Toggle ===== */
+        .lang-toggle {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .lang-toggle button {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .lang-toggle button:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+        }
+        .lang-toggle button.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+        }
+        .cn { display: none; }
+        body.lang-cn .cn { display: inline; }
+        body.lang-cn .en { display: none; }
+        body.lang-cn .cn-block { display: block; }
+        body.lang-cn .en-block { display: none; }
+        .cn-block { display: none; }
+        /* Keep math, code, tables always visible */
+        .cn .MathJax, .cn code, .cn pre, .cn .math-block,
+        .cn .algorithm, .cn table { display: revert; }
+        body.lang-cn .en .MathJax,
+        body.lang-cn .en code,
+        body.lang-cn .en pre { display: revert; }
+        @media (max-width: 768px) {
+            .lang-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .lang-toggle button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+        <div class="lang-toggle">
+            <button id="btn-en">EN</button>
+            <button id="btn-cn">中文</button>
+        </div>
+
+    <div class="layout">
+        <div class="sidebar">
+        <header>
+            <h1>Lecture 8: CNN Architecture <span class="cn">第八讲：CNN架构与评估</span> &amp; Evaluation Metrics</h1>
+            <p class="subtitle">Convolutional Neural Networks — Core Concepts, Parameter &amp; FLOPs Computation, and Classification Metrics</p>
+            <p class="subtitle">Introduction to Artificial Intelligence <span class="cn">人工智能导论</span></p>
+        </header>
+
+        <nav class="toc">
+            <h2>Table of Contents </h2>
+            <ul>
+                <li><a href="#confusion-matrix">1. Confusion Matrix</a></li>
+                <li><a href="#accuracy">2. Accuracy</a></li>
+                <li><span class="en"><a href="#precision-recall">3. Precision &amp; Recall</a></li></span>
+                <li><a href="#f1-score">4. F1-Score &amp; F<sub>&beta;</sub></a></li>
+                <li><span class="en"><a href="#roc-auc">5. ROC Curve &amp; AUC-ROC</a></li></span>
+                <li><span class="en"><a href="#pr-auc">6. PR Curve &amp; AUC-PR (PRAUC)</a></li></span>
+                <li><span class="en"><a href="#logloss">7. Log Loss (Cross-Entropy)</a></li></span>
+                <li><a href="#clip-score">8. CLIP Score</a></li>
+                <li><a href="#metrics-comparison">9. Metrics Comparison &amp; Selection</a></li>
+                <li><a href="#padding">10. Padding</a></li>
+                <li><span class="en"><a href="#output-size">11. Output Size Formula</a></li></span>
+                <li><a href="#receptive-field">12. Receptive Field</a></li>
+                <li><a href="#downsampling">13. Downsampling</a></li>
+                <li><a href="#pooling">14. Pooling</a></li>
+                <li><a href="#params">15. Parameters Calculation</a></li>
+                <li><span class="en"><a href="#flops">16. FLOPs Calculation</a></li></span>
+                <li><span class="en"><a href="#params-vs-flops">17. Params vs. FLOPs</a></li></span>
+                <li><a href="#summary">18. Summary</a></li>
+            </ul>
+        </nav>
+
+        </div>
+        <div class="main-wrapper">
+        <main>
+            <!-- ============================================================ -->
+            <!-- PART I: EVALUATION METRICS                                    -->
+            <!-- ============================================================ -->
+
+            <section id="confusion-matrix">
+                <h2>1. Confusion Matrix <span class="cn">1. <span class="cn">混淆矩阵</span></span> — The Foundation of All Metrics</h2>
+                <span class="en"><p>Every classification metric is derived from the <strong>confusion matrix</strong>, a table that cross-references predicted labels against true labels. For binary classification:</p></span><span class="cn">from sklearn.metrics import average_precision_score ap = average_precision_score(y_true, y_scores)  # PRAUC 近似值 ``` &gt; 注意：`average_precision_score` 计算的是 **Average Precision (AP)**，是 PRAUC 的一个保守近似（矩形插值），与逐点梯形插值的 PRAUC 略有差异。</span>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Predicted Positive</th>
+                            <th>Predicted Negative</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Actual Positive</strong></td>
+                            <td>TP (True Positive)</td>
+                            <td>FN (False Negative / Type II Error)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Actual Negative</strong></td>
+                            <td>FP (False Positive / Type I Error)</td>
+                            <td>TN (True Negative)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Mnemonic:</strong> The first letter tells you if the <em>prediction</em> was correct (T) or wrong (F). The second letter tells you what the model <em>predicted</em> (P or N). So <strong>FP</strong> = model predicted Positive but was wrong → actually Negative.
+                </div>
+            </section>
+
+            <section id="accuracy">
+                <h2>2. Accuracy</h2>
+                <div class="math-block">
+                    $$Accuracy = \frac{TP + TN}{TP + TN + FP + FN}$$
+                </div>
+                <ul>
+                    <span class="en"><li><strong>Meaning:</strong> The fraction of all samples that were correctly classified.</li></span><span class="cn">- **Precision**：预测为正的样本中，真正为正的比例 → **"查准率"** - **Recall**：实际为正的样本中，被正确找出来的比例 → **"查全率"** - 二者通常是 **trade-off** 关系：提高阈值 → Precision↑ Recall↓；降低阈值 → Precision↓ Recall↑</span>
+                    <li><strong>When to use:</strong> Balanced datasets where positive and negative classes are roughly equal.</li>
+                    <li><strong>Pitfall:</strong> Highly misleading on imbalanced data. If 99% of samples are negative, a model that always predicts negative achieves 99% accuracy but is useless for detecting positives.</li>
+                </ul>
+            </section>
+
+            <section id="precision-recall">
+                <h2>3. Precision &amp; Recall</h2>
+
+                <h3>3.1 Precision (<span class="cn">查准率</span>)</h3>
+                <div class="math-block">
+                    $$Precision = \frac{TP}{TP + FP}$$
+                </div>
+                <p>Of all samples the model <strong>predicted as positive</strong>, what fraction are actually positive? High precision means <strong>few false alarms</strong>.</p>
+
+                <h3>3.2 Recall (<span class="cn">查全率 </span>/ Sensitivity / True Positive Rate)</h3>
+                <div class="math-block">
+                    $$Recall = \frac{TP}{TP + FN}$$
+                </div>
+                <p>Of all samples that <strong>are actually positive</strong>, what fraction did the model correctly identify? High recall means <strong>few missed positives</strong>.</p>
+
+                <div class="warning-box">
+                    <strong>Precision–Recall Trade-off:</strong> Raising the classification threshold increases Precision but decreases Recall (fewer positives predicted, but more confident). Lowering the threshold has the opposite effect. They are inherently in tension.
+                </div>
+            </section>
+
+            <section id="f1-score">
+                <h2>4. F1-Score <span class="cn">F1分数</span> &amp; F&beta;</h2>
+
+                <h3>4.1 F1-Score <span class="cn">F1分数</span></h3>
+                <div class="math-block">
+                    $$F1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall} = \frac{2TP}{2TP + FP + FN}$$
+                </div>
+                <span class="en"><p>The <strong>harmonic mean</strong> of Precision and Recall. Unlike the arithmetic mean, the harmonic mean penalizes extreme imbalances — a model with Precision=1.0 and Recall=0.0 gets F1=0, not 0.5. F1 is more reliable than Accuracy on imbalanced datasets.</p></span><span class="cn">- **Precision**：预测为正的样本中，真正为正的比例 → **"查准率"** - **Recall**：实际为正的样本中，被正确找出来的比例 → **"查全率"** - 二者通常是 **trade-off** 关系：提高阈值 → Precision↑ Recall↓；降低阈值 → Precision↓ Recall↑</span>
+
+                <h3>4.2 Generalization: F<sub>&beta;</sub></h3>
+                <div class="math-block">
+                    $$F_\beta = (1+\beta^2) \cdot \frac{Precision \cdot Recall}{\beta^2 \cdot Precision + Recall}$$
+                </div>
+                <ul>
+                    <li>\( \beta > 1 \): weights Recall more heavily — use when <strong>missing positives is costly</strong> (e.g., disease screening, security threats).</li>
+                    <li>\( \beta < 1 \): weights Precision more heavily — use when <strong>false alarms are costly</strong> (e.g., spam filtering, recommendation).</li>
+                    <li>\( \beta = 1 \): standard F1 (equal weight).</li>
+                </ul>
+            </section>
+
+            <section id="roc-auc">
+                <h2>5. ROC Curve <span class="cn">ROC曲线</span> &amp; AUC-ROC</h2>
+
+                <h3>5.1 The ROC Curve <span class="cn">ROC曲线</span></h3>
+                <p>ROC (Receiver Operating Characteristic) plots <strong>TPR vs. FPR</strong> as the classification threshold sweeps from 0 to 1:</p>
+                <div class="math-block">
+                    $$FPR = \frac{FP}{FP + TN}, \qquad TPR = Recall = \frac{TP}{TP + FN}$$
+                </div>
+                <ul>
+                    <span class="en"><li>The <strong>diagonal</strong> (y = x) represents a random classifier.</li></span><span class="cn">1. 混淆矩阵（Confusion Matrix）—— 一切的基础</span>
+                    <span class="en"><li>The ideal point is <strong>(0, 1)</strong> — zero false positives, perfect recall.</li></span><span class="cn">3. Precision（精确率）&amp; Recall（召回率）</span>
+                    <li>A curve <strong>above the diagonal</strong> indicates a useful classifier.</li>
+                </ul>
+
+                <h3>5.2 AUC-ROC (Area Under the ROC Curve <span class="cn">ROC曲线</span>)</h3>
+                <ul>
+                    <span class="en"><li><strong>Range:</strong> [0, 1]. AUC = 1 is a perfect classifier; AUC = 0.5 is random guessing.</li></span><span class="cn">- PR 曲线下面积。 - **相比 AUC-ROC 的优势**：在 **正负样本极度不均衡** 时（如正样本只占 0.1%），PRAUC 更有区分度。 - ROC 在不均衡时可能看起来很好（因为 TN 很多，FPR 看起来低），但 PR 曲线能暴露 Precision 的问题。 - **适用场景**：信息检索、推荐系统、欺诈检测等不均衡场景。</span>
+                    <span class="en"><li><strong>Probabilistic interpretation:</strong> The probability that the model ranks a randomly chosen positive sample higher than a randomly chosen negative sample.</li></span><span class="cn">|                | 预测 Positive | 预测 Negative | |----------------|--------------|--------------| | 实际 Positive  | TP（真阳性） | FN（假阴性） | | 实际 Negative  | FP（假阳性） | TN（真阴性） |</span>
+                    <li><strong>Advantage:</strong> Invariant to class ratio — a useful property when comparing across datasets with different balance.</li>
+                </ul>
+            </section>
+
+            <section id="pr-auc">
+                <h2>6. PR Curve <span class="cn">PR曲线</span> &amp; AUC-PR (PRAUC)</h2>
+
+                <h3>6.1 The PR Curve <span class="cn">PR曲线</span></h3>
+                <p>The Precision–Recall curve plots <strong>Recall (x-axis) vs. Precision (y-axis)</strong> as the threshold varies. Unlike ROC, it does <em>not</em> use TN — making it far more sensitive to class imbalance.</p>
+
+                <h3>6.2 When to Prefer AUC-PR over AUC-ROC</h3>
+                <div class="warning-box">
+                    <strong>Highly Imbalanced Datasets:</strong> When negatives vastly outnumber positives (e.g., fraud detection: 0.1% positives), AUC-ROC can be <em>deceptively high</em> because the huge number of TN keeps FPR small. AUC-PR exposes the actual difficulty of finding positives, because it only considers Precision and Recall.
+                </div>
+                <p><strong>Typical use cases:</strong> information retrieval, recommendation systems, fraud detection, anomaly detection, medical diagnosis with rare conditions.</p>
+
+                <h3>6.3 Computing AUC-PR in Code</h3>
+                <pre><code># sklearn provides Average Precision (AP), a conservative approximation of AUC-PR
+from sklearn.metrics import average_precision_score, precision_recall_curve
+
+ap = average_precision_score(y_true, y_scores)  # AP ≈ PRAUC (rectangular interpolation)
+precisions, recalls, thresholds = precision_recall_curve(y_true, y_scores)</code></pre>
+                <p><em>Note:</em> <code>average_precision_score</code> computes Average Precision (AP) using rectangular interpolation, which is a conservative approximation of the true trapezoidal PRAUC.</p>
+            </section>
+
+            <section id="logloss">
+                <h2>7. Log Loss (Cross-Entropy Loss)</h2>
+                <div class="math-block">
+                    $$LogLoss = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \log(p_i) + (1-y_i)\log(1-p_i)\right]$$
+                </div>
+                <ul>
+                    <li>\( y_i \): true label (0 or 1); \( p_i \): predicted probability of being positive.</li>
+                    <span class="en"><li><strong>Range:</strong> [0, +\infty). Lower is better.</li></span><span class="cn">3. Precision（精确率）&amp; Recall（召回率）</span>
+                    <span class="en"><li><strong>Key property:</strong> Severely penalizes <strong>confident but wrong</strong> predictions (e.g., predicting 0.99 when the true label is 0 yields a very large loss).</li></span><span class="cn">from sklearn.metrics import average_precision_score ap = average_precision_score(y_true, y_scores)  # PRAUC 近似值 ``` &gt; 注意：`average_precision_score` 计算的是 **Average Precision (AP)**，是 PRAUC 的一个保守近似（矩形插值），与逐点梯形插值的 PRAUC 略有差异。</span>
+                    <li><strong>Use when:</strong> The downstream task needs well-calibrated probabilities, not just hard class labels.</li>
+                </ul>
+            </section>
+
+            <section id="clip-score">
+                <h2>8. CLIP Score <span class="cn">CLIP分数</span> (Image–Text Alignment Score)</h2>
+
+                <h3>8.1 Background</h3>
+                <span class="en"><p>CLIP (Contrastive Language-Image Pre-training) is a vision–language model by OpenAI that maps images and text into a <strong>shared semantic embedding space</strong>. The CLIP Score leverages this shared space to measure how well an image and a text description align — <em>without</em> needing any human reference annotations.</p></span><span class="cn">CLIP（Contrastive Language-Image Pre-training）是 OpenAI 提出的视觉-语言预训练模型，能将图像和文本映射到同一语义空间。**CLIP Score 利用这一特性来衡量图文之间的语义一致性**。</span>
+
+                <h3>8.2 How CLIP Score <span class="cn">CLIP分数</span> Is Computed</h3>
+                <ol>
+                    <span class="en"><li><span class="en">Pass the image through CLIP's <strong>Image Encoder</strong> (ViT-L/14) to obtain embedding \( I \in \mathbb{R}^{512} \).</span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span></li></span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span>
+                    <span class="en"><li><span class="en">Pass the text through CLIP's <strong>Text Encoder</strong> (Transformer) to obtain embedding \( T \in \mathbb{R}^{512} \).</span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span></li></span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span>
+                    <li>Compute the <strong>cosine similarity</strong> between the two embeddings:</li>
+                </ol>
+                <div class="math-block">
+                    $$CLIP\text{-}Score = \cos(I, T) = \frac{I \cdot T}{\|I\| \; \|T\|}$$
+                </div>
+
+                <h3>8.3 Value Range</h3>
+                <ul>
+                    <li><strong>Raw cosine similarity:</strong> [−1, 1].</li>
+                    <li><strong>After sigmoid normalization:</strong> [0, 1]. Higher = better alignment.</li>
+                </ul>
+
+                <h3>8.4 Code Example <span class="cn">例子</span></h3>
+                <pre><code>import torch
+from transformers import CLIPProcessor, CLIPModel
+
+model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+
+inputs = processor(
+    text=["a dog sitting on the grass"],
+    images=dog_image,
+    return_tensors="pt",
+    padding=True
+)
+outputs = model(**inputs)
+
+# CLIP Score = image-text cosine similarity (via logits)
+clip_score = outputs.logits_per_image.softmax(dim=1)[0, 0].item()
+print(f"CLIP Score: {clip_score:.4f}")</code></pre>
+
+                <h3>8.5 CLIP Score <span class="cn">CLIP分数</span> vs. FID / IS / LPIPS</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Evaluation Dimension</th>
+                            <th>Needs Reference Images?</th>
+                            <th>Pretrained Model</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CLIP Score</strong></td>
+                            <td>Image–text semantic alignment</td>
+                            <td>No (prompt only)</td>
+                            <td>CLIP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>FID</strong></td>
+                            <td>Distribution quality (realism)</td>
+                            <td>Yes (real image set)</td>
+                            <td>InceptionV3</td>
+                        </tr>
+                        <tr>
+                            <td><strong>IS (Inception Score)</strong></td>
+                            <td>Quality &amp; diversity</td>
+                            <td>No</td>
+                            <td>InceptionV3</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LPIPS</strong></td>
+                            <td>Perceptual similarity</td>
+                            <td>Yes (reference image)</td>
+                            <td>VGG / AlexNet</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Human Evaluation</strong></td>
+                            <td>Overall quality</td>
+                            <td>Usually no</td>
+                            <td>None</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="highlight-box">
+                    <h4>Core Distinction</h4>
+                    <p>CLIP Score is <strong>reference-free</strong> — it needs only a text prompt, no ground-truth images. This makes it uniquely valuable for evaluating generative models (text-to-image, image captioning) where collecting references is expensive or impossible.</p>
+                </div>
+
+                <h3>8.6 Strengths &amp; Limitations <span class="cn">局限性</span></h3>
+                <ul>
+                    <li><strong>Strengths:</strong> No human annotation required; captures high-level semantic alignment; language-agnostic to some degree.</li>
+                    <li><strong>Limitations:</strong> CLIP has known biases (prefers English, prefers photorealistic styles); <strong>cannot replace human subjective evaluation</strong>; insensitive to fine details (text rendering accuracy, number of fingers, spatial relations).</li>
+                    <span class="en"><li><strong>Variant:</strong> <strong>CLIP Score (Ref)</strong> uses a reference image for improved correlation with human judgments.</li></span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span>
+                </ul>
+
+                <h3>8.7 Applications <span class="cn">应用</span></h3>
+                <ul>
+                    <span class="en"><li><strong>Text-to-Image generation:</strong> Evaluate whether the generated image matches the input prompt.</li></span><span class="cn">- **文生图**（Text-to-Image）：评估生成图像与输入 prompt 的匹配度 - **图像描述**（Image Captioning）：评估生成的 caption 与图像的一致性 - **图像编辑**：评估编辑后图像与目标描述的对齐程度</span>
+                    <span class="en"><li><strong>Image Captioning:</strong> Evaluate whether the generated caption describes the image correctly.</li></span><span class="cn">- **文生图**（Text-to-Image）：评估生成图像与输入 prompt 的匹配度 - **图像描述**（Image Captioning）：评估生成的 caption 与图像的一致性 - **图像编辑**：评估编辑后图像与目标描述的对齐程度</span>
+                    <li><strong>Image Editing:</strong> Evaluate whether the edited image aligns with the target description.</li>
+                </ul>
+            </section>
+
+            <section id="metrics-comparison">
+                <h2>9. Metrics Comparison <span class="cn">对比</span> &amp; Practical Selection Guide</h2>
+
+                <h3>9.1 Summary <span class="cn">本讲总结</span> Table</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Focus</th>
+                            <th>Best For</th>
+                            <th>Imbalanced Data?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Accuracy</strong></td>
+                            <td>Overall correctness</td>
+                            <td>Balanced classification</td>
+                            <td>Not recommended</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Precision</strong></td>
+                            <td>Reduce false alarms</td>
+                            <td>Spam filtering, recommendations</td>
+                            <td>Fair</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Recall</strong></td>
+                            <td>Reduce missed positives</td>
+                            <td>Disease screening, security</td>
+                            <td>Fair</td>
+                        </tr>
+                        <tr>
+                            <td><strong>F1-Score</strong></td>
+                            <td>Balance P &amp; R</td>
+                            <td>General imbalanced scenarios</td>
+                            <td>Recommended</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AUC-ROC</strong></td>
+                            <td>Ranking ability</td>
+                            <td>General model comparison</td>
+                            <td>Good</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AUC-PR (PRAUC)</strong></td>
+                            <td>Precision–Recall trade-off</td>
+                            <td>Extreme imbalance</td>
+                            <td><strong>Best</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Log Loss</strong></td>
+                            <td>Probability calibration</td>
+                            <td>When probability outputs matter</td>
+                            <td>Good</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CLIP Score</strong></td>
+                            <td>Image–text alignment</td>
+                            <td>Text-to-image / captioning</td>
+                            <td>N/A (multimodal)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>9.2 Practical Selection Flowchart</h3>
+                <div class="success-box">
+                    <ol>
+                        <span class="en"><li><span class="en"><strong>Balanced classes</strong> → Accuracy + F1-Score</span><span class="cn">| 指标 | 关注点 | 适合场景 | 不均衡数据 | |------|--------|---------|-----------| | Accuracy | 整体正确率 | 均衡分类 | 不推荐 | | Precision | 减少误报 | 垃圾邮件、推荐 | 一般 | | Recall | 减少漏报 | 疾病筛查、安全 | 一般 | | F1-Score | 兼顾 P 和 R | 通用不均衡场景 | 推荐 | | AUC-ROC | 排序能力 | 通用评估 | 较好 | | **AUC-PR (PRAUC)** | 精确率-召回率权衡 | **极度不均衡** | **最推荐** | | LogLoss | 概率校准 | 需要概率输出的场景 | 较好 | | CLIP Score | 图文语义对齐 | 文生图/图像描述 | N/A（多模态） |</span></li></span><span class="cn">| 指标 | 关注点 | 适合场景 | 不均衡数据 | |------|--------|---------|-----------| | Accuracy | 整体正确率 | 均衡分类 | 不推荐 | | Precision | 减少误报 | 垃圾邮件、推荐 | 一般 | | Recall | 减少漏报 | 疾病筛查、安全 | 一般 | | F1-Score | 兼顾 P 和 R | 通用不均衡场景 | 推荐 | | AUC-ROC | 排序能力 | 通用评估 | 较好 | | **AUC-PR (PRAUC)** | 精确率-召回率权衡 | **极度不均衡** | **最推荐** | | LogLoss | 概率校准 | 需要概率输出的场景 | 较好 | | CLIP Score | 图文语义对齐 | 文生图/图像描述 | N/A（多模态） |</span>
+                        <span class="en"><li><span class="en"><strong>Moderately imbalanced</strong> (e.g., 1:10) → F1-Score + AUC-ROC</span><span class="cn">| 指标 | 关注点 | 适合场景 | 不均衡数据 | |------|--------|---------|-----------| | Accuracy | 整体正确率 | 均衡分类 | 不推荐 | | Precision | 减少误报 | 垃圾邮件、推荐 | 一般 | | Recall | 减少漏报 | 疾病筛查、安全 | 一般 | | F1-Score | 兼顾 P 和 R | 通用不均衡场景 | 推荐 | | AUC-ROC | 排序能力 | 通用评估 | 较好 | | **AUC-PR (PRAUC)** | 精确率-召回率权衡 | **极度不均衡** | **最推荐** | | LogLoss | 概率校准 | 需要概率输出的场景 | 较好 | | CLIP Score | 图文语义对齐 | 文生图/图像描述 | N/A（多模态） |</span></li></span><span class="cn">| 指标 | 关注点 | 适合场景 | 不均衡数据 | |------|--------|---------|-----------| | Accuracy | 整体正确率 | 均衡分类 | 不推荐 | | Precision | 减少误报 | 垃圾邮件、推荐 | 一般 | | Recall | 减少漏报 | 疾病筛查、安全 | 一般 | | F1-Score | 兼顾 P 和 R | 通用不均衡场景 | 推荐 | | AUC-ROC | 排序能力 | 通用评估 | 较好 | | **AUC-PR (PRAUC)** | 精确率-召回率权衡 | **极度不均衡** | **最推荐** | | LogLoss | 概率校准 | 需要概率输出的场景 | 较好 | | CLIP Score | 图文语义对齐 | 文生图/图像描述 | N/A（多模态） |</span>
+                        <span class="en"><li><span class="en"><strong>Severely imbalanced</strong> (e.g., 1:1000+) → <strong>PRAUC</strong> + F1-Score</span><span class="cn">from sklearn.metrics import average_precision_score ap = average_precision_score(y_true, y_scores)  # PRAUC 近似值 ``` &gt; 注意：`average_precision_score` 计算的是 **Average Precision (AP)**，是 PRAUC 的一个保守近似（矩形插值），与逐点梯形插值的 PRAUC 略有差异。</span></li></span><span class="cn">from sklearn.metrics import average_precision_score ap = average_precision_score(y_true, y_scores)  # PRAUC 近似值 ``` &gt; 注意：`average_precision_score` 计算的是 **Average Precision (AP)**，是 PRAUC 的一个保守近似（矩形插值），与逐点梯形插值的 PRAUC 略有差异。</span>
+                        <span class="en"><li><strong>Need calibrated probabilities</strong> → Log Loss</li></span><span class="cn">7. Log Loss（对数损失 / 交叉熵）</span>
+                        <span class="en"><li><span class="en"><strong>Ranking / retrieval quality</strong> → PRAUC or NDCG / MAP</span><span class="cn">1. **样本均衡** → Accuracy + F1-Score 2. **样本不均衡**（如 1:10）→ F1-Score + AUC-ROC 3. **极度不均衡**（如 1:1000+）→ **PRAUC** + F1-Score 4. **需要概率输出** → LogLoss 5. **关注排序质量**（如推荐系统）→ **PRAUC** 或 NDCG（检索场景用 MAP/NDCG）</span></li></span><span class="cn">1. **样本均衡** → Accuracy + F1-Score 2. **样本不均衡**（如 1:10）→ F1-Score + AUC-ROC 3. **极度不均衡**（如 1:1000+）→ **PRAUC** + F1-Score 4. **需要概率输出** → LogLoss 5. **关注排序质量**（如推荐系统）→ **PRAUC** 或 NDCG（检索场景用 MAP/NDCG）</span>
+                        <span class="en"><li><span class="en"><strong>Multimodal (image + text)</strong> → CLIP Score</span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span></li></span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PART II: CNN CORE CONCEPTS                                    -->
+            <!-- ============================================================ -->
+
+            <section id="padding">
+                <h2>10. Padding (<span class="cn">填充</span>)</h2>
+
+                <h3>10.1 Why Padding <span class="cn">填充 (Padding)</span>?</h3>
+                <p>When a convolution kernel slides over an image, edge pixels are covered <strong>fewer times</strong> than center pixels — boundary information is under-represented. Padding adds extra pixels (typically zeros) around the boundary so that:</p>
+                <ul>
+                    <li><strong>Edge pixels receive full coverage</strong>, enjoying the same attention as center pixels.</li>
+                    <span class="en"><li><strong>Output size can be controlled</strong> — particularly, kept equal to input size.</li></span><span class="cn">**推导**：令 OutputSize = InputSize，代入公式：</span>
+                </ul>
+
+                <h3>10.2 The Three Padding <span class="cn">填充 (Padding)</span> Cases</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Padding</th>
+                            <th>Effect</th>
+                            <th>Output Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>P = 0</strong> (Valid)</td>
+                            <td>No fill; edges lost; output shrinks</td>
+                            <td>\( Input - K + 1 \)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P = (K−1)/2</strong> (Same)</td>
+                            <td>Output size = Input size</td>
+                            <td>\( Input \) (unchanged)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>P &gt; (K−1)/2</strong></td>
+                            <td>Over-padding; output grows</td>
+                            <td>\( &gt; Input \)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Why \( 2P \) in the formula?</strong> Padding is added to <em>both sides</em> (top &amp; bottom, left &amp; right), so the effective dimension increase is \( 2P \).
+                </div>
+            </section>
+
+            <section id="output-size">
+                <h2>11. Output Size Formula (<span class="cn">必考</span>)</h2>
+
+                <div class="math-block">
+                    $$W_{out} = \left\lfloor \frac{W_{in} + 2P - K}{S} \right\rfloor + 1$$
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Meaning</th>
+                            <th>Typical Values</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>\( W_{in} \)</td><td>Input spatial size (width or height)</td><td>32, 224, etc.</td></tr>
+                        <tr><td>\( K \)</td><td>Kernel size</td><td>3, 5, 7</td></tr>
+                        <tr><td>\( P \)</td><td>Padding (pixels added per side)</td><td>0, 1, 2, 3</td></tr>
+                        <tr><td>\( S \)</td><td>Stride (step size)</td><td>1, 2</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>11.1 Same Padding <span class="cn">填充 (Padding)</span> Derivation</h3>
+                <span class="en"><p>To keep output = input, set \( S = 1 \) and solve \( W_{out} = W_{in} \):</p></span><span class="cn">**推导**：令 OutputSize = InputSize，代入公式：</span>
+                <div class="math-block">
+                    $$W_{in} = \frac{W_{in} + 2P - K}{1} + 1 \implies 2P = K - 1 \implies P = \frac{K-1}{2}$$
+                </div>
+                <span class="en"><p>Common values: K=3 → P=1; K=5 → P=2; K=7 → P=3.</p></span><span class="cn">from sklearn.metrics import average_precision_score ap = average_precision_score(y_true, y_scores)  # PRAUC 近似值 ``` &gt; 注意：`average_precision_score` 计算的是 **Average Precision (AP)**，是 PRAUC 的一个保守近似（矩形插值），与逐点梯形插值的 PRAUC 略有差异。</span>
+                <blockquote>Must-remember rule: <strong>Odd kernel + Stride=1 + P=(K−1)/2 → output size unchanged.</strong></blockquote>
+
+                <h3>11.2 Worked Example <span class="cn">例子</span>s</h3>
+                <h4>Example 1: Same Padding <span class="cn">填充 (Padding)</span></h4>
+                <span class="en"><p>Input 32×32, K=3, P=1, S=1</p></span><span class="cn">| Padding | 效果 | 输出尺寸 | |---------|------|---------| | **Padding=0**（Valid） | 不填充，边缘丢失，尺寸缩小 | $Input - Kernel + 1$ | | **Padding=(K-1)/2**（Same） | 填充使输出=输入 | $Input$（尺寸不变） | | **Padding &gt; (K-1)/2** | 过度填充，尺寸反而变大 | $&gt; Input$ |</span>
+                <div class="math-block">
+                    $$W_{out} = \left\lfloor \frac{32 + 2 - 3}{1} \right\rfloor + 1 = 31 + 1 = 32 \quad \checkmark$$
+                </div>
+
+                <h4>Example 2: Valid Padding <span class="cn">填充 (Padding)</span></h4>
+                <span class="en"><p>Input 32×32, K=5, P=0, S=1</p></span><span class="cn">| Padding | 效果 | 输出尺寸 | |---------|------|---------| | **Padding=0**（Valid） | 不填充，边缘丢失，尺寸缩小 | $Input - Kernel + 1$ | | **Padding=(K-1)/2**（Same） | 填充使输出=输入 | $Input$（尺寸不变） | | **Padding &gt; (K-1)/2** | 过度填充，尺寸反而变大 | $&gt; Input$ |</span>
+                <div class="math-block">
+                    $$W_{out} = \left\lfloor \frac{32 + 0 - 5}{1} \right\rfloor + 1 = 27 + 1 = 28$$
+                </div>
+
+                <h4>Example 3: Pooling <span class="cn">池化</span> layer</h4>
+                <span class="en"><p>Input 28×28, K=2, P=0, S=2</p></span><span class="cn">| Padding | 效果 | 输出尺寸 | |---------|------|---------| | **Padding=0**（Valid） | 不填充，边缘丢失，尺寸缩小 | $Input - Kernel + 1$ | | **Padding=(K-1)/2**（Same） | 填充使输出=输入 | $Input$（尺寸不变） | | **Padding &gt; (K-1)/2** | 过度填充，尺寸反而变大 | $&gt; Input$ |</span>
+                <div class="math-block">
+                    $$W_{out} = \left\lfloor \frac{28 - 2}{2} \right\rfloor + 1 = 13 + 1 = 14 \quad \text{(halved)}$$
+                </div>
+
+                <div class="info-box">
+                    <strong>PyTorch tip:</strong> Use <code>padding="same"</code> to let PyTorch auto-compute padding for you.
+                </div>
+            </section>
+
+            <section id="receptive-field">
+                <h2>12. Receptive Field (<span class="cn">感受野</span>)</h2>
+
+                <h3>12.1 Definition <span class="cn">定义</span></h3>
+                <p>The <strong>Receptive Field (RF)</strong> of a neuron is the region in the original input image that influences that neuron's activation. Deeper neurons have larger receptive fields, capturing more global context.</p>
+
+                <div class="math-block">
+                    $$RF_1 = K_1 = 3 \qquad \text{(first layer sees } 3 \times 3 \text{ patch)}$$
+                </div>
+
+                <h3>12.2 Multi-Layer Accumulation Formula <span class="cn">公式</span></h3>
+                <div class="math-block">
+                    $$RF_{new} = RF_{old} + (K - 1) \times \prod_{i=1}^{l-1} S_i$$
+                </div>
+                <span class="en"><p>where \( \prod_{i=1}^{l-1} S_i \) is the product of all strides of layers <em>before</em> the current layer.</p></span><span class="cn">- **Precision**：预测为正的样本中，真正为正的比例 → **"查准率"** - **Recall**：实际为正的样本中，被正确找出来的比例 → **"查全率"** - 二者通常是 **trade-off** 关系：提高阈值 → Precision↑ Recall↓；降低阈值 → Precision↓ Recall↑</span>
+
+                <h3>12.3 Worked Example <span class="cn">例子</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Layer</th>
+                            <th>Kernel</th>
+                            <th>Stride</th>
+                            <th>Cumulative RF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>3</td><td>1</td><td>3</td></tr>
+                        <tr><td>2</td><td>3</td><td>1</td><td>3 + (3−1)×1 = <strong>5</strong></td></tr>
+                        <tr><td>3</td><td>3</td><td>1</td><td>5 + (3−1)×1 = <strong>7</strong></td></tr>
+                        <tr><td>4</td><td>3</td><td>2</td><td>7 + (3−1)×2 = <strong>11</strong></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <h4>Why Receptive Field <span class="cn">感受野</span> Matters</h4>
+                    <p>Shallow layers (small RF) capture <strong>local textures and edges</strong>. Deep layers (large RF) capture <strong>global semantics and shapes</strong>. Stacking multiple small kernels (e.g., three 3×3) achieves the same RF as one large kernel (7×7) but with fewer parameters and more non-linear activations.</p>
+                </div>
+            </section>
+
+            <section id="downsampling">
+                <h2>13. Downsampling (<span class="cn">下采样</span>)</h2>
+
+                <h3>13.1 Why Downsample?</h3>
+                <ol>
+                    <span class="en"><li><strong>Reduce computation:</strong> Smaller feature maps = fewer operations in subsequent layers.</li></span><span class="cn">**定义**：FLoating-point OPerations，即模型进行一次前向推理所需的**浮点运算总次数**，决定了模型的**计算开销/推理速度**。</span>
+                    <li><strong>Increase receptive field:</strong> Without adding depth, spatially smaller maps let later layers "see" a larger input region.</li>
+                    <li><strong>Add translation invariance:</strong> Small positional shifts are absorbed by the coarser resolution.</li>
+                </ol>
+
+                <h3>13.2 Three Downsampling Methods</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Description</th>
+                            <th>Learnable?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Stride &gt; 1 Conv</strong></td>
+                            <td>Stride=2 convolution skips positions</td>
+                            <td>Yes (weights learned)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pooling</strong></td>
+                            <td>Max or Average over local windows</td>
+                            <td>No (fixed operation)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Global Average Pooling (GAP)</strong></td>
+                            <td>Average each channel to 1×1, then flatten</td>
+                            <td>No</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="pooling">
+                <h2>14. Pooling <span class="cn">池化</span></h2>
+
+                <h3>14.1 Max Pooling <span class="cn">池化</span> — Most Common</h3>
+                <p>Takes the <strong>maximum</strong> value in each local window, retaining the strongest activation:</p>
+                <pre><code>Input 4×4:               Max Pooling 2×2, Stride=2:
+
+1  3  2  1               3  4
+4  6  3  2       →       8  6
+2  8  5  1               Output 2×2
+3  4  1  0</code></pre>
+
+                <h3>14.2 Average Pooling <span class="cn">池化</span></h3>
+                <p>Takes the <strong>mean</strong> of each local window, retaining smoother, global information:</p>
+                <pre><code>Input 4×4:               Avg Pooling 2×2, Stride=2:
+
+1  3  2  1               3.50  2.00
+4  6  3  2       →       4.25  1.75
+2  8  5  1               Output 2×2
+3  4  1  0</code></pre>
+
+                <h3>14.3 Max Pooling <span class="cn">池化</span> vs. Average Pooling</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Max Pooling</th>
+                            <th>Average Pooling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>What it retains</td><td>Strongest activation (dominant feature)</td><td>Smoothed overall response</td></tr>
+                        <tr><td>Typical use</td><td>Hidden layers (classification)</td><td>Network end (Global Average Pooling)</td></tr>
+                        <tr><td>Sensitivity to noise</td><td>More robust (picks max)</td><td>Can be diluted by many zeros</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>14.4 Pooling <span class="cn">池化</span> vs. Stride-2 Convolution</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Comparison</th>
+                            <th>Pooling</th>
+                            <th>Stride-2 Conv</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Learnable parameters</td><td>None</td><td>Yes</td></tr>
+                        <tr><td>Information retained</td><td>Loses some (fixed aggregation)</td><td>Learned aggregation — more info preserved</td></tr>
+                        <tr><td>Computation cost</td><td>Lower</td><td>Higher</td></tr>
+                        <tr><td>Modern trend</td><td>Still widely used</td><td>ResNet etc. replace some pooling with stride conv</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Key rule:</strong> Pooling layers only change spatial dimensions (H×W), <strong>never the channel count (C)</strong>. Changing C is the job of convolution layers (determined by the number of filters).
+                </div>
+            </section>
+
+            <section id="params">
+                <h2>15. Parameters Calculation <span class="cn">参数量计算</span></h2>
+
+                <h3>15.1 Conv Layer Parameters</h3>
+                <div class="math-block">
+                    $$Params_{conv} = C_{out} \times (C_{in} \times K_h \times K_w + 1_{bias})$$
+                </div>
+                <p><strong>Intuition:</strong> Each output filter needs \( C_{in} \times K_h \times K_w \) weights to aggregate information across all input channels, plus 1 bias. There are \( C_{out} \) such filters.</p>
+
+                <blockquote>Critical insight: Conv parameters are <strong>independent of spatial resolution</strong> (H×W) — only \( C_{in} \), \( C_{out} \), and \( K \) matter.</blockquote>
+
+                <h3>15.2 Fully Connected (FC) Layer Parameters</h3>
+                <div class="math-block">
+                    $$Params_{FC} = C_{in} \times C_{out} + C_{out}$$
+                </div>
+                <p>FC layers typically have far more parameters than conv layers — this is precisely why modern architectures (GoogLeNet, ResNet) replace them with Global Average Pooling.</p>
+
+                <h3>15.3 Worked Example <span class="cn">例子</span>s</h3>
+                <h4>Single Conv Layer: C<sub>in</sub>=3, C<sub>out</sub>=64, K=3×3 (with bias)</h4>
+                <div class="math-block">
+                    $$Params = 64 \times (3 \times 3 \times 3 + 1) = 64 \times 28 = 1{,}792$$
+                </div>
+
+                <h4>Single Conv Layer: C<sub>in</sub>=64, C<sub>out</sub>=128, K=3×3 (with bias)</h4>
+                <div class="math-block">
+                    $$Params = 128 \times (64 \times 3 \times 3 + 1) = 128 \times 577 = 73{,}856$$
+                </div>
+
+                <h4>FC Layer: 512 → 10</h4>
+                <div class="math-block">
+                    $$Params = 512 \times 10 + 10 = 5{,}130$$
+                </div>
+
+                <h3>15.4 Full Network Walkthrough</h3>
+                <span class="en"><p>A simple CNN for 32×32 RGB image, 10-class classification:</p></span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Layer</th>
+                            <th>Configuration</th>
+                            <th>Output Shape</th>
+                            <th>Params</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Input</td><td>—</td><td>3 × 32 × 32</td><td>0</td></tr>
+                        <tr><td>Conv1</td><td>C<sub>in</sub>=3, C<sub>out</sub>=32, K=3×3, S=1, P=1</td><td>32 × 32 × 32</td><td>\( 32 \times (3 \times 9 + 1) = 896 \)</td></tr>
+                        <tr><td>MaxPool</td><td>2×2, stride 2</td><td>32 × 16 × 16</td><td>0</td></tr>
+                        <tr><td>Conv2</td><td>C<sub>in</sub>=32, C<sub>out</sub>=64, K=3×3, S=1, P=1</td><td>64 × 16 × 16</td><td>\( 64 \times (32 \times 9 + 1) = 18{,}496 \)</td></tr>
+                        <tr><td>MaxPool</td><td>2×2, stride 2</td><td>64 × 8 × 8</td><td>0</td></tr>
+                        <tr><td>Flatten</td><td>—</td><td>4096</td><td>0</td></tr>
+                        <tr><td>FC1</td><td>4096 → 128</td><td>128</td><td>\( 4096 \times 128 + 128 = 524{,}416 \)</td></tr>
+                        <tr><td>FC2</td><td>128 → 10</td><td>10</td><td>\( 128 \times 10 + 10 = 1{,}290 \)</td></tr>
+                    </tbody>
+                </table>
+                <div class="math-block">
+                    $$Total = 896 + 18{,}496 + 524{,}416 + 1{,}290 = 545{,}098$$
+                </div>
+                <div class="warning-box">
+                    <strong>Observation:</strong> FC1 alone accounts for \( 524{,}416 / 545{,}098 \approx 96\% \) of all parameters — even though the conv layers do all the feature extraction. This is exactly why modern architectures replace FC layers with Global Average Pooling.
+                </div>
+
+                <h3>15.5 Classic Network Parameter Comparison <span class="cn">对比</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Network</th>
+                            <th>Params (M)</th>
+                            <th>Key Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>LeNet-5</strong></td><td>~0.06</td><td>Pioneer for digit recognition</td></tr>
+                        <tr><td><strong>AlexNet</strong></td><td>~60</td><td>First with ReLU, Dropout, GPU</td></tr>
+                        <tr><td><strong>VGG-16</strong></td><td>~138</td><td>Uniform 3×3 stacking; most params in FC layers</td></tr>
+                        <tr><td><strong>GoogLeNet</strong></td><td>~6.8</td><td>Inception module + 1×1 bottleneck → 20× fewer than VGG</td></tr>
+                        <tr><td><strong>ResNet-18</strong></td><td>~11.7</td><td>Skip connections</td></tr>
+                        <tr><td><strong>ResNet-50</strong></td><td>~25.6</td><td>Most common baseline</td></tr>
+                    </tbody>
+                </table>
+                <div class="success-box">
+                    <strong>Exam focus:</strong> Why does VGG have so many parameters? Large channel counts (512) + stacked 3×3 convolutions + huge FC layers. How does GoogLeNet reduce them? 1×1 bottleneck convolutions reduce channel dimensions before expensive 3×3/5×5 operations, and GAP replaces FC layers.
+                </div>
+            </section>
+
+            <section id="flops">
+                <h2>16. FLOPs Calculation <span class="cn">计算量 (FLOPs)</span></h2>
+
+                <h3>16.1 Definition <span class="cn">定义</span></h3>
+                <span class="en"><p><strong>FLOPs</strong> (FLoating-point OPerations, lowercase s) = total number of floating-point operations for one forward pass. It determines <strong>inference speed / computational cost</strong>.</p></span><span class="cn">**定义**：FLoating-point OPerations，即模型进行一次前向推理所需的**浮点运算总次数**，决定了模型的**计算开销/推理速度**。</span>
+                <div class="warning-box">
+                    <strong>FLOPs vs. FLOPS:</strong> FLOPs (lowercase s) = operation count (e.g., 1 GFLOPs = 10⁹ ops). FLOPS (uppercase S) = FLoating-point Operations Per Second — a hardware throughput metric (GPU compute power).
+                </div>
+
+                <h3>16.2 Conv Layer FLOPs Formula <span class="cn">公式</span></h3>
+                <div class="math-block">
+                    $$FLOPs_{conv} = 2 \times C_{out} \times C_{in} \times K_h \times K_w \times H_{out} \times W_{out}$$
+                </div>
+                <ul>
+                    <span class="en"><li><strong>Factor 2:</strong> 1 multiplication + 1 addition per element (one MAC = 2 FLOPs).</li></span><span class="cn">其中： - 系数 **2** = 1 次乘法 + 1 次加法（一次 MAC = 2 FLOPs） - $H_{out} \times W_{out}$：输出特征图的空间尺寸</span>
+                    <li><span class="en">\( H_{out} \times W_{out} \): spatial size of the output feature map.</span><span class="cn">$$OutputSize = \lfloor \frac{InputSize + 2 \times Padding - KernelSize}{Stride} \rfloor + 1$$</span></li>
+                </ul>
+
+                <blockquote>Key difference from Params: FLOPs depend on spatial resolution \( H \times W \). A model with few parameters can still be slow if it operates on large feature maps.</blockquote>
+
+                <h3>16.3 Worked Example <span class="cn">例子</span></h3>
+                <span class="en"><p>Conv: C<sub>in</sub>=64, C<sub>out</sub>=128, K=3×3, input 28×28, P=1, S=1 → output 28×28</p></span><span class="cn">| Padding | 效果 | 输出尺寸 | |---------|------|---------| | **Padding=0**（Valid） | 不填充，边缘丢失，尺寸缩小 | $Input - Kernel + 1$ | | **Padding=(K-1)/2**（Same） | 填充使输出=输入 | $Input$（尺寸不变） | | **Padding &gt; (K-1)/2** | 过度填充，尺寸反而变大 | $&gt; Input$ |</span>
+                <div class="math-block">
+                    $$FLOPs = 2 \times 128 \times 64 \times 3 \times 3 \times 28 \times 28 = 109{,}890{,}048 \approx 0.11 \text{ GFLOPs}$$
+                </div>
+
+                <h3>16.4 FLOPs Across Layer Types</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Layer Type</th>
+                            <th>FLOPs Formula</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Conv</td>
+                            <td>\( 2 \times C_{out} \times C_{in} \times K^2 \times H_{out} \times W_{out} \)</td>
+                            <td>Computationally dominant</td>
+                        </tr>
+                        <tr>
+                            <td>FC (Linear)</td>
+                            <td>\( 2 \times C_{in} \times C_{out} \)</td>
+                            <td>Many params but usually only at network end</td>
+                        </tr>
+                        <tr>
+                            <td>Max Pooling</td>
+                            <td>\( K^2 \times H_{out} \times W_{out} \)</td>
+                            <td>No learnable params, minimal ops</td>
+                        </tr>
+                        <tr>
+                            <td>ReLU</td>
+                            <td>\( C \times H \times W \)</td>
+                            <td>Negligible</td>
+                        </tr>
+                        <tr>
+                            <td>BatchNorm</td>
+                            <td>\( 4 \times C \times H \times W \)</td>
+                            <td>Usually not dominant</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>16.5 FLOPs Comparison <span class="cn">对比</span> Across Architectures</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Parameters</th>
+                            <th>FLOPs (224×224 image)</th>
+                            <th>FLOPs / Params Ratio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>AlexNet</td><td>~60M</td><td>~0.72 GFLOPs</td><td>~12</td></tr>
+                        <tr><td>VGG-16</td><td>~138M</td><td>~15.5 GFLOPs</td><td>~112</td></tr>
+                        <tr><td>GoogLeNet</td><td>~6.8M</td><td>~1.5 GFLOPs</td><td>~220</td></tr>
+                        <tr><td>ResNet-50</td><td>~25.5M</td><td>~3.8 GFLOPs</td><td>~149</td></tr>
+                    </tbody>
+                </table>
+                <div class="info-box">
+                    <strong>Insight:</strong> VGG-16 has the most parameters <em>and</em> the most FLOPs — expensive in both memory and computation. GoogLeNet achieves comparable accuracy with 20× fewer parameters and 10× fewer FLOPs, thanks to 1×1 bottleneck convolutions and GAP.
+                </div>
+            </section>
+
+            <section id="params-vs-flops">
+                <h2>17. Params vs. FLOPs — Key Distinction <span class="cn">关键区别</span>s</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Params <span class="cn">(参数量)</span></th>
+                            <th>FLOPs <span class="cn">(计算量)</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>What it measures</strong></td>
+                            <td>Storage / model size</td>
+                            <td>Inference speed / compute cost</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Unit</strong></td>
+                            <td>M (millions)</td>
+                            <td>GFLOPs / MFLOPs</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Depends on H×W?</strong></td>
+                            <td><strong>No</strong> (only C<sub>in</sub>, C<sub>out</sub>, K)</td>
+                            <td><strong>Yes</strong> (scales with spatial size)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bottleneck</strong></td>
+                            <td>Memory / GPU VRAM</td>
+                            <td>Inference latency</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <h4>Params Few ≠ FLOPs Few</h4>
+                    <span class="en"><p>Depthwise Separable Convolution (MobileNet) dramatically reduces FLOPs, but the reduction in Params is proportionally smaller. A 1×1 convolution has tiny Params (kernel size = 1), but when channel counts are large, FLOPs can still be substantial.</p></span><span class="cn">**Params 少 ≠ FLOPs 少**： - 深度可分离卷积（Depthwise Separable Conv，MobileNet）大幅减少 FLOPs，但 Params 减少比例不同 - 1×1 卷积：Params 不大（核小），但通道数大时 FLOPs 仍可观</span>
+                </div>
+
+                <blockquote>Exam strategy: Given a network architecture, you should be able to compute Params and FLOPs for each layer and explain the difference between the two.
+                </blockquote>
+            </section>
+
+            <section id="summary">
+                <h2>18. Summary <span class="cn">8. 本讲总结</span></h2>
+                <div class="highlight-box">
+                    <ol>
+                        <span class="en"><li><strong>Confusion matrix</strong> is the foundation: all metrics (Accuracy, Precision, Recall, F1) derive from TP, FP, TN, FN.</li></span><span class="cn">- 横轴：**FPR**（False Positive Rate）$= \frac{FP}{FP + TN}$ - 纵轴：**TPR**（True Positive Rate）$= \frac{Recall} = \frac{TP}{TP + FN}$ - 通过不断改变分类阈值，绘制 (FPR, TPR) 点，连成曲线。</span>
+                        <span class="en"><li><strong>Precision vs. Recall</strong> is a fundamental trade-off; <strong>F<sub>&beta;</sub></strong> lets you control which side matters more.</li></span><span class="cn">- **Precision**：预测为正的样本中，真正为正的比例 → **"查准率"** - **Recall**：实际为正的样本中，被正确找出来的比例 → **"查全率"** - 二者通常是 **trade-off** 关系：提高阈值 → Precision↑ Recall↓；降低阈值 → Precision↓ Recall↑</span>
+                        <span class="en"><li><strong>AUC-ROC</strong> measures ranking quality, invariant to class ratio. <strong>AUC-PR (PRAUC)</strong> is better for <strong>extreme class imbalance</strong>.</li></span><span class="cn">- PR 曲线下面积。 - **相比 AUC-ROC 的优势**：在 **正负样本极度不均衡** 时（如正样本只占 0.1%），PRAUC 更有区分度。 - ROC 在不均衡时可能看起来很好（因为 TN 很多，FPR 看起来低），但 PR 曲线能暴露 Precision 的问题。 - **适用场景**：信息检索、推荐系统、欺诈检测等不均衡场景。</span>
+                        <li><strong>Log Loss</strong> penalizes confident wrong predictions; use when calibrated probabilities are needed.</li>
+                        <span class="en"><li><strong>CLIP Score</strong> is <strong>reference-free</strong> — evaluates image–text alignment using cosine similarity in CLIP's embedding space, uniquely suited for generative model evaluation.</li></span><span class="cn">**步骤**： 1. 用 CLIP 的 Image Encoder 提取图像特征 $I \in \mathbb{R}^{512}$（ViT-L/14） 2. 用 CLIP 的 Text Encoder 提取文本特征 $T \in \mathbb{R}^{512}$（Transformer） 3. 计算 $I$ 和 $T$ 的余弦相似度，即为 CLIP Score</span>
+                        <span class="en"><li><strong>Padding</strong> controls output size: P = (K−1)/2 with S=1 gives "Same" padding.</li></span><span class="cn">**示例 1**：输入 32×32，Kernel=3，Padding=1，Stride=1（Same Padding） $$Output = \lfloor \frac{32 + 2 \times 1 - 3}{1} \rfloor + 1 = \lfloor 31 \rfloor + 1 = 32$$ → 尺寸不变</span>
+                        <span class="en"><li><span class="en"><strong>Output size:</strong> \( W_{out} = \lfloor (W_{in} + 2P - K) / S \rfloor + 1 \).</span><span class="cn">$$OutputSize = \lfloor \frac{InputSize + 2 \times Padding - KernelSize}{Stride} \rfloor + 1$$</span></li></span><span class="cn">**示例 1**：输入 32×32，Kernel=3，Padding=1，Stride=1（Same Padding） $$Output = \lfloor \frac{32 + 2 \times 1 - 3}{1} \rfloor + 1 = \lfloor 31 \rfloor + 1 = 32$$ → 尺寸不变</span>
+                        <span class="en"><li><strong>Receptive field</strong> grows with depth: \( RF_{new} = RF_{old} + (K-1) \times \prod S_i \). Stacking small kernels is more parameter-efficient than one large kernel.</li></span><span class="cn">**示例 1**：输入 32×32，Kernel=3，Padding=1，Stride=1（Same Padding） $$Output = \lfloor \frac{32 + 2 \times 1 - 3}{1} \rfloor + 1 = \lfloor 31 \rfloor + 1 = 32$$ → 尺寸不变</span>
+                        <span class="en"><li><strong>Downsampling</strong> reduces spatial size via stride conv, pooling, or GAP — each with different trade-offs.</li></span><span class="cn">| 方式 | 说明 | 是否可学习 | |------|------|-----------| | **Stride &gt; 1 的卷积** | 卷积步长为 2，直接跳着采样 | 是（卷积参数可学习） | | **池化（Pooling）** | 在局部区域内取最大值或平均值 | 否（固定操作） | | **全局平均池化（GAP）** | 每个通道取所有像素的平均值，输出 1×1 | 否 |</span>
+                        <span class="en"><li><strong>Params</strong> = storage (independent of spatial size); <strong>FLOPs</strong> = compute cost (scales with spatial size). FC layers dominate Params; conv layers dominate FLOPs.</li></span><span class="cn">**Params 少 ≠ FLOPs 少**： - 深度可分离卷积（Depthwise Separable Conv，MobileNet）大幅减少 FLOPs，但 Params 减少比例不同 - 1×1 卷积：Params 不大（核小），但通道数大时 FLOPs 仍可观</span>
+                    </ol>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Lecture 8 Notes — Introduction to Artificial Intelligence</p>
+            <span class="en"><p>Topics: Confusion Matrix, Accuracy, Precision, Recall, F1, ROC, AUC-PR, Log Loss, CLIP Score, CNN Padding, Output Size, Receptive Field, Downsampling, Pooling, Params, FLOPs</p></span><span class="cn">| 指标 | 关注点 | 适合场景 | 不均衡数据 | |------|--------|---------|-----------| | Accuracy | 整体正确率 | 均衡分类 | 不推荐 | | Precision | 减少误报 | 垃圾邮件、推荐 | 一般 | | Recall | 减少漏报 | 疾病筛查、安全 | 一般 | | F1-Score | 兼顾 P 和 R | 通用不均衡场景 | 推荐 | | AUC-ROC | 排序能力 | 通用评估 | 较好 | | **AUC-PR (PRAUC)** | 精确率-召回率权衡 | **极度不均衡** | **最推荐** | | LogLoss | 概率校准 | 需要概率输出的场景 | 较好 | | CLIP Score | 图文语义对齐 | 文生图/图像描述 | N/A（多模态） |</span>
+        </footer>
+        </div>
+        </div>
+
+    // Language Toggle
+    (function() {
+        var body = document.body;
+        var btnEN = document.getElementById('btn-en');
+        var btnCN = document.getElementById('btn-cn');
+        var saved = localStorage.getItem('lang') || 'en';
+        if (saved === 'cn') {
+            body.classList.add('lang-cn');
+            if (btnCN) btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+        } else {
+            if (btnEN) btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+        }
+        if (btnEN) btnEN.addEventListener('click', function() {
+            body.classList.remove('lang-cn');
+            btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+            localStorage.setItem('lang', 'en');
+        });
+        if (btnCN) btnCN.addEventListener('click', function() {
+            body.classList.add('lang-cn');
+            btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+            localStorage.setItem('lang', 'cn');
+        });
+    })();
+
+</body>
+</html>

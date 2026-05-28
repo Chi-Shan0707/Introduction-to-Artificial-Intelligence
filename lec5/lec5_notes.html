@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 5: SVM and Model Evaluation — Intro to AI</title>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --text: #333;
+            --muted: #7f8c8d;
+            --code-bg: #f8f9fa;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar header {
+            background: transparent;
+            padding: 2rem 1.5rem 1.5rem;
+            text-align: left;
+        }
+
+        .sidebar header h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .sidebar header .subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc {
+            flex: 1;
+            padding: 0 1.5rem 2rem;
+            background: transparent;
+            border: none;
+            overflow-y: auto;
+        }
+
+        .sidebar .toc h2 {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.8rem;
+            border: none;
+            padding: 0;
+        }
+
+        .sidebar .toc ul {
+            columns: 1;
+            list-style: none;
+        }
+
+        .sidebar .toc li {
+            margin-bottom: 0.15rem;
+        }
+
+        .sidebar .toc a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc a:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            min-width: 0;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+        }
+
+        .main-wrapper main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        .main-wrapper footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        /* Header & TOC now in sidebar */
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        h3 {
+            color: var(--dark);
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        h4 {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin: 1.2rem 0 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Math blocks */
+        .math-block {
+            background: var(--code-bg);
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        /* Code / Pseudocode */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        th, td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background: var(--light);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight-box h4 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Philosophy blockquote */
+        blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--dark);
+            background: var(--light);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 0.5rem;
+            font-style: normal;
+            color: var(--muted);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .sidebar header {
+                width: 100%;
+                padding: 1.5rem;
+            }
+            .sidebar .toc {
+                width: 100%;
+                padding: 0 1.5rem 1rem;
+            }
+            .sidebar .toc ul {
+                columns: 2;
+            }
+            .main-wrapper main {
+                padding: 1.5rem;
+            }
+            .main-wrapper footer {
+                padding: 1.5rem;
+            }
+            table {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Algorithm pseudocode specific */
+        .algorithm {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .algorithm .keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .algorithm .function {
+            color: #dcdcaa;
+        }
+
+        .algorithm .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        /* Anchor offset for fixed header if needed */
+        section[id] {
+            scroll-margin-top: 20px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .sidebar {
+                position: relative;
+                height: auto;
+                width: 200px;
+                min-width: 200px;
+            }
+            .main-wrapper {
+                box-shadow: none;
+            }
+        }
+    
+        /* ===== Bilingual Toggle ===== */
+        .lang-toggle {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .lang-toggle button {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .lang-toggle button:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+        }
+        .lang-toggle button.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+        }
+        .cn { display: none; }
+        body.lang-cn .cn { display: inline; }
+        body.lang-cn .en { display: none; }
+        body.lang-cn .cn-block { display: block; }
+        body.lang-cn .en-block { display: none; }
+        .cn-block { display: none; }
+        /* Keep math, code, tables always visible */
+        .cn .MathJax, .cn code, .cn pre, .cn .math-block,
+        .cn .algorithm, .cn table { display: revert; }
+        body.lang-cn .en .MathJax,
+        body.lang-cn .en code,
+        body.lang-cn .en pre { display: revert; }
+        @media (max-width: 768px) {
+            .lang-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .lang-toggle button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+        <div class="lang-toggle">
+            <button id="btn-en">EN</button>
+            <button id="btn-cn">中文</button>
+        </div>
+
+    <div class="layout">
+        <div class="sidebar">
+        <header>
+            <h1>Lecture 5: Support Vector Machines <span class="cn">第五讲：支持向量机</span> & Model Evaluation</h1>
+            <p class="subtitle">From Maximum Margin Classifiers to Generalization <span class="cn">从最大间隔分类器到泛化</span> Principles</p>
+            <p class="subtitle">Introduction to Artificial Intelligence <span class="cn">人工智能导论</span></p>
+        </header>
+
+        <nav class="toc">
+            <h2>Table of Contents </h2>
+            <ul>
+                <li><a href="#svm-intro">1. Support Vector Machines — Introduction</a></li>
+                <li><span class="en"><a href="#hard-margin">2. Hard-Margin SVM</a></li></span>
+                <li><a href="#hard-margin-motivation">2.1 Problem Motivation & First Attempt</a></li>
+                <li><span class="en"><a href="#hard-margin-functional">2.2 Functional Margin</a></li></span>
+                <li><span class="en"><a href="#hard-margin-geometric">2.3 Geometric Margin</a></li></span>
+                <li><span class="en"><a href="#hard-margin-maxmin">2.4 Max-Min Modeling</a></li></span>
+                <li><a href="#hard-margin-scale">2.5 Scale Crisis</a></li>
+                <li><a href="#hard-margin-normalize">2.6 Geometric Margin Normalization</a></li>
+                <li><a href="#hard-margin-anchor">2.7 Anchor Point Normalization (Why Constant 1?)</a></li>
+                <li><a href="#hard-margin-primal">2.8 Primal QP Formulation</a></li>
+                <li><a href="#hard-margin-regularization">2.9 L2 Regularization Interpretation</a></li>
+                <li><span class="en"><a href="#soft-margin">3. Soft-Margin SVM</a></li></span>
+                <li><a href="#soft-margin-slack">3.1 Slack Variables</a></li>
+                <li><a href="#soft-margin-coefficient">3.2 Penalty Coefficient C</a></li>
+                <li><span class="en"><a href="#soft-margin-hinge">3.3 Hinge Loss Formulation</a></li></span>
+                <li><a href="#dual-form">4. Dual Formulation & Kernel Trick</a></li>
+                <li><a href="#dual-lagrangian">4.1 Lagrangian Derivation</a></li>
+                <li><a href="#dual-kkt">4.2 KKT Conditions</a></li>
+                <li><a href="#dual-optimization">4.3 Dual Optimization Problem</a></li>
+                <li><a href="#kernel-trick">4.4 The Kernel Trick</a></li>
+                <li><a href="#kernel-table">4.5 Kernel Types</a></li>
+                <li><a href="#mercer">4.6 Mercer's Theorem</a></li>
+                <li><a href="#model-eval">5. Model Evaluation Strategies</a></li>
+                <li><a href="#eval-splitting">5.1 Dataset Splitting</a></li>
+                <li><a href="#eval-holdout">5.2 Hold-out Method</a></li>
+                <li><a href="#eval-kfold">5.3 K-Fold Cross-Validation</a></li>
+                <li><a href="#eval-stratified">5.4 Stratified K-Fold</a></li>
+                <li><a href="#eval-nested">5.5 Nested Cross-Validation</a></li>
+                <li><a href="#metrics">6. Performance Metrics</a></li>
+                <li><a href="#confusion-matrix">6.1 Confusion Matrix</a></li>
+                <li><a href="#precision-recall">6.2 Precision, Recall, F1</a></li>
+                <li><a href="#roc-pr">6.3 ROC and PR Curves</a></li>
+                <li><a href="#ap-map">6.4 AP and mAP</a></li>
+                <li><a href="#ap-example">6.5 Worked AP Example</a></li>
+                <li><a href="#bias-variance">7. Bias-Variance Decomposition</a></li>
+                <li><a href="#summary">8. Summary & Key Takeaways</a></li>
+            </ul>
+        </nav>
+
+        </div>
+        <div class="main-wrapper">
+        <main>
+            <!-- ============================================================ -->
+            <!-- SECTION 1: SVM Introduction -->
+            <!-- ============================================================ -->
+            <section id="svm-intro">
+                <h2>1. Support Vector Machines (SVM) <span class="cn">1. <span class="cn">支持向量机 </span>(SVM)</span></h2>
+                <p>Support Vector Machines (SVM) represent a landmark in the history of machine learning. The core intuition is to find a decision boundary (hyperplane) that not only separates the data correctly but also maintains the <strong>maximum possible margin</strong> from the nearest data points of any class. This margin acts as a "safety buffer," enhancing the model's ability to generalize to unseen data.</p>
+
+                <div class="highlight-box">
+                    <h4>Key Concept <span class="cn">核心概念</span>: Support Vectors</h4>
+                    <p>The decision is determined solely by the points closest to the boundary, known as <strong>Support Vectors</strong>. Points further away do not affect the position of the hyperplane. This sparsity property makes SVM both memory-efficient and robust.</p>
+                </div>
+
+                <blockquote>
+                    "The goal of SVM is not merely to separate, but to separate with maximum confidence."
+                </blockquote>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 2: Hard-Margin SVM -->
+            <!-- ============================================================ -->
+            <section id="hard-margin">
+                <h2>2. Hard-Margin SVM <span class="cn">2. <span class="cn">硬间隔 </span>SVM</span></h2>
+                <p>In a perfectly linearly separable dataset, we seek a hyperplane that correctly classifies every point while maximizing the geometric margin. This section traces the full derivation from motivation to final QP formulation.</p>
+
+                <section id="hard-margin-motivation">
+                    <h3>2.1 Problem Motivation & First Attempt</h3>
+                    <span class="en"><p>We want to find a hyperplane</p></span><span class="cn">这个目标函数同时体现两层含义： 1. 几何意义：最小化 $\|w\|$ 等价于最大化几何间隔。 2. 统计学习意义： $$ \frac{1}{2}\|w\|^2 $$ 就是标准 $L_2$ 正则项（Ridge/Weight Decay 形式）。</span>
+                    <div class="math-block">
+                        $$w^T x + b = 0$$
+                    </div>
+                    <p>that not only correctly classifies all samples but also keeps the boundary "as safe as possible" — i.e., as far from the nearest points of both classes as possible.</p>
+
+                    <span class="en"><p>The most intuitive idea is to maximize \( |w^T x + b| \). However, this <strong>fails</strong> for three reasons:</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    <ol>
+                        <li>The absolute value only reflects distance, not direction.</li>
+                        <span class="en"><li>A misclassified sample far from the plane can have a large \( |w^T x + b| \).</li></span><span class="cn">根据课堂 PPT 的推导语境，临时变量 $$ \beta = |w^T x + b| $$ 确实被用作“点到超平面的未归一化绝对距离”描述量。这个定义本身没有问题，但它是无方向标量，不能体现分类是否正确，因此不能直接作为分类学习的最终优化依据。</span>
+                        <li>Therefore, "maximizing absolute distance" would treat misclassified points as "good" samples — the optimization objective contradicts the classification goal.</li>
+                    </ol>
+
+                    <div class="warning-box">
+                        <strong>Key Insight:</strong> We need a quantity that encodes both <em>correctness</em> and <em>confidence</em> simultaneously. The absolute value \( \beta = |w^T x + b| \) loses label information and cannot distinguish correct from incorrect classifications.
+                    </div>
+                </section>
+
+                <section id="hard-margin-functional">
+                    <h3>2.2 Functional Margin</h3>
+                    <span class="en"><p>Introducing binary labels \( y_i \in \{-1, +1\} \), we define the <strong>functional margin</strong> of sample \( (x_i, y_i) \) as:</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    <div class="math-block">
+                        $$f_i = y_i(w^T x_i + b)$$
+                    </div>
+                    <p>This definition binds "correctness" and "confidence" together:</p>
+                    <ul>
+                        <span class="en"><li>Positive sample correctly classified: \( y_i = +1 \) and \( w^T x_i + b > 0 \), so \( f_i > 0 \).</li></span><span class="cn">引入二分类标签 $$ y_i \in \{-1, +1\} $$ 定义函数间隔 $$ f_i = y_i(w^T x_i + b) $$</span>
+                        <span class="en"><li>Negative sample correctly classified: \( y_i = -1 \) and \( w^T x_i + b < 0 \), so \( f_i > 0 \) (negative × negative = positive).</li></span><span class="cn">引入二分类标签 $$ y_i \in \{-1, +1\} $$ 定义函数间隔 $$ f_i = y_i(w^T x_i + b) $$</span>
+                        <span class="en"><li>Any misclassification yields \( f_i < 0 \).</li></span><span class="cn">引入二分类标签 $$ y_i \in \{-1, +1\} $$ 定义函数间隔 $$ f_i = y_i(w^T x_i + b) $$</span>
+                    </ul>
+                    <span class="en"><p>Thus, the <strong>sign</strong> of \( f_i \) determines correctness, and the <strong>magnitude</strong> measures confidence.</p></span><span class="cn">这就引出下一步：引入松弛变量 $\xi_i$，从硬约束走向 Soft-Margin SVM。</span>
+
+                    <div class="info-box">
+                        <strong>Why "functional"?</strong> The functional margin depends on the functional form of \( (w, b) \) — it can be arbitrarily scaled without changing the geometric decision boundary. This is both a feature and a limitation.
+                    </div>
+                </section>
+
+                <section id="hard-margin-geometric">
+                    <h3>2.3 Geometric Margin</h3>
+                    <span class="en"><p>The functional margin suffers from a scaling problem: if we multiply \( (w, b) \) by a constant \( c > 0 \), the hyperplane stays the same but \( f_i \) is multiplied by \( c \). To fix this, we normalize by \( \|w\| \) to obtain the <strong>geometric margin</strong>:</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    <div class="math-block">
+                        $$\gamma_i = \frac{y_i(w^T x_i + b)}{\|w\|} = \frac{f_i}{\|w\|}$$
+                    </div>
+                    <p>The geometric margin is invariant to uniform scaling of \( (w, b) \) because the numerator and denominator scale by the same factor. It represents the <strong>actual Euclidean distance</strong> from the point to the hyperplane.</p>
+
+                    <div class="math-block">
+                        $$\text{Geometric margin} = \frac{\text{Functional margin}}{\|w\|}$$
+                    </div>
+                </section>
+
+                <section id="hard-margin-maxmin">
+                    <h3>2.4 Max-Min Modeling: The Bucket Effect</h3>
+                    <span class="en"><p>For a fixed hyperplane \( (w, b) \), the overall classification confidence is determined by the <em>weakest link</em> — the point with the smallest functional margin:</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    <div class="math-block">
+                        $$F = \min_i f_i = \min_i y_i(w^T x_i + b)$$
+                    </div>
+                    <p>This naturally leads to the <strong>maximin</strong> (worst-case optimal) objective — the "bucket effect" where the shortest stave determines the bucket's capacity:</p>
+                    <div class="math-block">
+                        $$\max_{w,b}\, \min_i\, y_i(w^T x_i + b)$$
+                    </div>
+                    <span class="en"><p>This is the core SVM intuition: <strong>maximize the margin of the closest point</strong>.</p></span><span class="cn">这就引出下一步：引入松弛变量 $\xi_i$，从硬约束走向 Soft-Margin SVM。</span>
+                </section>
+
+                <section id="hard-margin-scale">
+                    <h3>2.5 Scale Crisis</h3>
+                    <span class="en"><p>If we scale \( (w, b) \) to \( (cw, cb) \) for any \( c > 0 \):</p></span><span class="cn">若把 $(w,b)$ 同比例放大为 $(cw,cb)$，$c&gt;0$： 1. 超平面几何位置不变（同一个决策边界）。 2. 但函数间隔 $f_i$ 会被放大为 $cf_i$。</span>
+                    <ul>
+                        <li>The geometric position of the hyperplane does not change (same decision boundary).</li>
+                        <span class="en"><li>But the functional margin \( f_i \) is scaled to \( c \cdot f_i \).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    </ul>
+                    <p>For example, \( w_1 = (3, 4) \) and \( w_2 = (30, 40) \) represent the same normal direction, but the functional margin is inflated 10×. This causes the objective</p>
+                    <div class="math-block">
+                        $$\max F \to \infty$$
+                    </div>
+                    <p>by infinitely scaling the parameters, making the problem <strong>ill-posed</strong> with no unique meaningful solution.</p>
+
+                    <div class="warning-box">
+                        <strong>The Scale Crisis:</strong> Without normalization, the maximization problem is unbounded — any objective value can be achieved by simply scaling up \( w \) and \( b \). We must eliminate this redundancy.
+                    </div>
+                </section>
+
+                <section id="hard-margin-normalize">
+                    <h3>2.6 Geometric Margin Normalization</h3>
+                    <p>To eliminate the artificial scaling, we use the geometric margin for optimization:</p>
+                    <div class="math-block">
+                        $$\max_{w,b} M \quad \text{s.t.} \quad \gamma_i \ge M, \quad i = 1, \dots, m$$
+                    </div>
+                    <p>The geometric margin is scale-invariant because dividing by \( \|w\| \) cancels any uniform scaling of \( (w, b) \).</p>
+                </section>
+
+                <section id="hard-margin-anchor">
+                    <h3>2.7 Anchor Point Normalization — Why the Constant 1?</h3>
+                    <p>We exploit the remaining scaling freedom to impose an <strong>anchor normalization</strong>:</p>
+                    <div class="math-block">
+                        $$\min_i\, y_i(w^T x_i + b) = 1$$
+                    </div>
+                    <p>This means: "the support vectors (closest points) have a functional margin of exactly 1." Under this normalization, the minimum geometric margin becomes:</p>
+                    <div class="math-block">
+                        $$M = \frac{1}{\|w\|}$$
+                    </div>
+
+                    <span class="en"><p>The constant 1 is <strong>not arbitrary</strong> — it serves to eliminate the equivalence class \( \{(cw, cb) \mid c > 0\} \) of redundant parameters. Consider:</p></span><span class="cn">不等式右侧常数 1 的意义就在这里：它不是随意设定，而是用于消除参数等价类 $$ \{(cw,cb)\mid c&gt;0\} $$ 带来的冗余自由度。</span>
+                    <ul>
+                        <li>\( 2x + 3y \ge 1 \) and \( 20x + 30y \ge 10 \) are equivalent constraints (same geometric boundary).</li>
+                        <span class="en"><li>But forcing the right-hand side to be 1 means \( 20x + 30y \ge 1 \) is now a <em>different</em> (stricter) constraint — the artificial inflation has been removed.</li></span><span class="cn">对应的无约束视角可写成 Hinge Loss + $L_2$ 正则化： $$ \min_{w,b} \sum_{i=1}^m \max\left(0,1-y_i(w^T x_i+b)\right) + \lambda\|w\|^2 $$ 其中 $C$ 与 $\lambda$ 体现同一组偏好，方向上呈反向关系。</span>
+                    </ul>
+
+                    <div class="success-box">
+                        <strong>Summary:</strong> The constant 1 is a normalization convention that fixes the scale ambiguity. It is equivalent to choosing units where the support vector's functional margin equals 1, making all distances measurable in these units.
+                    </div>
+                </section>
+
+                <section id="hard-margin-primal">
+                    <h3>2.8 Primal QP Formula <span class="cn">公式</span>tion</h3>
+                    <span class="en"><p>With the anchor normalization, the Hard-Margin SVM becomes:</p></span><span class="cn">线性可分支持向量机（Hard-Margin SVM）统一笔记</span>
+                    <div class="math-block">
+                        $$\max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i + b) \ge 1, \; \forall i$$
+                    </div>
+                    <p>Equivalently (and more commonly written as a minimization for computational convenience):</p>
+                    <div class="math-block">
+                        $$\min_{w,b} \frac{1}{2}\|w\|^2 \quad \text{s.t.} \quad y_i(w^T x_i + b) \ge 1, \; \forall i$$
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Why \( \frac{1}{2}\|w\|^2 \) instead of \( \|w\| \)?</strong>
+                        <ol>
+                            <li>\( \|w\|^2 \) is a smooth quadratic function — optimization is more stable.</li>
+                            <li>The \( \frac{1}{2} \) cancels the factor 2 from differentiation, giving cleaner gradients: \( \nabla_w \frac{1}{2}\|w\|^2 = w \).</li>
+                            <li>This form is a standard <strong>Convex Quadratic Program (QP)</strong> with linear inequality constraints, enabling the use of mature QP solvers.</li>
+                        </ol>
+                        <p>It is an equivalent reformulation for computational friendliness, not a change to the problem.</p>
+                    </div>
+
+                    <p>This is a <strong>Convex Quadratic Programming (QP)</strong> problem — every local optimum is a global optimum, guaranteeing a unique solution (when the feasible region is non-empty).</p>
+                </section>
+
+                <section id="hard-margin-regularization">
+                    <h3>2.9 L2 Regularization Interpretation</h3>
+                    <p>The objective function carries a dual interpretation:</p>
+                    <ol>
+                        <li><strong>Geometric meaning:</strong> Minimizing \( \|w\| \) maximizes the geometric margin — the "widest street" between classes.</li>
+                        <span class="en"><li><strong>Statistical learning meaning:</strong> \( \frac{1}{2}\|w\|^2 \) is the standard \( L_2 \) regularization term (Ridge / Weight Decay).</li></span><span class="cn">这个目标函数同时体现两层含义： 1. 几何意义：最小化 $\|w\|$ 等价于最大化几何间隔。 2. 统计学习意义： $$ \frac{1}{2}\|w\|^2 $$ 就是标准 $L_2$ 正则项（Ridge/Weight Decay 形式）。</span>
+                    </ol>
+
+                    <span class="en"><p>In the hard-margin setting:</p></span><span class="cn">线性可分支持向量机（Hard-Margin SVM）统一笔记</span>
+                    <ul>
+                        <span class="en"><li>The constraints \( y_i(w^T x_i + b) \ge 1 \) guarantee <strong>zero training error</strong> (empirical risk = 0).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <li>The objective minimizes parameter norm, controlling model complexity (related to VC dimension or Rademacher complexity).</li>
+                        <li>This corresponds to <strong>Structural Risk Minimization (SRM)</strong>.</li>
+                    </ul>
+
+                    <blockquote>
+                        "SVM appears to do geometric optimization (widest street), but underneath it performs constrained \( L_2 \) regularization for complexity control."
+                    </blockquote>
+
+                    <div class="highlight-box">
+                        <h4>Is the \( \|w\| \) in the denominator regularization?</h4>
+                        <p>Strictly speaking, the \( \|w\| \) in the geometric margin formula is <em>not</em> directly a regularization term — it is geometric normalization. However, after normalization, maximizing the geometric margin is equivalent to minimizing \( \|w\|^2 \), which <em>is</em> regularization. In short: it is not regularization itself, but it <strong>leads to</strong> regularization.</p>
+                    </div>
+                </section>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 3: Soft-Margin SVM -->
+            <!-- ============================================================ -->
+            <section id="soft-margin">
+                <h2>3. Soft-Margin SVM <span class="cn">3. <span class="cn">软间隔 </span>SVM</span></h2>
+                <p>Real-world data is rarely perfectly separable due to noise, outliers, and class overlap. The hard-margin assumption may yield no feasible solution, or force the boundary to accommodate anomalous points at the cost of overall margin — leading to <strong>overfitting</strong>.</p>
+
+                <section id="soft-margin-slack">
+                    <h3>3.1 Slack Variables</h3>
+                    <span class="en"><p>Soft-Margin SVM introduces <strong>slack variables</strong> \( \xi_i \ge 0 \) to relax the hard constraints:</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    <div class="math-block">
+                        $$y_i(w^T x_i + b) \ge 1 - \xi_i$$
+                    </div>
+                    <p>The slack variables have a clear geometric interpretation:</p>
+                    <ul>
+                        <li>\( \xi_i = 0 \): The sample is on or outside the margin boundary — correctly classified with full margin.</li>
+                        <li>\( 0 < \xi_i < 1 \): The sample is correctly classified but falls <em>inside</em> the margin.</li>
+                        <li>\( \xi_i \ge 1 \): The sample is <strong>misclassified</strong>.</li>
+                    </ul>
+                </section>
+
+                <section id="soft-margin-coefficient">
+                    <h3>3.2 Penalty Coefficient C</h3>
+                    <span class="en"><p>The primal objective of Soft-Margin SVM is:</p></span><span class="cn">这就引出下一步：引入松弛变量 $\xi_i$，从硬约束走向 Soft-Margin SVM。</span>
+                    <div class="math-block">
+                        $$\min_{w,b,\xi} \frac{1}{2}\|w\|^2 + C \sum_{i=1}^m \xi_i$$
+                        $$\text{s.t.} \quad y_i(w^T x_i + b) \ge 1 - \xi_i, \quad \xi_i \ge 0, \; \forall i$$
+                    </div>
+                    <p>The parameter <strong>\( C \)</strong> controls the trade-off between margin width and classification error:</p>
+                    <ul>
+                        <li><strong>Large \( C \):</strong> Heavily penalizes misclassifications → strict, narrow margin → risk of <strong>overfitting</strong>.</li>
+                        <li><strong>Small \( C \):</strong> Tolerates more errors → wide, flexible margin → risk of <strong>underfitting</strong>.</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>When \( C \to \infty \):</strong> The soft-margin SVM reduces to the hard-margin case, as any violation becomes infinitely costly. When \( C \to 0 \), the model ignores all data and maximizes margin freely.
+                    </div>
+                </section>
+
+                <section id="soft-margin-hinge">
+                    <h3>3.3 Hinge Loss Formula <span class="cn">公式</span>tion</h3>
+                    <p>The soft-margin objective can be equivalently rewritten as an <strong>unconstrained</strong> loss minimization problem:</p>
+                    <div class="math-block">
+                        $$\min_{w,b} \sum_{i=1}^m \max\left(0,\; 1 - y_i(w^T x_i + b)\right) + \lambda \|w\|^2$$
+                    </div>
+                    <p>where:</p>
+                    <ul>
+                        <li>\( \max(0, 1 - z) \) is the <strong>Hinge Loss</strong>, which penalizes predictions that are either wrong or too close to the boundary.</li>
+                        <li>\( \lambda = 1/C \) is the regularization strength (inverse of the penalty coefficient).</li>
+                    </ul>
+
+                    <div class="math-block">
+                        $$\text{Hinge Loss}(z) = \max(0, 1 - z) = \begin{cases} 0 & \text{if } z \ge 1 \\ 1 - z & \text{if } z < 1 \end{cases}$$
+                    </div>
+
+                    <div class="success-box">
+                        <strong>Connection to Regularization:</strong> The Hinge Loss formulation makes explicit that SVM is a member of the "loss + regularization" family. The loss measures empirical fit; the \( L_2 \) term controls complexity. The parameter \( C \) (or equivalently \( \lambda \)) balances the two.
+                    </div>
+                </section>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 4: Dual Formulation & Kernel Trick -->
+            <!-- ============================================================ -->
+            <section id="dual-form">
+                <h2>4. Dual Formulation & Kernel Trick <span class="cn">4. <span class="cn">对偶问题与核技巧</span></span></h2>
+                <p>To handle non-linear boundaries and exploit high-dimensional feature spaces, we reformulate SVM in its <strong>dual form</strong> using Lagrange multipliers. This dual perspective naturally leads to the kernel trick.</p>
+
+                <section id="dual-lagrangian">
+                    <h3>4.1 Lagrangian Derivation</h3>
+                    <span class="en"><p>We construct the Lagrangian for the hard-margin primal problem by introducing multipliers \( \alpha_i \ge 0 \):</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    <div class="math-block">
+                        $$\mathcal{L}(w, b, \alpha) = \frac{1}{2}\|w\|^2 - \sum_{i=1}^n \alpha_i \left[ y_i(w^T x_i + b) - 1 \right]$$
+                    </div>
+                    <p>Taking partial derivatives and setting them to zero (stationarity conditions from KKT):</p>
+
+                    <span class="en"><p><strong>With respect to \( w \):</strong></p></span><span class="cn">根据课堂 PPT 的推导语境，临时变量 $$ \beta = |w^T x + b| $$ 确实被用作“点到超平面的未归一化绝对距离”描述量。这个定义本身没有问题，但它是无方向标量，不能体现分类是否正确，因此不能直接作为分类学习的最终优化依据。</span>
+                    <div class="math-block">
+                        $$\frac{\partial \mathcal{L}}{\partial w} = 0 \;\Longrightarrow\; w = \sum_{i=1}^n \alpha_i y_i x_i$$
+                    </div>
+                    <span class="en"><p>This reveals that the optimal weight vector is a <strong>linear combination of the training samples</strong>, weighted by \( \alpha_i y_i \).</p></span><span class="cn">这个目标函数同时体现两层含义： 1. 几何意义：最小化 $\|w\|$ 等价于最大化几何间隔。 2. 统计学习意义： $$ \frac{1}{2}\|w\|^2 $$ 就是标准 $L_2$ 正则项（Ridge/Weight Decay 形式）。</span>
+
+                    <span class="en"><p><strong>With respect to \( b \):</strong></p></span><span class="cn">根据课堂 PPT 的推导语境，临时变量 $$ \beta = |w^T x + b| $$ 确实被用作“点到超平面的未归一化绝对距离”描述量。这个定义本身没有问题，但它是无方向标量，不能体现分类是否正确，因此不能直接作为分类学习的最终优化依据。</span>
+                    <div class="math-block">
+                        $$\frac{\partial \mathcal{L}}{\partial b} = 0 \;\Longrightarrow\; \sum_{i=1}^n \alpha_i y_i = 0$$
+                    </div>
+                </section>
+
+                <section id="dual-kkt">
+                    <h3>4.2 KKT Conditions</h3>
+                    <p>The Karush-Kuhn-Tucker (KKT) conditions provide necessary and sufficient conditions for optimality (since the problem is convex):</p>
+                    <ol>
+                        <span class="en"><li><strong>Stationarity:</strong> \( \nabla_w \mathcal{L} = 0 \), \( \frac{\partial \mathcal{L}}{\partial b} = 0 \)</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <span class="en"><li><strong>Primal feasibility:</strong> \( y_i(w^T x_i + b) \ge 1, \; \forall i \)</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <span class="en"><li><strong>Dual feasibility:</strong> \( \alpha_i \ge 0, \; \forall i \)</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <span class="en"><li><strong>Complementary slackness:</strong> \( \alpha_i [y_i(w^T x_i + b) - 1] = 0, \; \forall i \)</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    </ol>
+
+                    <div class="highlight-box">
+                        <h4>Complementary Slackness — Who are the Support Vectors?</h4>
+                        <p>The complementary slackness condition implies:</p>
+                        <ul>
+                            <span class="en"><li>If \( \alpha_i > 0 \), then \( y_i(w^T x_i + b) = 1 \) — the point lies <em>exactly</em> on the margin boundary. These are the <strong>support vectors</strong>.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                            <span class="en"><li>If \( y_i(w^T x_i + b) > 1 \) (point is safely inside its class), then \( \alpha_i = 0 \) — the point does <em>not</em> influence the decision boundary.</li></span><span class="cn">引入二分类标签 $$ y_i \in \{-1, +1\} $$ 定义函数间隔 $$ f_i = y_i(w^T x_i + b) $$</span>
+                        </ul>
+                        <p>This sparsity property is fundamental: the solution depends only on a subset of training points.</p>
+                    </div>
+                </section>
+
+                <section id="dual-optimization">
+                    <h3>4.3 The Dual Optimization Problem</h3>
+                    <p>Substituting the stationarity conditions back into the Lagrangian yields the <strong>dual problem</strong>:</p>
+                    <div class="math-block">
+                        $$\max_{\alpha} \sum_{i=1}^n \alpha_i - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j (x_i \cdot x_j)$$
+                        $$\text{s.t.} \quad 0 \le \alpha_i \le C, \quad \sum_{i=1}^n \alpha_i y_i = 0$$
+                    </div>
+                    <p>Key observations:</p>
+                    <ul>
+                        <span class="en"><li>The dual depends on the data <strong>only through dot products</strong> \( x_i \cdot x_j \).</li></span><span class="cn">最大化最小几何间隔可写为 $$ \max_{w,b} M \quad \text{s.t.} \quad \gamma_i \ge M,\ i=1,\dots,m $$</span>
+                        <span class="en"><li>The constraint \( \alpha_i \le C \) comes from the soft-margin formulation; for hard-margin, \( C = \infty \).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <span class="en"><li>This is also a QP, but in \( n \) variables (one per sample) rather than \( d \) variables (one per feature). When \( n \ll d \), the dual is much more efficient.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    </ul>
+                </section>
+
+                <section id="kernel-trick">
+                    <h3>4.4 The Kernel Trick</h3>
+                    <p>Since the dual problem depends only on dot products \( x_i \cdot x_j \), we can replace the dot product with a <strong>kernel function</strong>:</p>
+                    <div class="math-block">
+                        $$K(x_i, x_j) = \phi(x_i)^T \phi(x_j)$$
+                    </div>
+                    <p>This implicitly maps the data into a high-dimensional (possibly infinite-dimensional) feature space via \( \phi(\cdot) \), <em>without ever computing \( \phi(x) \) explicitly</em>. The kernel computes the inner product directly in the original space.</p>
+
+                    <p>The decision function becomes:</p>
+                    <div class="math-block">
+                        $$f(x) = \text{sign}\left( \sum_{i=1}^n \alpha_i y_i K(x_i, x) + b \right)$$
+                    </div>
+
+                    <div class="success-box">
+                        <strong>The Power of the Kernel Trick:</strong> We can operate in an exponentially large (or infinite) feature space while paying only the cost of a kernel evaluation in the original space. This is what allows SVM to learn <strong>non-linear</strong> decision boundaries.
+                    </div>
+                </section>
+
+                <section id="kernel-table">
+                    <h3>4.5 Kernel Types</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kernel Type</th>
+                                <th>Formula</th>
+                                <th>Implicit Feature Space</th>
+                                <th>Use Case</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Linear</strong></td>
+                                <td>\( K(x, z) = x^T z \)</td>
+                                <td>Original space (no mapping)</td>
+                                <td>Linearly separable data, high-dimensional text features, when \( n \ll d \)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Polynomial</strong></td>
+                                <td>\( K(x, z) = (x^T z + c)^d \)</td>
+                                <td>All monomials up to degree \( d \)</td>
+                                <td>Captures feature interactions; image/text with moderate nonlinearity</td>
+                            </tr>
+                            <tr>
+                                <td><strong>RBF (Gaussian)</strong></td>
+                                <td>\( K(x, z) = \exp(-\gamma \|x - z\|^2) \)</td>
+                                <td>Infinite-dimensional</td>
+                                <td>Most popular default; captures complex nonlinear manifolds</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sigmoid</strong></td>
+                                <td>\( K(x, z) = \tanh(\alpha x^T z + c) \)</td>
+                                <td>Similar to neural network activation</td>
+                                <td>Connection to neural networks; less commonly used in practice</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="info-box">
+                        <strong>How to choose a kernel?</strong>
+                        <ul>
+                            <li>Start with the <strong>linear kernel</strong> — it is fast and often sufficient.</li>
+                            <li>If the data is clearly non-linear, try the <strong>RBF kernel</strong> (default in most libraries).</li>
+                            <li>The RBF kernel has one hyperparameter \( \gamma \): large \( \gamma \) → narrow, sharp boundaries (risk of overfitting); small \( \gamma \) → smooth boundaries (risk of underfitting).</li>
+                            <span class="en"><li>Use cross-validation to tune \( \gamma \) and \( C \) jointly.</li></span><span class="cn">为消除尺度虚增，引入几何间隔： $$ \gamma_i = \frac{y_i(w^T x_i+b)}{\|w\|} = \frac{f_i}{\|w\|} $$</span>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="mercer">
+                    <h3>4.6 Mercer's Theorem</h3>
+                    <p>Not every function is a valid kernel. <strong>Mercer's Theorem</strong> provides the necessary and sufficient condition:</p>
+
+                    <div class="highlight-box">
+                        <h4>Mercer's Theorem</h4>
+                        <span class="en"><p>A function \( K(x, z) \) is a valid kernel (i.e., there exists a feature map \( \phi \) such that \( K(x, z) = \phi(x)^T \phi(z) \)) if and only if:</p></span><span class="cn">当低维空间线性不可分时，可考虑映射 $$ x \mapsto \phi(x) $$ 在高维特征空间做线性分类。若显式构造 $\phi(x)$ 成本很高，可用核技巧： $$ K(x,z)=\phi(x)^T\phi(z) $$ 直接在原空间计算内积，等价完成“隐式升维”。</span>
+                        <ol>
+                            <span class="en"><li><span class="en"><strong>Symmetry:</strong> \( K(x, z) = K(z, x) \) for all \( x, z \).</span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span></li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                            <span class="en"><li><strong>Positive Semi-Definiteness (PSD):</strong> For any finite set of points \( \{x_1, \dots, x_n\} \), the Gram matrix \( G_{ij} = K(x_i, x_j) \) is positive semi-definite (i.e., \( v^T G v \ge 0 \) for all vectors \( v \)).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        </ol>
+                    </div>
+
+                    <p>This theorem is powerful because it allows us to design kernels by checking algebraic properties, without ever constructing \( \phi \) explicitly. It also enables combining kernels (sum, product, scaling) while preserving validity.</p>
+                </section>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 5: Model Evaluation -->
+            <!-- ============================================================ -->
+            <section id="model-eval">
+                <h2>5. Model Evaluation Strategies <span class="cn">5. <span class="cn">模型评估策略</span></span></h2>
+                <p>How do we know if our model truly "learned" or just "memorized"? We must evaluate it on data it has never seen during training. This section covers the fundamental strategies for reliable performance estimation.</p>
+
+                <section id="eval-splitting">
+                    <h3>5.1 Dataset Splitting</h3>
+                    <p>A well-designed evaluation requires partitioning the available data into distinct roles:</p>
+                    <ul>
+                        <li><strong>Training Set:</strong> Used to learn model parameters (weights, support vectors, etc.). The model directly "sees" this data.</li>
+                        <li><strong>Validation Set:</strong> Used to tune hyperparameters (e.g., \( C \), \( \gamma \), kernel type) and perform model selection. The model does <em>not</em> train on this data, but the developer uses it to make decisions.</li>
+                        <li><strong>Testing Set:</strong> The "Final Exam." Strictly isolated until the very end to provide an unbiased estimate of <strong>generalization error</strong>. Must <em>never</em> influence any design decision.</li>
+                    </ul>
+
+                    <div class="warning-box">
+                        <strong>Data Leakage:</strong> If any information from the test set leaks into the training or model selection process (e.g., using test accuracy to pick hyperparameters), the reported performance will be optimistically biased and unreliable.
+                    </div>
+                </section>
+
+                <section id="eval-holdout">
+                    <h3>5.2 Hold-out Method</h3>
+                    <span class="en"><p>The simplest approach: randomly split the data once, e.g., 80% training / 20% testing (or 70/15/15 for train/val/test).</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    <p><strong>Advantages:</strong> Simple, fast, one-time cost.</p>
+                    <p><strong>Disadvantages:</strong></p>
+                    <ul>
+                        <li>High variance: the performance estimate depends heavily on which points end up in which split.</li>
+                        <span class="en"><li>Wastes data: a significant portion is never used for training.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <span class="en"><li>Unreliable for small datasets.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    </ul>
+                </section>
+
+                <section id="eval-kfold">
+                    <h3>5.3 K-Fold Cross-Validation in Detail</h3>
+                    <p>K-fold cross-validation provides a more robust estimate by using every data point for both training and validation. The procedure:</p>
+                    <ol>
+                        <span class="en"><li><strong>Shuffle</strong> the dataset randomly (with a fixed seed for reproducibility).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <li><strong>Split</strong> the data into \( K \) equal-sized (or approximately equal) folds: \( D_1, D_2, \ldots, D_K \).</li>
+                        <span class="en"><li>For each fold \( i = 1, 2, \ldots, K \):
+                            <ul>
+                                <li>Use \( D_i \) as the <strong>validation/test</strong> set.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                                <span class="en"><li>Use the union of all other folds \( D_{-i} = D_1 \cup \cdots \cup D_{i-1} \cup D_{i+1} \cup \cdots \cup D_K \) as the <strong>training</strong> set.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                                <span class="en"><li>Train the model on \( D_{-i} \) and evaluate on \( D_i \) to obtain \( \text{score}_i \).</li></span><span class="cn">最大化最小几何间隔可写为 $$ \max_{w,b} M \quad \text{s.t.} \quad \gamma_i \ge M,\ i=1,\dots,m $$</span>
+                            </ul>
+                        </li>
+                        <li>Compute the <strong>mean</strong> and <strong>standard deviation</strong> of the \( K \) scores.</li>
+                    </ol>
+
+                    <div class="math-block">
+                        $$\bar{S} = \frac{1}{K}\sum_{i=1}^{K} \text{score}_i, \qquad \sigma_S = \sqrt{\frac{1}{K-1}\sum_{i=1}^{K}(\text{score}_i - \bar{S})^2}$$
+                    </div>
+
+                    <p>Common choices: \( K = 5 \) (faster, slightly higher bias) or \( K = 10 \) (standard, good bias-variance trade-off for moderate dataset sizes).</p>
+
+                    <div class="info-box">
+                        <strong>Bias-Variance Trade-off of \( K \):</strong>
+                        <ul>
+                            <li><strong>Small \( K \) (e.g., \( K = 2 \)):</strong> Each fold uses only half the data for training → <strong>high bias</strong> (model underfits due to insufficient data).</li>
+                            <span class="en"><li><strong>Large \( K \) (e.g., \( K = N \), LOOCV):</strong> Nearly all data used for training each fold → <strong>low bias</strong>, but the \( N \) fold estimates are highly correlated → <strong>high variance</strong> in the final estimate.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                            <li><strong>\( K = 5 \) or \( K = 10 \):</strong> Typically offers the best compromise between bias and variance of the performance estimate.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="eval-stratified">
+                    <h3>5.4 Stratified K-Fold Cross-Validation</h3>
+                    <p>When the dataset has <strong>class imbalance</strong> (e.g., 95% negative, 5% positive), a random split may produce folds where some folds contain very few or zero positive samples. This makes the performance estimate unreliable.</p>
+                    <p><strong>Stratified K-Fold</strong> addresses this by ensuring each fold preserves the <em>same class distribution</em> as the original dataset:</p>
+                    <ol>
+                        <li>Separate the data by class: group all positive samples and all negative samples.</li>
+                        <li>Within each class, divide the samples into \( K \) roughly equal groups.</li>
+                        <span class="en"><li>For fold \( i \), combine the \( i \)-th group from the positive class with the \( i \)-th group from the negative class.</li></span><span class="cn">这时原始问题写为： $$ \min_{w,b,\xi} \frac{1}{2}\|w\|^2 + C\sum_{i=1}^m \xi_i $$ $$ \mathrm{s.t.}\quad y_i(w^T x_i+b)\ge 1-\xi_i,\ \xi_i\ge 0,\ \forall i $$</span>
+                        <li>Each fold now has approximately the same positive-to-negative ratio as the full dataset.</li>
+                    </ol>
+
+                    <div class="warning-box">
+                        <strong>When to Use:</strong> Always prefer stratified K-fold for classification tasks with imbalanced classes. Standard K-fold may yield folds with no positive samples at all, making evaluation meaningless.
+                    </div>
+                </section>
+
+                <section id="eval-nested">
+                    <h3>5.5 Nested Cross-Validation for Hyperparameter Tuning</h3>
+                    <p>If we tune hyperparameters using standard K-fold CV and then report the best CV score as our performance estimate, we are <strong>overfitting to the validation set</strong> — the estimate is optimistically biased. <strong>Nested cross-validation</strong> solves this by separating the concerns of model selection and performance estimation.</p>
+
+                    <span class="en"><p><strong>Procedure (Nested \( K_1 \times K_2 \) CV):</strong></p></span><span class="cn">当低维空间线性不可分时，可考虑映射 $$ x \mapsto \phi(x) $$ 在高维特征空间做线性分类。若显式构造 $\phi(x)$ 成本很高，可用核技巧： $$ K(x,z)=\phi(x)^T\phi(z) $$ 直接在原空间计算内积，等价完成“隐式升维”。</span>
+                    <ol>
+                        <span class="en"><li><strong>Outer Loop</strong> (\( K_1 \) folds): Split data into \( K_1 \) outer folds. For each outer fold \( i \):
+                            <ul>
+                                <li>Hold out the outer test fold \( D_i^{\text{outer}} \).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                                <span class="en"><li>Use the remaining data \( D_{-i}^{\text{outer}} \) for the inner loop.</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                            </ul>
+                        </li>
+                        <span class="en"><li><strong>Inner Loop</strong> (\( K_2 \) folds on \( D_{-i}^{\text{outer}} \)): For each candidate hyperparameter setting \( \theta_j \):
+                            <ul>
+                                <li>Perform \( K_2 \)-fold CV on \( D_{-i}^{\text{outer}} \) to obtain mean score \( \bar{S}(\theta_j) \).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                            </ul>
+                        </li>
+                        <span class="en"><li><strong>Select</strong> the best hyperparameters: \( \theta^* = \arg\max_{\theta_j} \bar{S}(\theta_j) \).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                        <span class="en"><li><strong>Evaluate</strong> the model trained with \( \theta^* \) on \( D_i^{\text{outer}} \) to get \( \text{score}_i^{\text{outer}} \).</li></span><span class="cn">最大化最小几何间隔可写为 $$ \max_{w,b} M \quad \text{s.t.} \quad \gamma_i \ge M,\ i=1,\dots,m $$</span>
+                        <span class="en"><li>Repeat for all \( K_1 \) outer folds, then report: \( \bar{S}^{\text{outer}} = \frac{1}{K_1}\sum_{i=1}^{K_1} \text{score}_i^{\text{outer}} \).</li></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+                    </ol>
+
+                    <div class="math-block">
+                        $$\text{Total model fits} = K_1 \times K_2 \times |\{\theta_j\}|$$
+                    </div>
+
+                    <div class="success-box">
+                        <strong>Why Nested CV Matters:</strong> The outer loop provides an <em>unbiased</em> estimate of generalization error because the outer test data was <strong>never</strong> used to select hyperparameters. Without nesting, reported performance is often inflated. This is critical when comparing multiple models or publishing results.
+                    </div>
+                </section>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 6: Performance Metrics -->
+            <!-- ============================================================ -->
+            <section id="metrics">
+                <h2>6. Performance Metrics <span class="cn">6. 评估指标</span></h2>
+                <p>Accuracy is often misleading in imbalanced datasets (e.g., fraud detection where 99.9% of transactions are normal — a model that always predicts "normal" achieves 99.9% accuracy but catches zero fraud). We need more nuanced metrics.</p>
+
+                <section id="confusion-matrix">
+                    <h3>6.1 Confusion Matrix <span class="cn">混淆矩阵</span></h3>
+                    <p>The confusion matrix is the foundation of all classification metrics:</p>
+                    <table>
+                        <tr>
+                            <th></th>
+                            <th>Predicted Positive</th>
+                            <th>Predicted Negative</th>
+                        </tr>
+                        <tr>
+                            <th>Actual Positive</th>
+                            <td>True Positive (\( TP \))</td>
+                            <td>False Negative (\( FN \)) — Type II Error</td>
+                        </tr>
+                        <tr>
+                            <th>Actual Negative</th>
+                            <td>False Positive (\( FP \)) — Type I Error</td>
+                            <td>True Negative (\( TN \))</td>
+                        </tr>
+                    </table>
+                </section>
+
+                <section id="precision-recall">
+                    <h3>6.2 Precision, Recall, and F1-Score <span class="cn">F1分数</span></h3>
+                    <div class="math-block">
+                        $$\text{Precision} = \frac{TP}{TP + FP} \qquad \text{(Of all predicted positives, how many are correct?)}$$
+                        $$\text{Recall (Sensitivity / TPR)} = \frac{TP}{TP + FN} \qquad \text{(Of all actual positives, how many did we find?)}$$
+                    </div>
+                    <p>Precision and recall are often in tension — improving one may hurt the other. The <strong>F1-Score</strong> is their harmonic mean:</p>
+                    <div class="math-block">
+                        $$\text{F1-Score} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
+                    </div>
+                    <p>The harmonic mean ensures that F1 is high only when <em>both</em> precision and recall are high. Additional metrics:</p>
+                    <div class="math-block">
+                        $$\text{Specificity (TNR)} = \frac{TN}{TN + FP}, \qquad \text{FPR} = \frac{FP}{FP + TN} = 1 - \text{Specificity}$$
+                    </div>
+                </section>
+
+                <section id="roc-pr">
+                    <h3>6.3 ROC and PR Curve <span class="cn">PR曲线</span>s</h3>
+                    <p>By varying the classification threshold, we trace out curves that reveal performance across all operating points:</p>
+                    <ul>
+                        <li><strong>ROC Curve</strong> (Receiver Operating Characteristic): Plots TPR (Recall) vs. FPR at different thresholds. The <strong>AUC-ROC</strong> (Area Under the ROC Curve) represents the probability that a randomly chosen positive sample is ranked higher than a randomly chosen negative sample. AUC = 1.0 is perfect; AUC = 0.5 is random.</li>
+                        <li><strong>PR Curve</strong> (Precision-Recall): Plots Precision vs. Recall at different thresholds. Preferred for <strong>highly imbalanced datasets</strong> because ROC can be overly optimistic when negatives dominate.</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <strong>When to use which?</strong>
+                        <ul>
+                            <li>Use <strong>ROC-AUC</strong> when classes are roughly balanced and you care about both positive and negative performance.</li>
+                            <li>Use <strong>PR curves</strong> when the positive class is rare (e.g., disease detection, fraud detection, anomaly detection).</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="ap-map">
+                    <h3>6.4 Average Precision (AP) and mAP</h3>
+
+                    <h4>6.4.1 Definition <span class="cn">定义</span> of AP</h4>
+                    <p><strong>Average Precision (AP)</strong> is defined as the area under the Precision-Recall (PR) curve. It provides a single scalar value that summarizes the precision-recall trade-off across all possible classification thresholds:</p>
+                    <div class="math-block">
+                        $$\text{AP} = \int_0^1 P(r) \, dr$$
+                    </div>
+                    <span class="en"><p>where \( P(r) \) is the precision measured at recall level \( r \).</p></span><span class="cn">6. 最终原始问题（Primal）</span>
+
+                    <h4>6.4.2 Interpolation Method</h4>
+                    <p>In practice, the PR curve is not smooth — precision can fluctuate as recall increases. To obtain a monotonically decreasing curve, we apply <strong>interpolation</strong>: at each recall level \( r \), the interpolated precision is the <em>maximum</em> precision observed at any recall level \( \tilde{r} \ge r \):</p>
+                    <div class="math-block">
+                        $$P_{\text{interp}}(r) = \max_{\tilde{r} \ge r} P(\tilde{r})$$
+                    </div>
+                    <p>This eliminates the "zigzag" behavior of the raw PR curve, producing a monotonically decreasing envelope that yields a more stable and meaningful metric.</p>
+
+                    <h4>6.4.3 Mathematical Formula <span class="cn">公式</span>tion (All-Point)</h4>
+                    <p>The discrete approximation of AP is a Riemann sum over observed recall points:</p>
+                    <div class="math-block">
+                        $$\text{AP} = \sum_{k=1}^{n} P(k) \cdot \Delta r(k)$$
+                    </div>
+                    <p>where:</p>
+                    <ul>
+                        <li>\( P(k) \) is the precision at cutoff \( k \) (among the top-\( k \) ranked predictions),</li>
+                        <li>\( \Delta r(k) = r(k) - r(k-1) \) is the change in recall from cutoff \( k-1 \) to \( k \),</li>
+                        <li>\( n \) is the total number of predictions.</li>
+                    </ul>
+
+                    <h4>6.4.4 11-Point Interpolation</h4>
+                    <p>The classic PASCAL VOC challenge uses an <strong>11-point interpolation</strong> method, sampling precision at 11 equally spaced recall points: \( r \in \{0.0, 0.1, 0.2, \ldots, 1.0\} \):</p>
+                    <div class="math-block">
+                        $$\text{AP}_{11} = \frac{1}{11} \sum_{r \in \{0.0,\,0.1,\,\ldots,\,1.0\}} P_{\text{interp}}(r)$$
+                    </div>
+                    <p>This approach smooths out local variations and has been widely adopted in benchmark evaluations.</p>
+
+                    <h4>6.4.5 Mean Average Precision (mAP)</h4>
+                    <p>For multi-class or multi-category problems, we compute AP independently for each class, then average:</p>
+                    <div class="math-block">
+                        $$\text{mAP} = \frac{1}{C} \sum_{c=1}^{C} \text{AP}_c$$
+                    </div>
+                    <p>where \( C \) is the total number of classes. mAP is the standard evaluation metric for object detection challenges (PASCAL VOC, COCO, ImageNet).</p>
+                </section>
+
+                <section id="ap-example">
+                    <h3>6.5 Worked AP Example <span class="cn">例子</span></h3>
+                    <p>Consider a detection scenario with <strong>5 ground-truth positive objects</strong>. The detector returns 7 ranked predictions (sorted by confidence, highest first):</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Confidence</th>
+                                <th>TP / FP</th>
+                                <th># TP so far</th>
+                                <th># FP so far</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>0.95</td><td>TP</td><td>1</td><td>0</td><td>1.000</td><td>0.200</td></tr>
+                            <tr><td>2</td><td>0.90</td><td>TP</td><td>2</td><td>0</td><td>1.000</td><td>0.400</td></tr>
+                            <tr><td>3</td><td>0.85</td><td>FP</td><td>2</td><td>1</td><td>0.667</td><td>0.400</td></tr>
+                            <tr><td>4</td><td>0.70</td><td>TP</td><td>3</td><td>1</td><td>0.750</td><td>0.600</td></tr>
+                            <tr><td>5</td><td>0.65</td><td>FP</td><td>3</td><td>2</td><td>0.600</td><td>0.600</td></tr>
+                            <tr><td>6</td><td>0.50</td><td>TP</td><td>4</td><td>2</td><td>0.667</td><td>0.800</td></tr>
+                            <tr><td>7</td><td>0.40</td><td>TP</td><td>5</td><td>2</td><td>0.714</td><td>1.000</td></tr>
+                        </tbody>
+                    </table>
+
+                    <p><strong>Step 1 — Interpolate precision:</strong> At each unique recall level, take the maximum precision at that recall or higher:</p>
+                    <table>
+                        <thead>
+                            <tr><th>Recall \( r \)</th><th>\( P_{\text{interp}}(r) \)</th><th>Explanation</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>0.0</td><td>1.000</td><td>Max precision across all points</td></tr>
+                            <tr><td>0.2</td><td>1.000</td><td>Max precision at recall \( \ge 0.2 \)</td></tr>
+                            <tr><td>0.4</td><td>1.000</td><td>Max precision at recall \( \ge 0.4 \) is 1.000 (rank 2)</td></tr>
+                            <tr><td>0.6</td><td>0.750</td><td>Max precision at recall \( \ge 0.6 \) is 0.750 (rank 4)</td></tr>
+                            <tr><td>0.8</td><td>0.714</td><td>Max precision at recall \( \ge 0.8 \) is 0.714 (rank 7)</td></tr>
+                            <tr><td>1.0</td><td>0.714</td><td>Max precision at recall \( \ge 1.0 \) is 0.714 (rank 7)</td></tr>
+                        </tbody>
+                    </table>
+
+                    <p><strong>Step 2 — Compute AP (all-point method):</strong></p>
+                    <div class="math-block">
+                        $$\text{AP} = \sum_{k=1}^{7} P(k) \cdot \Delta r(k) = 1.0 \times 0.2 + 1.0 \times 0.2 + 0.667 \times 0 + 0.750 \times 0.2 + 0.600 \times 0 + 0.667 \times 0.2 + 0.714 \times 0.2$$
+                    </div>
+                    <div class="math-block">
+                        $$= 0.200 + 0.200 + 0 + 0.150 + 0 + 0.133 + 0.143 = 0.826$$
+                    </div>
+
+                    <span class="en"><p><strong>Step 3 — Compute AP (11-point method):</strong></p></span><span class="cn">当低维空间线性不可分时，可考虑映射 $$ x \mapsto \phi(x) $$ 在高维特征空间做线性分类。若显式构造 $\phi(x)$ 成本很高，可用核技巧： $$ K(x,z)=\phi(x)^T\phi(z) $$ 直接在原空间计算内积，等价完成“隐式升维”。</span>
+                    <div class="math-block">
+                        $$\text{AP}_{11} = \frac{1}{11}\bigl(1.0 + 1.0 + 1.0 + 1.0 + 1.0 + 0.75 + 0.75 + 0.714 + 0.714 + 0.714 + 0.714\bigr) \approx 0.850$$
+                    </div>
+
+                    <div class="success-box">
+                        <strong>Key Insight:</strong> AP rewards a model that ranks true positives at the top of the list. If all TPs appear before any FPs, AP = 1.0. The more FPs are interleaved among the top ranks, the lower the AP. This makes AP an excellent metric for <strong>ranking quality</strong> in detection and retrieval tasks.
+                    </div>
+                </section>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 7: Bias-Variance Decomposition -->
+            <!-- ============================================================ -->
+            <section id="bias-variance">
+                <h2>7. Bias-Variance Decomposition <span class="cn">7. 偏差-方差分解</span> <span class="cn">7. 偏差-方差分解</span> <span class="cn">7. 偏差-方差分解</span></h2>
+                <p>The total expected error of a model can be decomposed into three irreducible components, providing deep insight into why models fail and how to improve them.</p>
+
+                <h3>7.1 The Decomposition</h3>
+                <div class="math-block">
+                    $$E\left[(y - \hat{f}(x))^2\right] = \underbrace{\left(f(x) - E[\hat{f}(x)]\right)^2}_{\text{Bias}^2} + \underbrace{E\left[\left(\hat{f}(x) - E[\hat{f}(x)]\right)^2\right]}_{\text{Variance}} + \underbrace{\sigma^2}_{\text{Irreducible Noise}}$$
+                </div>
+                <ul>
+                    <li><strong>Bias²:</strong> How far is the average prediction from the true function? Measures <em>systematic error</em>. High bias → underfitting (model is too simple).</li>
+                    <li><strong>Variance:</strong> How much do predictions fluctuate across different training sets? Measures <em>sensitivity to data</em>. High variance → overfitting (model is too complex).</li>
+                    <li><strong>Noise (\( \sigma^2 \)):</strong> Irreducible error inherent in the data. No model can reduce this.</li>
+                </ul>
+
+                <h3>7.2 Mathematical Derivation</h3>
+                <span class="en"><p>Assume the true data-generating process is \( y = f(x) + \epsilon \), where \( E[\epsilon] = 0 \) and \( \text{Var}(\epsilon) = \sigma^2 \). The noise \( \epsilon \) is independent of \( \hat{f} \).</p></span><span class="cn">经过规范化，Hard-Margin SVM 变为： $$ \max_{w,b} \frac{1}{\|w\|} \quad \text{s.t.} \quad y_i(w^T x_i+b)\ge 1,\ \forall i $$</span>
+
+                <div class="math-block" style="font-size:0.92em;">
+                    $$E\left[(y - \hat{f})^2\right] = E\left[(f + \epsilon - \hat{f})^2\right]$$
+                </div>
+                <div class="math-block" style="font-size:0.92em;">
+                    $$= E\left[(f - \hat{f})^2\right] + E[\epsilon^2] + 2\,E\left[\epsilon(f - \hat{f})\right]$$
+                </div>
+                <p>Since \( \epsilon \) is independent of \( \hat{f} \) and \( E[\epsilon] = 0 \), the cross term vanishes: \( E[\epsilon(f - \hat{f})] = 0 \). Also, \( E[\epsilon^2] = \sigma^2 \). So:</p>
+                <div class="math-block" style="font-size:0.92em;">
+                    $$= E\left[(f - \hat{f})^2\right] + \sigma^2$$
+                </div>
+                <p>Now add and subtract \( E[\hat{f}] \) inside the first term:</p>
+                <div class="math-block" style="font-size:0.92em;">
+                    $$E\left[(f - \hat{f})^2\right] = E\left[\left((f - E[\hat{f}]) + (E[\hat{f}] - \hat{f})\right)^2\right]$$
+                </div>
+                <div class="math-block" style="font-size:0.92em;">
+                    $$= E\left[(f - E[\hat{f}])^2\right] + E\left[(E[\hat{f}] - \hat{f})^2\right] + 2\,E\left[(f - E[\hat{f}])(E[\hat{f}] - \hat{f})\right]$$
+                </div>
+                <p>Since \( f \) is a constant (the true function) and \( E[E[\hat{f}] - \hat{f}] = 0 \), the cross term vanishes again. Thus:</p>
+                <div class="math-block" style="font-size:0.92em;">
+                    $$= \underbrace{(f - E[\hat{f}])^2}_{\text{Bias}^2} + \underbrace{E\left[(\hat{f} - E[\hat{f}])^2\right]}_{\text{Variance}} + \sigma^2$$
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Practical Implications</h4>
+                    <ul>
+                        <li><strong>High Bias (Underfitting):</strong> Model is too simple to capture the true pattern. Training error is high. Remedy: increase model complexity, add features, reduce regularization.</li>
+                        <li><strong>High Variance (Overfitting):</strong> Model fits the training data too closely, including noise. Training error is low but test error is high. Remedy: get more data, simplify model, increase regularization, use ensembles.</li>
+                        <li><strong>Bias-Variance Trade-off:</strong> Increasing model complexity reduces bias but increases variance. The optimal model minimizes total error (Bias² + Variance + Noise).</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 8: Summary -->
+            <!-- ============================================================ -->
+            <section id="summary">
+                <h2>8. Summary & Key Takeaways <span class="cn">8. <span class="cn">本讲总结</span></span></h2>
+                <div class="success-box">
+                    <ol>
+                        <li><strong>Hard-Margin SVM:</strong> Maximize the geometric margin between classes. The functional margin introduces label information; the geometric margin removes scale ambiguity. Anchor normalization (constant 1) eliminates parameter redundancy. The result is a convex QP with a global optimum.</li>
+                        <li><strong>Soft-Margin SVM:</strong> Introduces slack variables \( \xi_i \) to handle noise and overlap. The penalty coefficient \( C \) controls the trade-off between margin width and training error. Equivalent to Hinge Loss + \( L_2 \) regularization.</li>
+                        <li><strong>Dual Formulation:</strong> The Lagrangian dual depends only on dot products, enabling the kernel trick. KKT conditions identify support vectors (points with \( \alpha_i > 0 \)).</li>
+                        <li><strong>Kernel Trick:</strong> Replace dot products with kernel functions to implicitly operate in high-dimensional spaces. RBF kernel is the default choice. Mercer's theorem guarantees kernel validity via symmetry and PSD conditions.</li>
+                        <li><strong>Model Evaluation:</strong> Use K-fold cross-validation for robust performance estimation. Stratified K-fold for imbalanced data. Nested CV for unbiased hyperparameter tuning. Never touch the test set until the end.</li>
+                        <li><strong>Performance Metrics:</strong> Confusion matrix → Precision/Recall/F1. ROC-AUC for balanced data; PR curves for imbalanced data. AP summarizes PR curve quality; mAP averages AP across classes.</li>
+                        <li><strong>Bias-Variance:</strong> Total error = Bias² + Variance + Noise. High bias → underfitting; high variance → overfitting. The optimal model balances the two.</li>
+                    </ol>
+                </div>
+
+                <blockquote>
+                    "SVM's elegance lies in converting a geometric intuition (maximum margin) into a convex optimization problem, then lifting it to infinite dimensions via kernels — all while maintaining global optimality guarantees."
+                </blockquote>
+            </section>
+        </main>
+
+        <footer>
+            <p>Lecture 5 Notes — Introduction to Artificial Intelligence</p>
+            <p>Topics: Hard-Margin SVM, Soft-Margin SVM, Dual Formulation, Kernel Trick, Model Evaluation, Performance Metrics, AP/mAP, Bias-Variance Decomposition</p>
+        </footer>
+        </div>
+        </div>
+
+    // Language Toggle
+    (function() {
+        var body = document.body;
+        var btnEN = document.getElementById('btn-en');
+        var btnCN = document.getElementById('btn-cn');
+        var saved = localStorage.getItem('lang') || 'en';
+        if (saved === 'cn') {
+            body.classList.add('lang-cn');
+            if (btnCN) btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+        } else {
+            if (btnEN) btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+        }
+        if (btnEN) btnEN.addEventListener('click', function() {
+            body.classList.remove('lang-cn');
+            btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+            localStorage.setItem('lang', 'en');
+        });
+        if (btnCN) btnCN.addEventListener('click', function() {
+            body.classList.add('lang-cn');
+            btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+            localStorage.setItem('lang', 'cn');
+        });
+    })();
+
+</body>
+</html>

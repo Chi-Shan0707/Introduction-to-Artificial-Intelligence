@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 7: Deep Learning Fundamentals — Intro to AI</title>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --text: #333;
+            --muted: #7f8c8d;
+            --code-bg: #f8f9fa;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar header {
+            background: transparent;
+            padding: 2rem 1.5rem 1.5rem;
+            text-align: left;
+        }
+
+        .sidebar header h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .sidebar header .subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc {
+            flex: 1;
+            padding: 0 1.5rem 2rem;
+            background: transparent;
+            border: none;
+            overflow-y: auto;
+        }
+
+        .sidebar .toc h2 {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.8rem;
+            border: none;
+            padding: 0;
+        }
+
+        .sidebar .toc ul {
+            columns: 1;
+            list-style: none;
+        }
+
+        .sidebar .toc li {
+            margin-bottom: 0.15rem;
+        }
+
+        .sidebar .toc a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc a:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            min-width: 0;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+        }
+
+        .main-wrapper main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        .main-wrapper footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        /* Header & TOC now in sidebar */
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        h3 {
+            color: var(--dark);
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        h4 {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin: 1.2rem 0 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Math blocks */
+        .math-block {
+            background: var(--code-bg);
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        /* Code / Pseudocode */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        th, td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background: var(--light);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight-box h4 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Philosophy blockquote */
+        blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--dark);
+            background: var(--light);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 0.5rem;
+            font-style: normal;
+            color: var(--muted);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .sidebar header {
+                width: 100%;
+                padding: 1.5rem;
+            }
+            .sidebar .toc {
+                width: 100%;
+                padding: 0 1.5rem 1rem;
+            }
+            .sidebar .toc ul {
+                columns: 2;
+            }
+            .main-wrapper main {
+                padding: 1.5rem;
+            }
+            .main-wrapper footer {
+                padding: 1.5rem;
+            }
+            table {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Algorithm pseudocode specific */
+        .algorithm {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .algorithm .keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .algorithm .function {
+            color: #dcdcaa;
+        }
+
+        .algorithm .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        /* Anchor offset for fixed header if needed */
+        section[id] {
+            scroll-margin-top: 20px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .sidebar {
+                position: relative;
+                height: auto;
+                width: 200px;
+                min-width: 200px;
+            }
+            .main-wrapper {
+                box-shadow: none;
+            }
+        }
+    
+        /* ===== Bilingual Toggle ===== */
+        .lang-toggle {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .lang-toggle button {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .lang-toggle button:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+        }
+        .lang-toggle button.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+        }
+        .cn { display: none; }
+        body.lang-cn .cn { display: inline; }
+        body.lang-cn .en { display: none; }
+        body.lang-cn .cn-block { display: block; }
+        body.lang-cn .en-block { display: none; }
+        .cn-block { display: none; }
+        /* Keep math, code, tables always visible */
+        .cn .MathJax, .cn code, .cn pre, .cn .math-block,
+        .cn .algorithm, .cn table { display: revert; }
+        body.lang-cn .en .MathJax,
+        body.lang-cn .en code,
+        body.lang-cn .en pre { display: revert; }
+        @media (max-width: 768px) {
+            .lang-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .lang-toggle button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+        <div class="lang-toggle">
+            <button id="btn-en">EN</button>
+            <button id="btn-cn">中文</button>
+        </div>
+
+    <div class="layout">
+        <div class="sidebar">
+        <header>
+            <h1>Lecture 7: Deep Learning Fundamentals <span class="cn">第七讲：深度学习基础</span></h1>
+            <p><span class="en"> class="subtitle"</span><span class="cn">class MultiplyGate: def forward(self, x, y): self.x, self.y = x, y   # 缓存，供反向传播使用 return x * y</span></p>
+            <p><span class="en"> class="subtitle"</span><span class="cn">class MultiplyGate: def forward(self, x, y): self.x, self.y = x, y   # 缓存，供反向传播使用 return x * y</span></p>
+        </header>
+
+        <nav class="toc">
+            <h2>Table of Contents </h2>
+            <ul>
+                <li><a href="#roadmap">0. Lecture Roadmap</a></li>
+                <li><a href="#nn-foundations">1. Neural Network Foundations</a></li>
+                <li><a href="#activation">2. Activation Functions</a></li>
+                <li><a href="#architecture">3. Network Architecture Terminology</a></li>
+                <li><a href="#bio">4. Biological Inspiration</a></li>
+                <li><span class="en"><a href="#loss">5. Loss Functions</a></li></span>
+                <li><a href="#backprop">6. Backpropagation</a></li>
+                <li><a href="#compgraph">7. Computation Graphs &amp; Autodiff</a></li>
+                <li><a href="#gate-rules">8. Gate Gradient Rules</a></li>
+                <li><a href="#modular">9. Modular Implementation &amp; PyTorch</a></li>
+                <li><a href="#regularization">10. Regularization Methods</a></li>
+                <li><a href="#l1l2">11. L1/L2/Elastic Net &amp; Weight Preference</a></li>
+                <li><a href="#dropout">12. Dropout</a></li>
+                <li><span class="en"><a href="#stochastic-depth">13. Stochastic Depth (DropPath)</a></li></span>
+                <li><span class="en"><a href="#pooling">14. Pooling: Max, Average, Global, Fractional</a></li></span>
+                <li><span class="en"><a href="#optimization">15. Optimization: Gradient Descent Variants</a></li></span>
+                <li><span class="en"><a href="#sgd-problems">16. SGD Problems &amp; Momentum</a></li></span>
+                <li><span class="en"><a href="#adam">17. RMSProp &amp; Adam</a></li></span>
+                <li><span class="en"><a href="#lr-schedule">18. Learning Rate Scheduling</a></li></span>
+                <li><span class="en"><a href="#bn-regularization">19. Batch Normalization as Regularization</a></li></span>
+                <li><span class="en"><a href="#transformer-reg">20. Transformer Regularization</a></li></span>
+                <li><a href="#batch-dual">21. "Batch" Dual Meaning</a></li>
+                <li><a href="#normalization">22. Normalization Methods (BN/LN/IN/GN/RMSNorm)</a></li>
+                <li><a href="#hessian">23. Hessian Matrix &amp; Loss Landscape Geometry</a></li>
+                <li><a href="#newton">24. Newton&rsquo;s Method &amp; Modern Optimizers</a></li>
+                <li><a href="#summary">25. Summary</a></li>
+            </ul>
+        </nav>
+
+        </div>
+        <div class="main-wrapper">
+        <main>
+            <!-- Section 0: Roadmap -->
+            <section id="roadmap">
+                <h2>0. Lecture Roadmap</h2>
+                <span class="en"><p>This lecture introduces deep learning fundamentals along three main threads:</p></span><span class="cn">Keskar et al. (2016) 的著名论文 "On Large-Batch Training for Deep Learning" 提出了一个被广泛引用的结论：</span>
+                <ol>
+                    <span class="en"><li><strong>Neural Networks</strong>: from linear classifiers to multi-layer non-linear networks</li></span><span class="cn">- **2-layer Neural Net** = 1 个隐藏层（输入层不算，输出层算一层） - **3-layer Neural Net** = 2 个隐藏层 - 通用术语：**全连接层（Fully-connected layer）**或**多层感知机（MLP）**</span>
+                    <li><strong>Backpropagation</strong>: computation graphs + chain rule for efficient gradient computation</li>
+                    <span class="en"><li><strong>Regularization &amp; Optimization</strong>: preventing overfitting and finding better solutions</li></span><span class="cn">weights = softmax(region)  # 按值大小转成概率，如 [0.002, 0.000, 0.998, 0.000] return random_sample(region, weights)  # 以 99.8% 概率选 7，但也可能选 3 ```</span>
+                </ol>
+            </section>
+
+            <!-- Section 1: Neural Network Foundations -->
+            <section id="nn-foundations">
+                <h2>1. Neural Network Foundations <span class="cn">1. <span class="cn">神经网络基础</span></span></h2>
+                <h3>1.1 Starting Point: Linear Classifiers</h3>
+                <span class="en"><p>Linear classifiers (SVM, Softmax) use a score function:</p></span><span class="cn">线性分类器（如 SVM、Softmax）的得分函数：</span>
+                <div class="math-block">
+                    $$s = Wx, \quad x \in \mathbb{R}^d \to s \in \mathbb{R}^K$$
+                </div>
+                <p><strong>Problem:</strong> Linear classifiers can only draw hyperplanes. They cannot handle non-linearly separable data (e.g., red and blue points arranged in concentric rings).</p>
+
+                <h3>1.2 Two-Layer Neural Network</h3>
+                <span class="en"><p>Insert a <strong>hidden layer</strong> between input and output, with a <strong>non-linear activation function</strong> \( \sigma \):</p></span><span class="cn">```python def fractional_max_pool(input, output_size): """ input: H x W 的特征图 output_size: (h_out, w_out) """ H, W = input.shape</span>
+                <div class="math-block">
+                    $$s = W_2 \, \sigma(W_1 x)$$
+                </div>
+                <div class="math-block">
+                    $$x \in \mathbb{R}^{3072} \xrightarrow{W_1} h \in \mathbb{R}^{100} \xrightarrow{\sigma} \xrightarrow{W_2} s \in \mathbb{R}^{10}$$
+                </div>
+
+                <div class="warning-box">
+                    <strong>Why non-linear activation is critical:</strong> Without \( \sigma \), composing linear layers is still linear:
+                    $$s = W_2(W_1 x) = (W_2 W_1)x = W'x$$
+                    Multi-layer linear transformations are equivalent to a single linear transformation. <strong>The non-linear activation function is what gives neural networks their powerful representational capacity.</strong>
+                </div>
+
+                <div class="info-box">
+                    <strong>Universal Approximation Theorem:</strong> A feed-forward network with a single hidden layer containing a finite number of neurons can approximate continuous functions on compact subsets of \( \mathbb{R}^n \), under mild assumptions on the activation function.
+                </div>
+            </section>
+
+            <!-- Section 2: Activation Functions -->
+            <section id="activation">
+                <h2>2. Activation Functions <span class="cn">2. <span class="cn">激活函数</span></span></h2>
+                <p>Activation functions introduce non-linearity, allowing networks to learn complex manifolds.</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Function</th>
+                            <th>Formula</th>
+                            <th>Derivative</th>
+                            <th>Pros / Cons</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Sigmoid</strong></td>
+                            <td>\( \sigma(x) = \frac{1}{1+e^{-x}} \)</td>
+                            <td>\( \sigma(x)(1-\sigma(x)) \)</td>
+                            <td>Output (0,1). Vanishing gradients for large \( |x| \).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tanh</strong></td>
+                            <td>\( \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} \)</td>
+                            <td>\( 1 - \tanh^2(x) \)</td>
+                            <td>Zero-centered. Better than sigmoid, but still saturates.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ReLU</strong></td>
+                            <td>\( \max(0, x) \)</td>
+                            <td>\( 1 \) if \( x > 0 \), else \( 0 \)</td>
+                            <td>Fast, no saturation in positive region. &ldquo;Dead ReLU&rdquo; issue.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Leaky ReLU</strong></td>
+                            <td>\( \max(\alpha x, x),\; \alpha \ll 1 \)</td>
+                            <td>\( 1 \) if \( x > 0 \), else \( \alpha \)</td>
+                            <td>Fixes dead ReLU by allowing small negative slope.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ELU</strong></td>
+                            <td>Similar to Leaky ReLU but smoother</td>
+                            <td>Smooth near zero</td>
+                            <td>Output mean closer to 0. Helps convergence.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Maxout</strong></td>
+                            <td>\( \max(w_1^T x + b_1,\; w_2^T x + b_2) \)</td>
+                            <td>Piecewise linear</td>
+                            <td>Learns the activation function itself. Doubles parameters.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="success-box">
+                    <strong>Practice:</strong> ReLU works best on the vast majority of tasks. Use ReLU as the default choice.
+                </div>
+            </section>
+
+            <!-- Section 3: Architecture Terminology -->
+            <section id="architecture">
+                <h2>3. Network Architecture Terminology</h2>
+                <ul>
+                    <span class="en"><li><strong>2-layer Neural Net</strong> = 1 hidden layer (input layer does not count; output layer counts as one)</li></span><span class="cn">- **2-layer Neural Net** = 1 个隐藏层（输入层不算，输出层算一层） - **3-layer Neural Net** = 2 个隐藏层 - 通用术语：**全连接层（Fully-connected layer）**或**多层感知机（MLP）**</span>
+                    <span class="en"><li><span class="en"><strong>3-layer Neural Net</strong> = 2 hidden layers</span><span class="cn">- **2-layer Neural Net** = 1 个隐藏层（输入层不算，输出层算一层） - **3-layer Neural Net** = 2 个隐藏层 - 通用术语：**全连接层（Fully-connected layer）**或**多层感知机（MLP）**</span></li></span><span class="cn">- **2-layer Neural Net** = 1 个隐藏层（输入层不算，输出层算一层） - **3-layer Neural Net** = 2 个隐藏层 - 通用术语：**全连接层（Fully-connected layer）**或**多层感知机（MLP）**</span>
+                    <span class="en"><li><span class="en">General terms: <strong>Fully-Connected (FC) layer</strong> or <strong>Multi-Layer Perceptron (MLP)</strong></span><span class="cn">- **2-layer Neural Net** = 1 个隐藏层（输入层不算，输出层算一层） - **3-layer Neural Net** = 2 个隐藏层 - 通用术语：**全连接层（Fully-connected layer）**或**多层感知机（MLP）**</span></li></span><span class="cn">- **2-layer Neural Net** = 1 个隐藏层（输入层不算，输出层算一层） - **3-layer Neural Net** = 2 个隐藏层 - 通用术语：**全连接层（Fully-connected layer）**或**多层感知机（MLP）**</span>
+                </ul>
+                <p>FC layers are commonly used in the final layers of a network for classification or regression. In high-dimensional data like images, convolutional layers often replace FC layers to reduce parameters. However, for small-scale tasks and structured data, FC layers remain fundamental building blocks.</p>
+            </section>
+
+            <!-- Section 4: Biological Inspiration -->
+            <section id="bio">
+                <h2>4. Biological Inspiration</h2>
+                <p>Neural networks draw inspiration from biological neurons:</p>
+                <ul>
+                    <span class="en"><li><strong>Dendrites</strong>: receive signals → corresponds to input \( x \)</li></span><span class="cn">$$\text{Stochastic Depth: } y = \begin{cases} \mathcal{F}(x, W_l) + x &amp; \text{以概率 } 1 - p_l \\ x &amp; \text{以概率 } p_l \end{cases}$$</span>
+                    <span class="en"><li><strong>Cell Body</strong>: integrates signals → corresponds to summation \( w^T x + b \)</li></span><span class="cn">- **树突（Dendrite）**：接收信号 → 对应输入 $x$ - **胞体（Cell body）**：整合信号 → 对应求和 $w^T x + b$ - **轴突（Axon）**：传递信号 → 对应输出 - **突触（Synapse）**：连接权重 → 对应权重 $w$ - Sigmoid 激活函数本身就是对生物神经元"全或无"发放规律的建模</span>
+                    <li><strong>Axon</strong>: transmits signals → corresponds to output</li>
+                    <span class="en"><li><strong>Synapse</strong>: connection strength → corresponds to weights \( w \)</li></span><span class="cn">- **树突（Dendrite）**：接收信号 → 对应输入 $x$ - **胞体（Cell body）**：整合信号 → 对应求和 $w^T x + b$ - **轴突（Axon）**：传递信号 → 对应输出 - **突触（Synapse）**：连接权重 → 对应权重 $w$ - Sigmoid 激活函数本身就是对生物神经元"全或无"发放规律的建模</span>
+                    <li>The Sigmoid activation function itself models the &ldquo;all-or-none&rdquo; firing law of biological neurons</li>
+                </ul>
+                <p><strong>Key difference:</strong> Biological neurons have complex, random connections, while artificial neurons are organized in regular layered structures for computational efficiency. However, research has shown that randomly connected networks can also work.</p>
+            </section>
+
+            <!-- Section 5: Loss Functions -->
+            <section id="loss">
+                <h2>5. Loss Functions &amp; Integration</h2>
+                <span class="en"><p>Neural networks are integrated with loss functions to form the complete objective:</p></span><span class="cn">Stochastic Depth（Huang et al., 2016 "Deep Networks with Stochastic Depth"）的做法非常直接：</span>
+                <div class="math-block">
+                    $$L = \underbrace{L_{\text{data}}(W)}_{\text{Data Loss}} + \lambda \underbrace{R(W)}_{\text{Regularization}}$$
+                </div>
+                <ul>
+                    <span class="en"><li><strong>Data Loss</strong>: model predictions should match training data (SVM Loss / Softmax Loss)</li></span><span class="cn">- 数据损失：模型预测应与训练数据匹配（SVM Loss / Softmax Loss） - 正则化：防止过拟合 - 目标：求出最优的 $W_1, W_2$</span>
+                    <li><strong>Regularization</strong>: prevents overfitting</li>
+                    <span class="en"><li><strong>Goal</strong>: find optimal \( W_1, W_2 \)</li></span><span class="cn">| 激活函数 | 公式 | 特点 | |---|---|---| | Sigmoid | $\sigma(x) = \frac{1}{1+e^{-x}}$ | 输出 (0,1)，易梯度消失 | | Tanh | $\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$ | 输出 (-1,1)，零中心 | | ReLU | $\text{ReLU}(x) = \max(0, x)$ | 计算快，缓解梯度消失 | | Leaky ReLU | $\max(\alpha x, x), \alpha \ll 1$ | 解决 ReLU "死神经元"问题 | | ELU | 类似 Leaky ReLU 但更平滑 | 输出均值更接近 0 | | Maxout | $\max(w_1^T x + b_1, w_2^T x + b_2)$ | 学习激活函数本身 |</span>
+                </ul>
+
+                <h3>Common Loss Functions</h3>
+                <ul>
+                    <span class="en"><li><strong>Mean Squared Error (MSE):</strong> \( L = \frac{1}{2}\|\hat{y} - y\|^2 \). Common for regression.</li></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                    <span class="en"><li><strong>Cross-Entropy Loss:</strong> \( L = -\sum y_i \log(\hat{y}_i) \). Derived from Maximum Likelihood Estimation (MLE). When paired with Softmax output, the gradient simplifies to \( \frac{\partial L}{\partial z_i} = \hat{y}_i - y_i \).</li></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                </ul>
+            </section>
+
+            <!-- Section 6: Backpropagation -->
+            <section id="backprop">
+                <h2>6. Backpropagation <span class="cn">反向传播</span></h2>
+                <h3>6.1 Why Backpropagation <span class="cn">反向传播</span>?</h3>
+                <span class="en"><p>Computing gradients by hand has two fatal problems:</p></span><span class="cn">Stochastic Depth（Huang et al., 2016 "Deep Networks with Stochastic Depth"）的做法非常直接：</span>
+                <ol>
+                    <span class="en"><li><strong>Computationally prohibitive</strong> for large networks</li></span><span class="cn">Keskar et al. (2016) 的著名论文 "On Large-Batch Training for Deep Learning" 提出了一个被广泛引用的结论：</span>
+                    <span class="en"><li><strong>Some functions have no closed-form derivative</strong></li></span><span class="cn">因此 Transformer 使用 **Layer Normalization** 替代 Batch Normalization：</span>
+                </ol>
+                <span class="en"><p>We need a systematic method: <strong>Computation Graph + Chain Rule</strong>.</p></span><span class="cn">**注意**：AdamW 是 Adam 的改进版，将权重衰减（weight decay）从梯度更新中解耦出来。</span>
+
+                <h3>6.2 Chain Rule</h3>
+                <p>The core mathematical tool of backpropagation:</p>
+                <div class="math-block">
+                    $$\frac{\partial f}{\partial x} = \underbrace{\frac{\partial f}{\partial q}}_{\text{upstream gradient}} \times \underbrace{\frac{\partial q}{\partial x}}_{\text{local gradient}}$$
+                </div>
+                <span class="en"><p>Each node only needs to know two things:</p></span><span class="cn">Stochastic Depth（Huang et al., 2016 "Deep Networks with Stochastic Depth"）的做法非常直接：</span>
+                <ol>
+                    <span class="en"><li><strong>Upstream gradient</strong>: gradient flowing from downstream</li></span><span class="cn">每个节点只需要知道两件事： 1. **上游梯度**（upstream gradient）：从后面传过来的梯度 2. **局部梯度**（local gradient）：该节点自身运算的导数</span>
+                    <span class="en"><li><strong>Local gradient</strong>: the derivative of that node&rsquo;s own operation</li></span><span class="cn">每个节点只需要知道两件事： 1. **上游梯度**（upstream gradient）：从后面传过来的梯度 2. **局部梯度**（local gradient）：该节点自身运算的导数</span>
+                </ol>
+                <span class="en"><p>Their product = <strong>downstream gradient</strong>, passed to the previous node.</p></span><span class="cn">两者相乘 = **下游梯度**（downstream gradient），传给前面的节点。</span>
+
+                <h3>6.3 Vectorized Derivation</h3>
+                <span class="en"><p>Consider layer \( l \): \( z^{(l)} = W^{(l)} a^{(l-1)} + b^{(l)} \) and \( a^{(l)} = \sigma(z^{(l)}) \). Define the error \( \delta^{(l)} = \frac{\partial C}{\partial z^{(l)}} \).</p></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                <ol>
+                    <span class="en"><li><strong>Output Layer Error:</strong> \( \delta^{(L)} = \nabla_a C \odot \sigma'(z^{(L)}) \)</li></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                    <span class="en"><li><strong>Error Propagation:</strong> \( \delta^{(l)} = \left( (W^{(l+1)})^T \delta^{(l+1)} \right) \odot \sigma'(z^{(l)}) \)</li></span><span class="cn">**命题**：设 $W_t$ 是一个严格鞍点（Hessian 至少有一个负特征值），梯度噪声 $\xi_t$ 满足 $\mathbb{E}[\|\xi_t\|^2] \leq \sigma^2$。则 SGD 在常数学习率 $\alpha$ 下，经过 $T = O\left(\frac{1}{\alpha^2 \lambda_{-}}\right)$ 步后，以高概率逃出鞍点的邻域。其中 $\lambda_{-}$ 是 Hessian 最大负特征值的绝对值。</span>
+                    <span class="en"><li><span class="en"><strong>Weight Gradient:</strong> \( \frac{\partial C}{\partial W^{(l)}} = \delta^{(l)} (a^{(l-1)})^T \)</span><span class="cn">$$\frac{\partial f}{\partial x} = \underbrace{\frac{\partial f}{\partial q}}_{\text{upstream gradient}} \times \underbrace{\frac{\partial q}{\partial x}}_{\text{local gradient}}$$</span></li></span><span class="cn">- **梯度（一阶导数）**：$g = \nabla f = \left[\frac{\partial f}{\partial w_1}, \frac{\partial f}{\partial w_2}, \dots, \frac{\partial f}{\partial w_d}\right]^T \in \mathbb{R}^d$ - **Hessian 矩阵（二阶导数）**：$H = \nabla^2 f \in \mathbb{R}^{d \times d}$，其中</span>
+                    <span class="en"><li><span class="en"><strong>Bias Gradient:</strong> \( \frac{\partial C}{\partial b^{(l)}} = \delta^{(l)} \)</span><span class="cn">$$\frac{\partial f}{\partial x} = \underbrace{\frac{\partial f}{\partial q}}_{\text{upstream gradient}} \times \underbrace{\frac{\partial q}{\partial x}}_{\text{local gradient}}$$</span></li></span><span class="cn">**反向传播**： - $\frac{\partial f}{\partial f} = 1$ （base case） - $\frac{\partial f}{\partial z} = q = 3$ （乘法门：梯度互换） - $\frac{\partial f}{\partial q} = z = -4$ （乘法门：梯度互换） - $\frac{\partial f}{\partial x} = \frac{\partial f}{\partial q} \cdot \frac{\partial q}{\partial x} = -4 \times 1 = -4$ （加法门：梯度直通） - $\frac{\partial f}{\partial y} = \frac{\partial f}{\partial q} \cdot \frac{\partial q}{\partial y} = -4 \times 1 = -4$ （加法门：梯度直通）</span>
+                </ol>
+
+                <div class="warning-box">
+                    <strong>Vanishing Gradient:</strong> If \( \sigma'(z) \) is small (e.g., Sigmoid for large \( |z| \)), the error \( \delta^{(l)} \) decays exponentially as it propagates backwards, preventing early layers from learning.
+                </div>
+            </section>
+
+            <!-- Section 7: Computation Graphs -->
+            <section id="compgraph">
+                <h2>7. Computation Graphs &amp; Automatic Differentiation</h2>
+
+                <h3>7.1 What Is a Computation Graph?</h3>
+                <p>A <strong>computation graph</strong> is a directed acyclic graph (DAG) whose nodes represent variables or operations, and whose edges represent data dependencies. Every mathematical expression can be decomposed into primitive operations (additions, multiplications, unary functions).</p>
+
+                <div class="info-box">
+                    <strong>Why computation graphs matter:</strong> Modern frameworks (TensorFlow, PyTorch, JAX) represent every model as a computation graph, enabling <em>automatic differentiation</em>: the framework computes exact gradients for every parameter without the user writing derivative code by hand.
+                </div>
+
+                <h3>7.2 Forward Pass</h3>
+                <p>During the <strong>forward pass</strong>, the graph is evaluated bottom-up: each node computes its value from its inputs and <strong>caches</strong> the result for the backward pass.</p>
+
+                <h3>7.3 Backward Pass</h3>
+                <p>The <strong>backward pass</strong> traverses the graph in reverse topological order. At each node, the local gradient is multiplied with the <em>upstream gradient</em> via the chain rule. All parameter gradients are computed in a single sweep with cost proportional to one forward pass.</p>
+                <div class="math-block">
+                    $$\frac{\partial L}{\partial x_i} = \sum_{j \in \text{children}(i)} \frac{\partial L}{\partial y_j} \cdot \frac{\partial y_j}{\partial x_i}$$
+                </div>
+
+                <h3>7.4 Worked Example <span class="cn">例子</span>: \( f(x, y, z) = (x + y)z \)</h3>
+                <span class="en"><p>Introduce intermediate variable \( q = x + y \), so \( f = qz \).</p></span><span class="cn">**前向传播**： - $q = x + y = -2 + 5 = 3$ - $f = q \cdot z = 3 \times (-4) = -12$</span>
+
+                <h4>Step 1 &mdash; Forward Pass</h4>
+                <span class="en"><p>Let \( x = -2 \), \( y = 5 \), \( z = -4 \).</p></span><span class="cn">以 $f(x, y, z) = (x + y) \cdot z$ 为例：</span>
+                <div class="math-block">
+                    $$q = x + y = -2 + 5 = 3, \quad f = q \cdot z = 3 \times (-4) = -12$$
+                </div>
+
+                <h4>Step 2 &mdash; Local Gradients</h4>
+                <div class="math-block">
+                    $$\frac{\partial q}{\partial x} = 1, \quad \frac{\partial q}{\partial y} = 1, \quad \frac{\partial f}{\partial q} = z = -4, \quad \frac{\partial f}{\partial z} = q = 3$$
+                </div>
+
+                <h4>Step 3 &mdash; Backward Pass (Chain Rule)</h4>
+                <div class="math-block">
+                    $$\frac{\partial f}{\partial z} = q = 3$$
+                    $$\frac{\partial f}{\partial x} = \frac{\partial f}{\partial q} \cdot \frac{\partial q}{\partial x} = (-4)(1) = -4$$
+                    $$\frac{\partial f}{\partial y} = \frac{\partial f}{\partial q} \cdot \frac{\partial q}{\partial y} = (-4)(1) = -4$$
+                </div>
+
+                <div class="success-box">
+                    <strong>Result:</strong> \( \nabla f = (-4,\; -4,\; 3) \) at \( (-2, 5, -4) \). The backward pass required only one traversal from output to inputs &mdash; the power of reverse-mode autodiff.
+                </div>
+
+                <h3>7.5 Why Computation Graphs Enable Efficient Gradients</h3>
+                <ul>
+                    <li><strong>Cost proportional to the forward pass:</strong> \( O(1) \times \) cost of one forward evaluation (&ldquo;cheap gradient principle&rdquo;).</li>
+                    <span class="en"><li><strong>Automatic:</strong> Framework handles all bookkeeping (define-by-run or define-and-run).</li></span><span class="cn">1. **病态条件数（Poor Conditioning）**：损失函数在不同方向上变化速度不同，Hessian 矩阵的最大奇异值与最小奇异值的比值很大。导致在浅方向（shallow）进展缓慢，在陡方向（steep）波动剧烈。 2. **局部最小值和鞍点**：梯度为零时，SGD 会停滞。高维空间中鞍点比局部最小值更常见。 3. **梯度噪声**：mini-batch 的梯度只是真实梯度的估计值，包含采样噪声。</span>
+                    <li><strong>Composable:</strong> Any differentiable operation can be added; only its local gradient is needed.</li>
+                    <span class="en"><li><strong>Scalable:</strong> Works for networks with millions of parameters.</li></span><span class="cn">Stochastic Depth（Huang et al., 2016 "Deep Networks with Stochastic Depth"）的做法非常直接：</span>
+                </ul>
+            </section>
+
+            <!-- Section 8: Gate Gradient Rules -->
+            <section id="gate-rules">
+                <h2>8. Gate Gradient Rules</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gate</th>
+                            <th>Forward</th>
+                            <th>Backward Rule</th>
+                            <th>Intuition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Add Gate</strong></td>
+                            <td>\( f = x + y \)</td>
+                            <td>Gradient distributor: \( \frac{\partial f}{\partial x}=1, \frac{\partial f}{\partial y}=1 \)</td>
+                            <td>Upstream gradient is copied to each input</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Multiply Gate</strong></td>
+                            <td>\( f = x \cdot y \)</td>
+                            <td>Gradient swap: \( \frac{\partial f}{\partial x}=y, \frac{\partial f}{\partial y}=x \)</td>
+                            <td>Upstream gradient scaled by the other input</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Copy Gate</strong></td>
+                            <td>Same value used multiple times</td>
+                            <td>Gradient accumulator: sum gradients from all paths</td>
+                            <td>Gradients add up during backprop</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Max Gate</strong></td>
+                            <td>\( f = \max(x, y) \)</td>
+                            <td>Gradient router: gradient flows only to the max input</td>
+                            <td>The other input contributed nothing to the output</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>8.1 Sigmoid Simplification</h3>
+                <span class="en"><p>Sigmoid: \( \sigma(x) = \frac{1}{1 + e^{-x}} \). Instead of building a full computation graph, we can use the <strong>direct local gradient formula</strong>:</p></span><span class="cn">| 激活函数 | 公式 | 特点 | |---|---|---| | Sigmoid | $\sigma(x) = \frac{1}{1+e^{-x}}$ | 输出 (0,1)，易梯度消失 | | Tanh | $\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$ | 输出 (-1,1)，零中心 | | ReLU | $\text{ReLU}(x) = \max(0, x)$ | 计算快，缓解梯度消失 | | Leaky ReLU | $\max(\alpha x, x), \alpha \ll 1$ | 解决 ReLU "死神经元"问题 | | ELU | 类似 Leaky ReLU 但更平滑 | 输出均值更接近 0 | | Maxout | $\max(w_1^T x + b_1, w_2^T x + b_2)$ | 学习激活函数本身 |</span>
+                <div class="math-block">
+                    $$\sigma'(x) = (1 - \sigma(x)) \cdot \sigma(x)$$
+                </div>
+                <span class="en"><p>For example, if \( \sigma(x) = 0.73 \), the local gradient is \( (1 - 0.73) \times 0.73 = 0.1971 \).</p></span><span class="cn">例如 $\sigma(x) = 0.73$，则局部梯度为 $(1 - 0.73) \times 0.73 = 0.1971$。</span>
+            </section>
+
+            <!-- Section 9: Modular Implementation -->
+            <section id="modular">
+                <h2>9. Modular Implementation &amp; PyTorch Autograd <span class="cn">自动微分</span></h2>
+
+                <h3>9.1 Modular Forward/Backward</h3>
+                <pre><code># Each module implements forward() and backward() interfaces
+
+class MultiplyGate:
+    def forward(self, x, y):
+        self.x, self.y = x, y   # cache for backward
+        return x * y
+
+    def backward(self, upstream_grad):
+        # upstream gradient times local gradient
+        return upstream_grad * self.y, upstream_grad * self.x
+
+class AddGate:
+    def forward(self, x, y):
+        self.x, self.y = x, y
+        return x + y
+
+    def backward(self, upstream_grad):
+        return upstream_grad, upstream_grad  # gradient passes through</code></pre>
+
+                <h3>9.2 PyTorch Correspondence</h3>
+                <ul>
+                    <li>Every PyTorch operator automatically implements <code>forward()</code> and <code>backward()</code></li>
+                    <li><code>autograd</code> automatically builds the computation graph and performs backpropagation</li>
+                    <li><code>forward</code>: computes results and caches intermediate variables</li>
+                    <li><code>backward</code>: applies the chain rule to compute gradients</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>Backpropagation Summary:</strong>
+                    <ul>
+                        <li>Neural networks are stacks of linear functions and non-linear activations, more expressive than linear classifiers</li>
+                        <li>Backpropagation: recursively apply the chain rule along the computation graph to compute all parameter gradients</li>
+                        <li>Implemented in modular form: each node implements <code>forward</code> / <code>backward</code> interfaces</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 10: Regularization Overview -->
+            <section id="regularization">
+                <h2>10. Regularization Methods <span class="cn">正则化方法</span></h2>
+                <p>The goal is to prevent <strong>overfitting</strong> by penalizing model complexity or injecting randomness.</p>
+
+                <h3>10.1 Why Regularization?</h3>
+                <ul>
+                    <span class="en"><li>Good performance on training data does not guarantee good performance on test data (overfitting)</li></span><span class="cn">```python def stochastic_depth(x, block, p, training=True): """ x: 输入特征 block: 残差块 (函数或模块) p: 该层被丢弃的概率 """ if not training or p == 0.0: return block(x) + x</span>
+                    <li>Regularization constrains model complexity, balancing training error and model complexity</li>
+                </ul>
+                <blockquote>
+                    <strong>Occam&rsquo;s Razor:</strong> Among multiple competing hypotheses, the simplest is the best.
+                </blockquote>
+                <div class="math-block">
+                    $$L = L_{\text{data}} + \lambda R(W)$$
+                </div>
+                <p>\( \lambda \) is the regularization strength (hyperparameter), controlling how well the model fits training data.</p>
+
+                <h3>10.2 Three Reasons to Use Regularization</h3>
+                <ol>
+                    <li><strong>Encode weight preferences:</strong> bias the model toward simpler, more reasonable parameter distributions</li>
+                    <li><strong>Simplify the model:</strong> reduce fitting of noise in training data, improving generalization</li>
+                    <li><strong>Improve optimization:</strong> add curvature to make the loss surface smoother, helping gradient descent find better solutions</li>
+                </ol>
+
+                <h3>10.3 Regularization Method Classification</h3>
+                <span class="en"><p><strong>Simple methods:</strong></p></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Penalty</th>
+                            <th>Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>L1</td>
+                            <td>\( R(W) = \sum |w| \)</td>
+                            <td>Drives some parameters to exactly zero (feature selection)</td>
+                        </tr>
+                        <tr>
+                            <td>L2</td>
+                            <td>\( R(W) = \sum w^2 \)</td>
+                            <td>Parameters shrink toward zero but stay non-zero</td>
+                        </tr>
+                        <tr>
+                            <td>Elastic Net</td>
+                            <td>\( R(W) = \alpha \sum |w| + (1-\alpha) \sum w^2 \)</td>
+                            <td>Combines sparsity (L1) with grouping stability (L2)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p><strong>Complex methods:</strong></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Core Mechanism</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dropout</td>
+                            <td>Randomly zero out neurons during training</td>
+                        </tr>
+                        <tr>
+                            <td>Batch Normalization</td>
+                            <td>Uses mini-batch statistics as random noise</td>
+                        </tr>
+                        <tr>
+                            <td>Stochastic Depth</td>
+                            <td>Randomly bypass entire residual blocks</td>
+                        </tr>
+                        <tr>
+                            <td>Fractional Pooling</td>
+                            <td>Randomizes pooling operation</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section 11: L1/L2/Elastic Net -->
+            <section id="l1l2">
+                <h2>11. L1/L2/Elastic Net &amp; Weight Preference</h2>
+
+                <h3>11.1 L1 vs L2 Weight Preference</h3>
+                <ul>
+                    <li><strong>L2</strong> favors <strong>distributed</strong> weights: \( [0.25, 0.25, 0.25, 0.25] \) is preferred over \( [1, 0, 0, 0] \) because L2&rsquo;s squared penalty makes large values expensive</li>
+                    <span class="en"><li><strong>L1</strong> favors <strong>sparse</strong> weights: \( [1, 0, 0, 0] \) and \( [0.25, 0.25, 0.25, 0.25] \) have the same L1 penalty (\( 1+0+0+0 = 0.25 \times 4 \)), but the sparse solution is simpler</li></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+                </ul>
+
+                <div class="math-block">
+                    $$\text{L2: } 1^2 + 0^2 + 0^2 + 0^2 = 1 \quad \text{vs} \quad 0.25^2 \times 4 = 0.25$$
+                    $$\text{L1: } |1| + 0 + 0 + 0 = 1 \quad \text{vs} \quad |0.25| \times 4 = 1 \quad \text{(equal!)}$$
+                </div>
+
+                <h3>11.2 Limitations <span class="cn">局限性</span> of L1/L2 as Loss Functions</h3>
+                <span class="en"><p><strong>L1 (MAE) limitations:</strong></p></span><span class="cn">**L1（MAE）的局限**： - 导数为常数（±1），训练后期在最小值附近波动，难以精确收敛 - $x=0$ 处不可导，不利于梯度优化</span>
+                <ul>
+                    <span class="en"><li>Derivative is constant (\( \pm 1 \)), oscillates near the minimum in late training, hard to converge precisely</li></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+                    <span class="en"><li>Not differentiable at \( x = 0 \), problematic for gradient optimization</li></span><span class="cn">class MultiplyGate: def forward(self, x, y): self.x, self.y = x, y   # 缓存，供反向传播使用 return x * y</span>
+                </ul>
+                <span class="en"><p><strong>L2 (MSE) limitations:</strong></p></span><span class="cn">**L2（MSE）的局限**： - 远离最优点时梯度很大，可能导致梯度爆炸</span>
+                <ul>
+                    <li>Far from the optimum, gradients can be very large, potentially causing gradient explosion</li>
+                </ul>
+            </section>
+
+            <!-- Section 12: Dropout -->
+            <section id="dropout">
+                <h2>12. Dropout</h2>
+                <span class="en"><p>During training, randomly zero out each neuron with probability \( p \). Forces the network to learn redundant representations.</p></span><span class="cn">Stochastic Depth（Huang et al., 2016 "Deep Networks with Stochastic Depth"）的做法非常直接：</span>
+                <ul>
+                    <span class="en"><li><strong>Training:</strong> each forward pass uses a different sub-network (random mask)</li></span><span class="cn">- 前向传播（Forward pass）：从左到右计算每个节点的值 - 反向传播（Backward pass）：从右到左计算每个节点的梯度</span>
+                    <span class="en"><li><strong>Testing:</strong> all neurons are active, but weights are scaled by \( (1-p) \)</li></span><span class="cn">1. **病态条件数（Poor Conditioning）**：损失函数在不同方向上变化速度不同，Hessian 矩阵的最大奇异值与最小奇异值的比值很大。导致在浅方向（shallow）进展缓慢，在陡方向（steep）波动剧烈。 2. **局部最小值和鞍点**：梯度为零时，SGD 会停滞。高维空间中鞍点比局部最小值更常见。 3. **梯度噪声**：mini-batch 的梯度只是真实梯度的估计值，包含采样噪声。</span>
+                    <span class="en"><li><strong>Implicit ensemble:</strong> at test time, the network approximates averaging over \( 2^n \) possible sub-networks</li></span><span class="cn">Stochastic Depth（Huang et al., 2016 "Deep Networks with Stochastic Depth"）的做法非常直接：</span>
+                </ul>
+            </section>
+
+            <!-- Section 13: Stochastic Depth -->
+            <section id="stochastic-depth">
+                <h2>13. Stochastic Depth (DropPath) &mdash; Detailed Analysis</h2>
+
+                <h3>13.1 Motivation: Redundancy in Deep Networks</h3>
+                <span class="en"><p>After ResNet introduced residual connections, networks can be stacked to hundreds or even thousands of layers. But a key observation is:</p></span><span class="cn">| 论文 | 名称 | 应用场景 | |---|---|---| | Huang et al., 2016 | Stochastic Depth | ResNet | | Touvron et al., 2021 (DeiT) | DropPath | Vision Transformer (ViT) | | Liu et al., 2021 (Swin) | DropPath | Swin Transformer |</span>
+                <blockquote>Not all layers in a deep network are equally important.</blockquote>
+                <ul>
+                    <span class="en"><li>Shallow layers extract low-level features (edges, textures) &mdash; nearly all samples need them</li></span><span class="cn">1. **病态条件数（Poor Conditioning）**：损失函数在不同方向上变化速度不同，Hessian 矩阵的最大奇异值与最小奇异值的比值很大。导致在浅方向（shallow）进展缓慢，在陡方向（steep）波动剧烈。 2. **局部最小值和鞍点**：梯度为零时，SGD 会停滞。高维空间中鞍点比局部最小值更常见。 3. **梯度噪声**：mini-batch 的梯度只是真实梯度的估计值，包含采样噪声。</span>
+                    <li>Deep layers extract high-level semantics (object parts, complex patterns) &mdash; not every sample needs all deep layers</li>
+                    <li>During training mid-stage, gradients through many layers become very weak for early layers</li>
+                </ul>
+                <p><strong>Essence:</strong> The deeper the network, the greater the redundancy, the higher the overfitting risk, and the harder the training.</p>
+
+                <h3>13.2 Core Idea</h3>
+                <span class="en"><p>Stochastic Depth (Huang et al., 2016) extends Dropout from individual neurons to <strong>entire residual blocks</strong>. During training, each residual block is either executed normally or <em>bypassed</em> (replaced by the identity shortcut) according to a Bernoulli random variable.</p></span><span class="cn">| 论文 | 名称 | 应用场景 | |---|---|---| | Huang et al., 2016 | Stochastic Depth | ResNet | | Touvron et al., 2021 (DeiT) | DropPath | Vision Transformer (ViT) | | Liu et al., 2021 (Swin) | DropPath | Swin Transformer |</span>
+                <div class="math-block">
+                    $$\text{Normal: } y = \mathcal{F}(x, W_l) + x$$
+                    $$\text{Stochastic Depth: } y = \begin{cases} \mathcal{F}(x, W_l) + x & \text{with probability } 1 - p_l \\ x & \text{with probability } p_l \end{cases}$$
+                </div>
+
+                <h3>13.3 Linear Decay Schedule</h3>
+                <span class="en"><p>The survival probability uses a <strong>linear decay</strong> from first to last layer:</p></span><span class="cn">| 方法 | 使用位置 | 作用 | |---|---|---| | **Dropout** | Attention 权重后、FFN 中间层、Embedding 层、输出层前 | 最主要的正则化手段，默认 $p=0.1$ | | **Layer Normalization** | 每个子层之后 | 训练稳定性 + 隐式正则化 | | **Label Smoothing** | 训练标签 | 不让模型 100% 自信，提高泛化 | | **Weight Decay (L2)** | AdamW 中 | 对权重施加 L2 惩罚 | | **DropPath / Stochastic Depth** | 深层 Transformer（ViT、BERT） | 随机丢弃整条残差分支 |</span>
+                <div class="math-block">
+                    $$p_l = 1 - \frac{l}{L}(1 - p_L), \quad p_L = 0.5$$
+                </div>
+                <p>Intuition:</p>
+                <pre><code>Shallow (l ≈ 1):  p_l ≈ 0   → almost never drop (shallow layers are critical)
+Deep    (l ≈ L):  p_l ≈ 0.5 → high drop probability (deep layers are redundant)</code></pre>
+                <p>Shallow layers are &ldquo;infrastructure&rdquo;; deep layers are &ldquo;expert layers.&rdquo; Infrastructure cannot be shut down randomly, but experts can take turns.</p>
+
+                <h3>13.4 Test-Time Handling</h3>
+                <p>At test time, no layers are dropped (otherwise output is non-deterministic). Use <strong>all residual blocks</strong> with full weights (similar to how Dropout is disabled at test time).</p>
+
+                <h3>13.5 Four Effects of Stochastic Depth</h3>
+                <ol>
+                    <li><strong>Regularization:</strong> Each training step uses a <strong>random sub-network</strong>, preventing the entire deep network from co-overfitting.</li>
+                    <span class="en"><li><strong>Implicit Ensemble:</strong> Different mini-batches use different sub-networks. The final full network is equivalent to an implicit ensemble of all sub-networks &mdash; similar to Bagging without training multiple models.</li></span><span class="cn">Dinh et al. (2017) 的反例论文 "Sharp Minima Can Generalize For Deep Networks" 证明：通过简单的参数重参数化（如 $W \to W/2$），可以找到一个"尖锐"的最优解和一个"平坦"的最优解，它们对应完全相同的网络函数、完全相同的测试误差。尖锐与否取决于**参数化的选择**，而不是泛化能力的本质。</span>
+                    <li><strong>Reduced Training Time:</strong> Deep layers have 50% probability of being skipped, meaning forward/backward computation is roughly halved. Training time is reduced by ~25-50%.</li>
+                    <li><strong>Alleviated Vanishing Gradients:</strong> Because shallow layers are often directly connected to the output through identity shortcuts (skipped intermediate layers), gradients can flow more directly back to shallow layers.</li>
+                </ol>
+
+                <h3>13.6 Modern Applications <span class="cn">应用</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paper</th>
+                            <th>Name</th>
+                            <th>Application</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Huang et al., 2016</td>
+                            <td>Stochastic Depth</td>
+                            <td>ResNet</td>
+                        </tr>
+                        <tr>
+                            <td>Touvron et al., 2021 (DeiT)</td>
+                            <td>DropPath</td>
+                            <td>Vision Transformer (ViT)</td>
+                        </tr>
+                        <tr>
+                            <td>Liu et al., 2021 (Swin)</td>
+                            <td>DropPath</td>
+                            <td>Swin Transformer</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <span class="en"><p>In ViT, typical DropPath settings: first few blocks have \( p = 0 \), last blocks have \( p = 0.1 \sim 0.5 \) (linear increase with layer index).</p></span><span class="cn">| 方法 | 使用位置 | 作用 | |---|---|---| | **Dropout** | Attention 权重后、FFN 中间层、Embedding 层、输出层前 | 最主要的正则化手段，默认 $p=0.1$ | | **Layer Normalization** | 每个子层之后 | 训练稳定性 + 隐式正则化 | | **Label Smoothing** | 训练标签 | 不让模型 100% 自信，提高泛化 | | **Weight Decay (L2)** | AdamW 中 | 对权重施加 L2 惩罚 | | **DropPath / Stochastic Depth** | 深层 Transformer（ViT、BERT） | 随机丢弃整条残差分支 |</span>
+
+                <h3>13.7 Comparison <span class="cn">对比</span>: Dropout vs Stochastic Depth</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Dropout</th>
+                            <th>Stochastic Depth</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Unit of dropping</td>
+                            <td>Individual neurons / channels</td>
+                            <td>Entire residual blocks</td>
+                        </tr>
+                        <tr>
+                            <td>When useful</td>
+                            <td>Fully-connected layers, early CNNs</td>
+                            <td>Very deep ResNets, Transformers (ViT, Swin)</td>
+                        </tr>
+                        <tr>
+                            <td>Survival schedule</td>
+                            <td>Fixed \( p \) for all units</td>
+                            <td>Linear decay from 1.0 to 0.5</td>
+                        </tr>
+                        <tr>
+                            <td>Effect on gradient flow</td>
+                            <td>Can block gradient through dropped units</td>
+                            <td>Shortcuts preserve gradient via identity path</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>13.8 Pseudocode</h3>
+                <pre><code>def stochastic_depth(x, block, p, training=True):
+    if not training or p == 0.0:
+        return block(x) + x
+    if random.random() < p:
+        return x  # skip block entirely, return identity
+    else:
+        return block(x) + x
+
+# Training loop with linear decay
+for l, block in enumerate(blocks):
+    p_l = linear_decay(l, total_layers, max_p=0.5)
+    x = stochastic_depth(x, block, p_l, training=True)</code></pre>
+            </section>
+
+            <!-- Section 14: Pooling -->
+            <section id="pooling">
+                <h2>14. Pooling <span class="cn">池化</span>: Max, Average, Global Average, Fractional</h2>
+
+                <h3>14.1 What Is Pooling <span class="cn">池化</span>?</h3>
+                <p><strong>Pooling is a downsampling operation</strong> that reduces the spatial size of feature maps (height &times; width) while preserving important information.</p>
+                <span class="en"><p>Analogy: shrinking a high-resolution image into a thumbnail &mdash; you can&rsquo;t see every pixel, but you can still recognize what&rsquo;s in the photo.</p></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+                <span class="en"><p>Why pooling? Three reasons:</p></span><span class="cn">| 方法 | 核心机制 | |---|---| | Dropout | 训练时随机丢弃神经元 | | Batch Normalization | 利用 mini-batch 统计量的随机噪声 | | Stochastic Depth | 随机丢弃整条残差分支 | | Fractional Pooling | 随机化池化操作 |</span>
+                <ol>
+                    <li><strong>Reduce computation:</strong> halving feature map size drastically reduces parameters and FLOPs in subsequent layers</li>
+                    <span class="en"><li><strong>Increase receptive field:</strong> after pooling, one output pixel corresponds to a larger input region</li></span><span class="cn">| 方法 | 核心机制 | |---|---| | Dropout | 训练时随机丢弃神经元 | | Batch Normalization | 利用 mini-batch 统计量的随机噪声 | | Stochastic Depth | 随机丢弃整条残差分支 | | Fractional Pooling | 随机化池化操作 |</span>
+                    <span class="en"><li><strong>Provide translation invariance:</strong> even if an object shifts a few pixels, pooled features change minimally</li></span><span class="cn">if random.random() &lt; p: return x  # 直接返回输入，block 被完全跳过 else: return block(x) + x</span>
+                </ol>
+
+                <h3>14.2 Max Pooling <span class="cn">池化</span></h3>
+                <div class="math-block">
+                    $$y_{i,j} = \max_{(m,n) \in \text{window}(i,j)} x_{m,n}$$
+                </div>
+                <p>Retains the <strong>most salient</strong> feature (brightest point, strongest edge) in each window.</p>
+
+                <h3>14.3 Average Pooling <span class="cn">池化</span></h3>
+                <div class="math-block">
+                    $$y_{i,j} = \frac{1}{|\text{window}|} \sum_{(m,n) \in \text{window}(i,j)} x_{m,n}$$
+                </div>
+                <p>Retains <strong>overall statistical information</strong> of the window.</p>
+
+                <h3>14.4 Global Average Pooling <span class="cn">池化</span> (GAP)</h3>
+                <div class="math-block">
+                    $$y_c = \frac{1}{H \times W} \sum_{i=1}^{H} \sum_{j=1}^{W} x_{i,j,c}$$
+                </div>
+                <span class="en"><p>In modern networks (e.g., ResNet), GAP replaces the final FC layer: \( H \times W \times C \to 1 \times 1 \times C \), drastically reducing parameters.</p></span><span class="cn">在现代网络（如 ResNet）中，GAP 常用来替代最后的全连接层：$H \times W \times C \to 1 \times 1 \times C$，大幅减少参数。</span>
+
+                <h3>14.5 Max Pooling <span class="cn">池化</span> vs Average Pooling</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Max Pooling</th>
+                            <th>Average Pooling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Selection</td>
+                            <td>Maximum in window</td>
+                            <td>Mean in window</td>
+                        </tr>
+                        <tr>
+                            <td>Retains</td>
+                            <td>Most salient features</td>
+                            <td>Overall statistics</td>
+                        </tr>
+                        <tr>
+                            <td>Noise robustness</td>
+                            <td>Robust (noise ignored)</td>
+                            <td>Sensitive (noise averaged in)</td>
+                        </tr>
+                        <tr>
+                            <td>Translation invariance</td>
+                            <td>Strong</td>
+                            <td>Weaker</td>
+                        </tr>
+                        <tr>
+                            <td>Gradient</td>
+                            <td>Sparse (only to max location)</td>
+                            <td>Dense (uniform to all locations)</td>
+                        </tr>
+                        <tr>
+                            <td>Typical use</td>
+                            <td>Middle layers of CNNs</td>
+                            <td>Network end (GAP replaces FC)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>14.6 Modern Trend: Strided Convolutions Replace Pooling <span class="cn">池化</span></h3>
+                <pre><code>Traditional:  Conv(stride=1) → ReLU → Pool(stride=2)    ← two steps
+Modern:       Conv(stride=2) → ReLU                       ← one step</code></pre>
+                <p>Advantage: the downsampling manner can be <em>learned</em> (convolution kernel parameters are trainable), rather than fixed max or mean. However, pooling is still useful when feature maps need to shrink dramatically (e.g., \( 224 \times 224 \to 7 \times 7 \)).</p>
+
+                <h3>14.7 Fractional Max Pooling <span class="cn">池化</span></h3>
+                <p>Fractional Max Pooling (FMP) generalizes standard max pooling by using <strong>non-integer pooling ratios</strong>. Instead of fixed non-overlapping windows, FMP generates pooling regions using a <strong>random spatial grid</strong> with slightly non-uniform boundaries.</p>
+                <ul>
+                    <li><strong>Non-deterministic pooling:</strong> the random grid changes each iteration, so the network cannot overfit to a fixed spatial structure</li>
+                    <li><strong>Smoother size reduction:</strong> non-integer ratios allow more gradual spatial downsampling</li>
+                    <li><strong>Implicit ensemble effect:</strong> over many iterations, the network sees many different pooling configurations</li>
+                </ul>
+
+                <h3>14.8 Random Pooling <span class="cn">池化</span></h3>
+                <span class="en"><p>Same window as Max Pooling, but instead of taking the max, <strong>sample proportionally to values</strong>:</p></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                <pre><code>def random_pool(region):
+    weights = softmax(region)  # convert values to probabilities
+    return random_sample(region, weights)  # high values more likely, but not guaranteed</code></pre>
+
+                <h3>14.9 Pooling <span class="cn">池化</span> Comparison</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Max Pooling</th>
+                            <th>Random Pooling</th>
+                            <th>Fractional Max Pooling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Deterministic</td>
+                            <td>Fully deterministic</td>
+                            <td>Stochastic</td>
+                            <td>Stochastic</td>
+                        </tr>
+                        <tr>
+                            <td>Downsampling ratio</td>
+                            <td>Integer only</td>
+                            <td>Integer only</td>
+                            <td>Arbitrary ratio</td>
+                        </tr>
+                        <tr>
+                            <td>Regularization</td>
+                            <td>None</td>
+                            <td>Weak</td>
+                            <td>Stronger</td>
+                        </tr>
+                        <tr>
+                            <td>Practical use</td>
+                            <td>Very widespread</td>
+                            <td>Rare</td>
+                            <td>Rare</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section 15: Optimization Overview -->
+            <section id="optimization">
+                <h2>15. Optimization: Gradient Computation &amp; GD Variants</h2>
+
+                <h3>15.1 Numerical vs Analytic Gradient</h3>
+                <p><strong>Numerical Gradient:</strong></p>
+                <div class="math-block">
+                    $$\frac{\partial L}{\partial w_i} \approx \frac{L(w_i + h) - L(w_i - h)}{2h}$$
+                </div>
+                <ul>
+                    <span class="en"><li>Pro: easy to implement</li></span><span class="cn">8.2 随机近似算法（Stochastic Approximation）的收敛性证明</span>
+                    <span class="en"><li>Con: approximate, slow (must iterate over all dimensions)</li></span><span class="cn">1. **病态条件数（Poor Conditioning）**：损失函数在不同方向上变化速度不同，Hessian 矩阵的最大奇异值与最小奇异值的比值很大。导致在浅方向（shallow）进展缓慢，在陡方向（steep）波动剧烈。 2. **局部最小值和鞍点**：梯度为零时，SGD 会停滞。高维空间中鞍点比局部最小值更常见。 3. **梯度噪声**：mini-batch 的梯度只是真实梯度的估计值，包含采样噪声。</span>
+                </ul>
+                <span class="en"><p><strong>Analytic Gradient:</strong> via chain rule.</p></span><span class="cn">**解析梯度**（Analytic Gradient）：</span>
+                <ul>
+                    <span class="en"><li>Pro: exact, fast</li></span><span class="cn">Adam = **Momentum + RMSProp**，目前最常用的深度学习优化器。</span>
+                    <span class="en"><li>Con: error-prone</li></span><span class="cn">- **2-layer Neural Net** = 1 个隐藏层（输入层不算，输出层算一层） - **3-layer Neural Net** = 2 个隐藏层 - 通用术语：**全连接层（Fully-connected layer）**或**多层感知机（MLP）**</span>
+                </ul>
+                <div class="success-box">
+                    <strong>Practice:</strong> Always use analytic gradients, but verify correctness with numerical gradients (<strong>Gradient Checking</strong>).
+                </div>
+
+                <h3>15.2 Three GD Variants</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Data per Step</th>
+                            <th>Characteristics</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Batch GD</td>
+                            <td>All data</td>
+                            <td>Accurate but slow; one iteration takes too long</td>
+                        </tr>
+                        <tr>
+                            <td>SGD</td>
+                            <td>Single sample</td>
+                            <td>Fast but noisy</td>
+                        </tr>
+                        <tr>
+                            <td>Mini-batch GD</td>
+                            <td>One batch (typically 32/64/128)</td>
+                            <td>Best trade-off; most common in practice</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section 16: SGD Problems & Momentum -->
+            <section id="sgd-problems">
+                <h2>16. SGD Problems &amp; Momentum</h2>
+
+                <h3>16.1 SGD Problems</h3>
+                <ol>
+                    <span class="en"><li><strong>Poor Conditioning:</strong> The loss function changes at different rates in different directions. The Hessian&rsquo;s max/min singular value ratio is large. Slow progress in shallow directions, oscillation in steep directions.</li></span><span class="cn">1. **病态条件数（Poor Conditioning）**：损失函数在不同方向上变化速度不同，Hessian 矩阵的最大奇异值与最小奇异值的比值很大。导致在浅方向（shallow）进展缓慢，在陡方向（steep）波动剧烈。 2. **局部最小值和鞍点**：梯度为零时，SGD 会停滞。高维空间中鞍点比局部最小值更常见。 3. **梯度噪声**：mini-batch 的梯度只是真实梯度的估计值，包含采样噪声。</span>
+                    <li><strong>Local Minima &amp; Saddle Points:</strong> When the gradient is zero, SGD stalls. In high-dimensional spaces, saddle points are more common than local minima.</li>
+                    <span class="en"><li><strong>Gradient Noise:</strong> Mini-batch gradients are only estimates of the true gradient, containing sampling noise.</li></span><span class="cn">**策略三：Mini-batch Gradient Descent（小批梯度下降）——实践中最常用**</span>
+                </ol>
+
+                <h3>16.2 SGD + Momentum</h3>
+                <p>Core idea: simulate physical &ldquo;inertia&rdquo; by building a velocity variable to smooth gradient updates.</p>
+                <div class="math-block">
+                    $$v_t = \rho \cdot v_{t-1} + \nabla L$$
+                    $$W_{t+1} = W_t - \alpha \cdot v_t$$
+                </div>
+                <ul>
+                    <li>\( \rho \) controls velocity smoothing, typically 0.9 or 0.99</li>
+                    <li>Effect: faster convergence, reduced oscillation, helps escape local minima and saddle points</li>
+                </ul>
+                <pre><code># Python implementation
+v = 0
+rho = 0.9
+while True:
+    dw = compute_gradient(W)
+    v = rho * v + dw
+    W -= learning_rate * v</code></pre>
+            </section>
+
+            <!-- Section 17: RMSProp & Adam -->
+            <section id="adam">
+                <h2>17. RMSProp &amp; Adam (Adaptive Moment Estimation)</h2>
+
+                <h3>17.1 RMSProp</h3>
+                <p>Adaptive learning rate based on the moving average of squared gradients. Dampens steep directions and accelerates shallow ones.</p>
+                <div class="math-block">
+                    $$v_t = \rho \cdot v_{t-1} + (1-\rho)(\nabla L)^2$$
+                    $$W_{t+1} = W_t - \frac{\alpha}{\sqrt{v_t} + \epsilon} \nabla L$$
+                </div>
+                <ul>
+                    <span class="en"><li>Large gradient direction (steep): \( v_t \) large, effective learning rate suppressed</li></span><span class="cn">while True: dw = compute_gradient(W) m = beta1 * m + (1 - beta1) * dw          # 更新一阶矩 v = beta2 * v + (1 - beta2) * dw**2       # 更新二阶矩 m_hat = m / (1 - beta1**t)                # 偏差校正 v_hat = v / (1 - beta2**t)                # 偏差校正 W -= learning_rate * m_hat / (sqrt(v_hat) + eps) ```</span>
+                    <span class="en"><li>Small gradient direction (flat): \( v_t \) small, effective learning rate boosted</li></span><span class="cn">while True: dw = compute_gradient(W) m = beta1 * m + (1 - beta1) * dw          # 更新一阶矩 v = beta2 * v + (1 - beta2) * dw**2       # 更新二阶矩 m_hat = m / (1 - beta1**t)                # 偏差校正 v_hat = v / (1 - beta2**t)                # 偏差校正 W -= learning_rate * m_hat / (sqrt(v_hat) + eps) ```</span>
+                    <span class="en"><li>Intuition: brake on steep slopes, accelerate on flat terrain</li></span><span class="cn">1. **病态条件数（Poor Conditioning）**：损失函数在不同方向上变化速度不同，Hessian 矩阵的最大奇异值与最小奇异值的比值很大。导致在浅方向（shallow）进展缓慢，在陡方向（steep）波动剧烈。 2. **局部最小值和鞍点**：梯度为零时，SGD 会停滞。高维空间中鞍点比局部最小值更常见。 3. **梯度噪声**：mini-batch 的梯度只是真实梯度的估计值，包含采样噪声。</span>
+                </ul>
+
+                <h3>17.2 Adam</h3>
+                <span class="en"><p>Adam = <strong>Momentum + RMSProp</strong>. The most commonly used deep learning optimizer. Uses both the first moment (mean = Momentum) and second moment (variance = RMSProp) of gradients.</p></span><span class="cn">Adam = **Momentum + RMSProp**，目前最常用的深度学习优化器。</span>
+                <pre><code># Adam core steps
+m = 0   # first moment (gradient mean)
+v = 0   # second moment (gradient variance)
+beta1, beta2, eps = 0.9, 0.999, 1e-8
+
+while True:
+    dw = compute_gradient(W)
+    m = beta1 * m + (1 - beta1) * dw          # update first moment
+    v = beta2 * v + (1 - beta2) * dw**2       # update second moment
+    m_hat = m / (1 - beta1**t)                # bias correction
+    v_hat = v / (1 - beta2**t)                # bias correction
+    W -= learning_rate * m_hat / (sqrt(v_hat) + eps)</code></pre>
+
+                <div class="info-box">
+                    <strong>Note:</strong> AdamW is an improved version of Adam that decouples weight decay from the gradient update.
+                </div>
+            </section>
+
+            <!-- Section 18: Learning Rate Scheduling -->
+            <section id="lr-schedule">
+                <h2>18. Learning Rate Scheduling</h2>
+                <p>All optimizers have learning rate as a hyperparameter. There is no single &ldquo;best&rdquo; answer. Common scheduling strategies:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Step decay</td>
+                            <td>Multiply LR by 0.1 at fixed epochs (e.g., 30, 60, 90)</td>
+                        </tr>
+                        <tr>
+                            <td>Cosine annealing</td>
+                            <td>\( \eta_t = \frac{\eta_0}{2}(1 + \cos(\frac{\pi t}{T})) \)</td>
+                        </tr>
+                        <tr>
+                            <td>Linear warmup</td>
+                            <td>First ~5000 steps: linearly increase LR from 0 to initial value</td>
+                        </tr>
+                        <tr>
+                            <td>Inverse sqrt</td>
+                            <td>\( \eta_t = \eta_0 / \sqrt{t} \)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="success-box">
+                    <strong>Rule of thumb:</strong> When batch size increases by \( N \times \), initial learning rate should also scale by \( N \).
+                </div>
+            </section>
+
+            <!-- Section 19: BN as Regularization -->
+            <section id="bn-regularization">
+                <h2>19. Batch Normalization <span class="cn">批归一化</span> as Regularization</h2>
+
+                <h3>19.1 BN&rsquo;s Original Design Goal</h3>
+                <span class="en"><p>Batch Normalization was designed to <strong>accelerate training</strong> by normalizing each layer&rsquo;s input distribution, alleviating <strong>Internal Covariate Shift</strong> and making optimization more stable.</p></span><span class="cn">Batch Normalization 的设计初衷是**加速训练**，通过归一化每层的输入分布来缓解**内部协变量偏移（Internal Covariate Shift）**，让优化更稳定。</span>
+                <div class="math-block">
+                    $$\hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}, \quad y_i = \gamma \hat{x}_i + \beta$$
+                </div>
+
+                <h3>19.2 Why BN Also Acts as Regularization</h3>
+
+                <span class="en"><p><strong>Reason 1: Mini-batch introduces random noise</strong></p></span><span class="cn">| 方法 | 核心机制 | |---|---| | Dropout | 训练时随机丢弃神经元 | | Batch Normalization | 利用 mini-batch 统计量的随机噪声 | | Stochastic Depth | 随机丢弃整条残差分支 | | Fractional Pooling | 随机化池化操作 |</span>
+                <p>\( \mu_B \) and \( \sigma_B \) are statistics of the current mini-batch. Each training step, the mini-batch containing a given sample is different, so normalization results vary each time. This is equivalent to adding random perturbation to each sample &mdash; the model cannot memorize any single sample&rsquo;s exact value.</p>
+
+                <span class="en"><p><strong>Reason 2: Analogy to Dropout</strong></p></span><span class="cn">| 方法 | 核心机制 | |---|---| | Dropout | 训练时随机丢弃神经元 | | Batch Normalization | 利用 mini-batch 统计量的随机噪声 | | Stochastic Depth | 随机丢弃整条残差分支 | | Fractional Pooling | 随机化池化操作 |</span>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Dropout</th>
+                            <th>Batch Normalization</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mechanism</td>
+                            <td>Randomly drop neurons</td>
+                            <td>Randomly perturb feature values</td>
+                        </tr>
+                        <tr>
+                            <td>Training</td>
+                            <td>Network &ldquo;shape&rdquo; differs each time</td>
+                            <td>Feature &ldquo;scale&rdquo; differs each time</td>
+                        </tr>
+                        <tr>
+                            <td>Testing</td>
+                            <td>Disable randomness</td>
+                            <td>Use running mean/var instead of mini-batch stats</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Both <strong>inject randomness during training, remove randomness during testing</strong>.</p>
+
+                <p><strong>Reason 3: Gradient noise helps find flat optima</strong></p>
+                <p>The stochasticity of mini-batch statistics injects noise into gradients, forcing the model to search in a larger solution space region, tending to find <strong>flatter optima</strong> (better generalization).</p>
+
+                <h3>19.3 BN Limitations <span class="cn">局限性</span> &amp; LayerNorm</h3>
+                <span class="en"><p>BN normalizes along the batch dimension, suitable for CV with fixed-size images. But in NLP:</p></span><span class="cn">**特点**： - 不依赖 batch size（每个样本独立归一化） - 训练和测试行为一致（不需要 running statistics） - NLP / Transformer 的标准选择 - 正则化效果比 BN 弱（因为没有 mini-batch 随机性）</span>
+                <ul>
+                    <span class="en"><li>Sequence lengths vary</li></span><span class="cn">| 任务 | 典型 Batch Size | 典型学习率 | 优化器 | 特殊处理 | |---|---|---|---|---| | 图像分类（ResNet） | 32~256 | 0.1~0.4 | SGD+Momentum | Step decay 或 cosine | | 目标检测（Faster R-CNN） | 2~16 | 0.01~0.02 | SGD+Momentum | 小 batch，不能用 BN | | 机器翻译（Transformer） | ~4096 tokens | 0.0003~0.001 | Adam | Inverse sqrt warmup | | BERT 预训练 | 256~1024 sequences | 2e-4~5e-4 | Adam | Linear warmup 10000 步 | | GPT-3 预训练 | 3.2M tokens | 6e-5 | Adam | Cosine decay, 375M token warmup | | LLaMA 预训练 | 4M tokens | 3e-4 | AdamW | Cosine decay, 2000 step warmup | | Stable Diffusion | 2048~4096 | 1e-4 | AdamW | Warmup 10000 步 |</span>
+                    <span class="en"><li>Batch-dimension statistics are unstable</li></span><span class="cn">``` N: 样本数量（batch size） C: 通道数（channel / feature dimension） H: 高度（spatial height） W: 宽度（spatial width） ```</span>
+                </ul>
+                <span class="en"><p>Therefore Transformers use <strong>Layer Normalization</strong>:</p></span><span class="cn">因此 Transformer 使用 **Layer Normalization** 替代 Batch Normalization：</span>
+                <div class="math-block">
+                    $$\hat{x}_i = \frac{x_i - \mu_L}{\sqrt{\sigma_L^2 + \epsilon}} \cdot \gamma + \beta$$
+                </div>
+                <p>LayerNorm normalizes along the feature dimension per sample, independent of mini-batch. Its randomization is much smaller than BN, so its regularization effect is also much weaker.</p>
+            </section>
+
+            <!-- Section 20: Transformer Regularization -->
+            <section id="transformer-reg">
+                <h2>20. Transformer Regularization Methods <span class="cn">正则化方法</span></h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Where Used</th>
+                            <th>Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Dropout</strong></td>
+                            <td>After attention weights, in FFN, embedding layer, before output</td>
+                            <td>Primary regularization; default \( p=0.1 \)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Layer Normalization</strong></td>
+                            <td>After each sub-layer</td>
+                            <td>Training stability + implicit regularization</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Label Smoothing</strong></td>
+                            <td>Training labels</td>
+                            <td>Prevents overconfident predictions, improves generalization</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Weight Decay (L2)</strong></td>
+                            <td>In AdamW</td>
+                            <td>L2 penalty on weights</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DropPath / Stochastic Depth</strong></td>
+                            <td>Deep Transformers (ViT, BERT)</td>
+                            <td>Randomly bypass entire residual branches</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Key observation:</strong> Transformers <strong>do NOT use BatchNorm</strong>, but use LayerNorm instead. Regularization is primarily handled by Dropout and Weight Decay.
+                </div>
+            </section>
+
+            <!-- Section 21: Batch Dual Meaning -->
+            <section id="batch-dual">
+                <h2>21. &ldquo;Batch&rdquo; Dual Meaning</h2>
+                <span class="en"><p>&ldquo;Batch&rdquo; appears in two very different contexts in deep learning:</p></span><span class="cn">Keskar et al. (2016) 的著名论文 "On Large-Batch Training for Deep Learning" 提出了一个被广泛引用的结论：</span>
+                <ol>
+                    <span class="en"><li><strong>Gradient descent batch:</strong> determines &ldquo;how much data per update&rdquo;</li></span><span class="cn">**策略一：Batch Gradient Descent（批梯度下降）**</span>
+                    <span class="en"><li><strong>Normalization batch:</strong> determines &ldquo;along which dimension to compute statistics&rdquo;</li></span><span class="cn">| 方法 | 核心机制 | |---|---| | Dropout | 训练时随机丢弃神经元 | | Batch Normalization | 利用 mini-batch 统计量的随机噪声 | | Stochastic Depth | 随机丢弃整条残差分支 | | Fractional Pooling | 随机化池化操作 |</span>
+                </ol>
+
+                <h3>21.1 Gradient Descent Batch: How Much Data Per Update</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Batch Size</th>
+                            <th>Gradient Noise</th>
+                            <th>Speed (per step)</th>
+                            <th>Generalization</th>
+                            <th>Memory</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Small (1-32)</td>
+                            <td>Large</td>
+                            <td>Slow (more steps needed)</td>
+                            <td><strong>Good</strong> (noise = regularization)</td>
+                            <td>Small</td>
+                        </tr>
+                        <tr>
+                            <td>Medium (64-256)</td>
+                            <td>Moderate</td>
+                            <td>Moderate</td>
+                            <td>Moderate</td>
+                            <td>Moderate</td>
+                        </tr>
+                        <tr>
+                            <td>Large (512-4096)</td>
+                            <td>Small</td>
+                            <td>Fast (fewer steps)</td>
+                            <td><strong>Poor</strong> (easy to overfit)</td>
+                            <td>Large</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Why small batch generalizes better:</strong> Gradient noise acts as a random perturbation that prevents the model from settling into sharp local optima, helping find <strong>flat minima</strong> with better generalization. This is a <strong>free implicit regularization</strong>.
+                </div>
+
+                <h3>21.2 Normalization Batch: Which Dimension to Compute Statistics</h3>
+                <span class="en"><p>For a 4D tensor \( X \in \mathbb{R}^{N \times C \times H \times W} \), the key question is: <strong>across which dimensions to compute mean and variance?</strong></p></span><span class="cn">| 论文 | 名称 | 应用场景 | |---|---|---| | Huang et al., 2016 | Stochastic Depth | ResNet | | Touvron et al., 2021 (DeiT) | DropPath | Vision Transformer (ViT) | | Liu et al., 2021 (Swin) | DropPath | Swin Transformer |</span>
+
+                <h3>21.3 The Interesting Contradiction</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>GD Batch</th>
+                            <th>Batch Norm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Controls</td>
+                            <td>Data per update</td>
+                            <td>Samples for statistics</td>
+                        </tr>
+                        <tr>
+                            <td>Batch too small</td>
+                            <td>Slow but good generalization</td>
+                            <td>Unstable statistics, poor BN</td>
+                        </tr>
+                        <tr>
+                            <td>Batch too large</td>
+                            <td>Fast but poor generalization</td>
+                            <td>Stable BN, less regularization</td>
+                        </tr>
+                        <tr>
+                            <td>Connection</td>
+                            <td>Small batch gradient noise = implicit regularization</td>
+                            <td>BN mini-batch noise = implicit regularization</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <span class="en"><p>Practice: CV uses batch = 32~256 with BN; NLP uses smaller batch or gradient accumulation with LN/RMSNorm.</p></span><span class="cn">实践中需要权衡。现代常见做法： - CV：batch = 32~256，用 BN - NLP：batch 较小或用 gradient accumulation，用 LN / RMS Norm</span>
+            </section>
+
+            <!-- Section 22: Normalization Methods -->
+            <section id="normalization">
+                <h2>22. Normalization Methods: BN / LN / IN / GN / RMSNorm</h2>
+                <span class="en"><p>All normalization methods do the same thing: <strong>keep data in a &ldquo;good&rdquo; range for stable optimization.</strong> The only difference is &ldquo;who to compare with.&rdquo;</p></span><span class="cn">| 方法 | 使用位置 | 作用 | |---|---|---| | **Dropout** | Attention 权重后、FFN 中间层、Embedding 层、输出层前 | 最主要的正则化手段，默认 $p=0.1$ | | **Layer Normalization** | 每个子层之后 | 训练稳定性 + 隐式正则化 | | **Label Smoothing** | 训练标签 | 不让模型 100% 自信，提高泛化 | | **Weight Decay (L2)** | AdamW 中 | 对权重施加 L2 惩罚 | | **DropPath / Stochastic Depth** | 深层 Transformer（ViT、BERT） | 随机丢弃整条残差分支 |</span>
+
+                <h3>22.1 Batch Normalization <span class="cn">批归一化</span> (2015)</h3>
+                <span class="en"><p><strong>Normalize across</strong> \( (N, H, W) \) per channel.</p></span><span class="cn">| 方法 | 统计量计算维度 | 依赖 batch | 训练/测试一致 | 主要场景 | |---|---|---|---|---| | **Batch Norm** | (N, H, W) per channel | 是 | 否（需要 running stats） | CNN（ResNet 等） | | **Layer Norm** | (C, H, W) per sample | 否 | 是 | Transformer、NLP | | **Instance Norm** | (H, W) per (sample, channel) | 否 | 是 | 风格迁移 | | **Group Norm** | (C/G, H, W) per (sample, group) | 否 | 是 | 小 batch 的 CV 任务 | | **RMS Norm** | (C, H, W) per sample（只算方差） | 否 | 是 | LLaMA 等大模型 |</span>
+                <div class="math-block">
+                    $$\mu_c = \frac{1}{NHW} \sum_{n,h,w} X_{n,c,h,w}, \quad \hat{X}_{n,c,h,w} = \frac{X_{n,c,h,w} - \mu_c}{\sqrt{\sigma_c^2 + \epsilon}}$$
+                </div>
+                <ul>
+                    <span class="en"><li>Depends on batch size: unstable when batch &lt; 8</li></span><span class="cn">``` N: 样本数量（batch size） C: 通道数（channel / feature dimension） H: 高度（spatial height） W: 宽度（spatial width） ```</span>
+                    <span class="en"><li>Training vs testing behavior differs (running mean/var at test time)</li></span><span class="cn">| | Dropout | Batch Normalization | |---|---|---| | 机制 | 随机丢弃神经元 | 随机扰动特征值 | | 训练时 | 网络的"样子"每次不同 | 特征的"尺度"每次不同 | | 测试时 | 关闭随机性 | 用 running mean/var 替代 mini-batch 统计量 |</span>
+                    <span class="en"><li>Byproduct regularization from mini-batch noise</li></span><span class="cn">| 方法 | 核心机制 | |---|---| | Dropout | 训练时随机丢弃神经元 | | Batch Normalization | 利用 mini-batch 统计量的随机噪声 | | Stochastic Depth | 随机丢弃整条残差分支 | | Fractional Pooling | 随机化池化操作 |</span>
+                    <span class="en"><li>Standard choice for CNNs (ResNet, VGG, etc.)</li></span><span class="cn">| 论文 | 名称 | 应用场景 | |---|---|---| | Huang et al., 2016 | Stochastic Depth | ResNet | | Touvron et al., 2021 (DeiT) | DropPath | Vision Transformer (ViT) | | Liu et al., 2021 (Swin) | DropPath | Swin Transformer |</span>
+                </ul>
+
+                <h3>22.2 Layer Normalization (2016)</h3>
+                <span class="en"><p><strong>Normalize across</strong> \( (C, H, W) \) per sample.</p></span><span class="cn">| 方法 | 统计量计算维度 | 依赖 batch | 训练/测试一致 | 主要场景 | |---|---|---|---|---| | **Batch Norm** | (N, H, W) per channel | 是 | 否（需要 running stats） | CNN（ResNet 等） | | **Layer Norm** | (C, H, W) per sample | 否 | 是 | Transformer、NLP | | **Instance Norm** | (H, W) per (sample, channel) | 否 | 是 | 风格迁移 | | **Group Norm** | (C/G, H, W) per (sample, group) | 否 | 是 | 小 batch 的 CV 任务 | | **RMS Norm** | (C, H, W) per sample（只算方差） | 否 | 是 | LLaMA 等大模型 |</span>
+                <ul>
+                    <span class="en"><li>Independent of batch size (each sample normalized independently)</li></span><span class="cn">weights = softmax(region)  # 按值大小转成概率，如 [0.002, 0.000, 0.998, 0.000] return random_sample(region, weights)  # 以 99.8% 概率选 7，但也可能选 3 ```</span>
+                    <span class="en"><li>Training and testing behavior consistent (no running statistics)</li></span><span class="cn">| | Dropout | Batch Normalization | |---|---|---| | 机制 | 随机丢弃神经元 | 随机扰动特征值 | | 训练时 | 网络的"样子"每次不同 | 特征的"尺度"每次不同 | | 测试时 | 关闭随机性 | 用 running mean/var 替代 mini-batch 统计量 |</span>
+                    <span class="en"><li>Standard for Transformers and NLP</li></span><span class="cn">**特点**： - 不依赖 batch size（每个样本独立归一化） - 训练和测试行为一致（不需要 running statistics） - NLP / Transformer 的标准选择 - 正则化效果比 BN 弱（因为没有 mini-batch 随机性）</span>
+                    <span class="en"><li>Weaker regularization than BN (no mini-batch randomness)</li></span><span class="cn">LayerNorm 按单个样本的特征维度归一化，不依赖 mini-batch，因此随机性远小于 BN，正则化效果也弱得多。</span>
+                </ul>
+
+                <h3>22.3 Instance Normalization (2016)</h3>
+                <span class="en"><p><strong>Normalize across</strong> \( (H, W) \) per (sample, channel) pair.</p></span><span class="cn">| 方法 | 统计量计算维度 | 依赖 batch | 训练/测试一致 | 主要场景 | |---|---|---|---|---| | **Batch Norm** | (N, H, W) per channel | 是 | 否（需要 running stats） | CNN（ResNet 等） | | **Layer Norm** | (C, H, W) per sample | 否 | 是 | Transformer、NLP | | **Instance Norm** | (H, W) per (sample, channel) | 否 | 是 | 风格迁移 | | **Group Norm** | (C/G, H, W) per (sample, group) | 否 | 是 | 小 batch 的 CV 任务 | | **RMS Norm** | (C, H, W) per sample（只算方差） | 否 | 是 | LLaMA 等大模型 |</span>
+                <ul>
+                    <span class="en"><li>Each (sample, channel) has independent statistics</li></span><span class="cn">| 方法 | 统计量计算维度 | 依赖 batch | 训练/测试一致 | 主要场景 | |---|---|---|---|---| | **Batch Norm** | (N, H, W) per channel | 是 | 否（需要 running stats） | CNN（ResNet 等） | | **Layer Norm** | (C, H, W) per sample | 否 | 是 | Transformer、NLP | | **Instance Norm** | (H, W) per (sample, channel) | 否 | 是 | 风格迁移 | | **Group Norm** | (C/G, H, W) per (sample, group) | 否 | 是 | 小 batch 的 CV 任务 | | **RMS Norm** | (C, H, W) per sample（只算方差） | 否 | 是 | LLaMA 等大模型 |</span>
+                    <li>Primarily used for <strong>style transfer</strong>: style features (contrast, brightness) are consistent across spatial positions</li>
+                </ul>
+
+                <h3>22.4 Group Normalization (2018)</h3>
+                <span class="en"><p>Divide channels into \( G \) groups, <strong>normalize across</strong> \( (C/G, H, W) \) per (sample, group).</p></span><span class="cn">| 方法 | 统计量计算维度 | 依赖 batch | 训练/测试一致 | 主要场景 | |---|---|---|---|---| | **Batch Norm** | (N, H, W) per channel | 是 | 否（需要 running stats） | CNN（ResNet 等） | | **Layer Norm** | (C, H, W) per sample | 否 | 是 | Transformer、NLP | | **Instance Norm** | (H, W) per (sample, channel) | 否 | 是 | 风格迁移 | | **Group Norm** | (C/G, H, W) per (sample, group) | 否 | 是 | 小 batch 的 CV 任务 | | **RMS Norm** | (C, H, W) per sample（只算方差） | 否 | 是 | LLaMA 等大模型 |</span>
+                <div class="info-box">
+                    <strong>Key insight:</strong> Other normalization methods are special cases of Group Norm:
+                    <ul>
+                        <li><span class="en">\( G = 1 \): <strong>Layer Norm</strong> (all channels in one group)</span><span class="cn">| 方法 | 统计量计算维度 | 依赖 batch | 训练/测试一致 | 主要场景 | |---|---|---|---|---| | **Batch Norm** | (N, H, W) per channel | 是 | 否（需要 running stats） | CNN（ResNet 等） | | **Layer Norm** | (C, H, W) per sample | 否 | 是 | Transformer、NLP | | **Instance Norm** | (H, W) per (sample, channel) | 否 | 是 | 风格迁移 | | **Group Norm** | (C/G, H, W) per (sample, group) | 否 | 是 | 小 batch 的 CV 任务 | | **RMS Norm** | (C, H, W) per sample（只算方差） | 否 | 是 | LLaMA 等大模型 |</span></li>
+                        <li><span class="en">\( G = C \): <strong>Instance Norm</strong> (each channel a separate group)</span><span class="cn">| 方法 | 统计量计算维度 | 依赖 batch | 训练/测试一致 | 主要场景 | |---|---|---|---|---| | **Batch Norm** | (N, H, W) per channel | 是 | 否（需要 running stats） | CNN（ResNet 等） | | **Layer Norm** | (C, H, W) per sample | 否 | 是 | Transformer、NLP | | **Instance Norm** | (H, W) per (sample, channel) | 否 | 是 | 风格迁移 | | **Group Norm** | (C/G, H, W) per (sample, group) | 否 | 是 | 小 batch 的 CV 任务 | | **RMS Norm** | (C, H, W) per sample（只算方差） | 否 | 是 | LLaMA 等大模型 |</span></li>
+                    </ul>
+                </div>
+                <ul>
+                    <span class="en"><li><span class="en">Independent of batch size</span><span class="cn">| Batch Size | 梯度噪声 | 训练速度（每步） | 泛化能力 | 内存占用 | |---|---|---|---|---| | 小（1-32） | 大 | 慢（每步快但需要更多步） | **好**（噪声有正则化效果） | 小 | | 中（64-256） | 适中 | 适中 | 适中 | 适中 | | 大（512-4096） | 小 | 快（每步慢但总步数少） | **差**（容易过拟合） | 大 |</span></li></span><span class="cn">7.1.3 Batch Size 的影响</span>
+                    <span class="en"><li>BN alternative for small-batch CV tasks (detection, segmentation)</li></span><span class="cn">BN 按 batch 维度归一化，适合 CV 中固定尺寸的图像数据。但在 NLP 中： - 序列长度不固定 - batch 维度的统计量不稳定</span>
+                    <span class="en"><li>Typical setting: \( G = 32 \)</li></span><span class="cn">在输入和输出之间插入一个**隐藏层**，加上**非线性激活函数** $\sigma$：</span>
+                </ul>
+
+                <h3>22.5 RMS Normalization (2019)</h3>
+                <span class="en"><p>Simplified LayerNorm: <strong>only divide by RMS, do not subtract mean.</strong></p></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                <div class="math-block">
+                    $$\hat{X} = \frac{X}{\text{RMS}} = \frac{X}{\sqrt{\frac{1}{d}\sum_i X_i^2 + \epsilon}}, \quad Y = \gamma \hat{X}$$
+                </div>
+                <ul>
+                    <span class="en"><li>No shift parameter \( \beta \) (only scale \( \gamma \))</li></span><span class="cn">Batch Normalization 的设计初衷是**加速训练**，通过归一化每层的输入分布来缓解**内部协变量偏移（Internal Covariate Shift）**，让优化更稳定。</span>
+                    <span class="en"><li>Less computation (no mean subtraction)</li></span><span class="cn">| | Dropout | Batch Normalization | |---|---|---| | 机制 | 随机丢弃神经元 | 随机扰动特征值 | | 训练时 | 网络的"样子"每次不同 | 特征的"尺度"每次不同 | | 测试时 | 关闭随机性 | 用 running mean/var 替代 mini-batch 统计量 |</span>
+                    <span class="en"><li>Used by LLaMA, GPT-NeoX, and other modern LLMs</li></span><span class="cn">- 没有偏移参数 $\beta$（只有缩放参数 $\gamma$） - 计算量更小（不需要减均值） - LLaMA、GPT-NeoX 等现代大语言模型使用</span>
+                </ul>
+
+                <h3>22.6 Unified Comparison <span class="cn">对比</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Statistics Dimension</th>
+                            <th>Batch Dependent</th>
+                            <th>Train/Test Consistent</th>
+                            <th>Primary Use</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Batch Norm</strong></td>
+                            <td>(N, H, W) per channel</td>
+                            <td>Yes</td>
+                            <td>No (needs running stats)</td>
+                            <td>CNNs (ResNet)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Layer Norm</strong></td>
+                            <td>(C, H, W) per sample</td>
+                            <td>No</td>
+                            <td>Yes</td>
+                            <td>Transformers, NLP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Instance Norm</strong></td>
+                            <td>(H, W) per (sample, channel)</td>
+                            <td>No</td>
+                            <td>Yes</td>
+                            <td>Style transfer</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Group Norm</strong></td>
+                            <td>(C/G, H, W) per (sample, group)</td>
+                            <td>No</td>
+                            <td>Yes</td>
+                            <td>Small-batch CV</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RMS Norm</strong></td>
+                            <td>(C, H, W) per sample (variance only)</td>
+                            <td>No</td>
+                            <td>Yes</td>
+                            <td>LLaMA etc.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section 23: Hessian Matrix -->
+            <section id="hessian">
+                <h2>23. Hessian Matrix &amp; Loss Landscape Geometry</h2>
+
+                <h3>23.1 From Gradient to Hessian</h3>
+                <p>Gradients tell us the <strong>first-order information</strong> (slope) &mdash; which direction is steepest. The Hessian provides <strong>second-order information</strong> (curvature) &mdash; how &ldquo;curved&rdquo; each direction is.</p>
+                <span class="en"><p>For a scalar function \( f: \mathbb{R}^d \to \mathbb{R} \):</p></span><span class="cn">**PyTorch 中的对应关系**： - PyTorch 的每个运算符（operator）都自动实现了 `forward()` 和 `backward()` - `autograd` 自动构建计算图并执行反向传播 - `forward`：计算结果，并缓存中间变量 - `backward`：应用链式法则计算梯度</span>
+                <div class="math-block">
+                    $$H_{ij} = \frac{\partial^2 f}{\partial w_i \partial w_j}, \quad H \in \mathbb{R}^{d \times d}$$
+                </div>
+                <span class="en"><p>The Hessian is <strong>symmetric</strong> (when \( f \) is twice continuously differentiable).</p></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+
+                <h3>23.2 Second-Order Taylor Expansion</h3>
+                <div class="math-block">
+                    $$f(W + \Delta W) \approx f(W) + \nabla f(W)^T \Delta W + \frac{1}{2} \Delta W^T H \Delta W$$
+                </div>
+                <span class="en"><p>The extra \( \frac{1}{2} \Delta W^T H \Delta W \) term is the curvature information:</p></span><span class="cn">$$f(W + \Delta W) \approx f(W) + \nabla f(W)^T \Delta W + \frac{1}{2} \Delta W^T H \Delta W \quad \text{（加上 Hessian，是二次近似）}$$</span>
+                <ul>
+                    <li>\( \Delta W^T H \Delta W > 0 \): function is &ldquo;concave up&rdquo; (bowl-shaped)</li>
+                    <li>\( \Delta W^T H \Delta W < 0 \): function is &ldquo;convex up&rdquo; (ridge-shaped)</li>
+                </ul>
+
+                <h3>23.3 Eigenvalues &amp; Loss Landscape Geometry</h3>
+                <span class="en"><p>Eigenvalue decomposition: \( H = V \Lambda V^T \), where \( \Lambda = \text{diag}(\lambda_1, \dots, \lambda_d) \).</p></span><span class="cn">对 Hessian 做特征值分解：$H = V \Lambda V^T$，其中 $\Lambda = \text{diag}(\lambda_1, \lambda_2, \dots, \lambda_d)$。</span>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Eigenvalue</th>
+                            <th>Curvature</th>
+                            <th>Intuition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>\( \lambda_i > 0 \)</td>
+                            <td>Concave direction (bowl bottom)</td>
+                            <td>Moving along \( v_i \), function increases</td>
+                        </tr>
+                        <tr>
+                            <td>\( \lambda_i < 0 \)</td>
+                            <td>Convex direction (ridge)</td>
+                            <td>Moving along \( v_i \), function decreases</td>
+                        </tr>
+                        <tr>
+                            <td>\( \lambda_i = 0 \)</td>
+                            <td>Flat direction</td>
+                            <td>Function doesn&rsquo;t change (saddle point)</td>
+                        </tr>
+                        <tr>
+                            <td>\( \lambda_i \gg 1 \)</td>
+                            <td>Steep direction</td>
+                            <td>Function changes rapidly</td>
+                        </tr>
+                        <tr>
+                            <td>\( \lambda_i \ll 1 \)</td>
+                            <td>Shallow direction</td>
+                            <td>Function changes slowly</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>Determining critical point type from eigenvalues:</p>
+                <ul>
+                    <span class="en"><li><strong>All \( \lambda_i > 0 \):</strong> positive definite → <strong>local minimum</strong> (bowl)</li></span><span class="cn">每个节点只需要知道两件事： 1. **上游梯度**（upstream gradient）：从后面传过来的梯度 2. **局部梯度**（local gradient）：该节点自身运算的导数</span>
+                    <span class="en"><li><strong>All \( \lambda_i < 0 \):</strong> negative definite → <strong>local maximum</strong> (hilltop)</li></span><span class="cn">每个节点只需要知道两件事： 1. **上游梯度**（upstream gradient）：从后面传过来的梯度 2. **局部梯度**（local gradient）：该节点自身运算的导数</span>
+                    <li><strong>Mixed signs:</strong> indefinite → <strong>saddle point</strong></li>
+                </ul>
+                <p><strong>Saddle points are far more common than local minima in high-dimensional spaces.</strong> In \( d \) dimensions, the probability that all \( d \) eigenvalues are positive is exponentially small.</p>
+
+                <h3>23.4 Condition Number &amp; Optimization Difficulty</h3>
+                <div class="math-block">
+                    $$\kappa(H) = \frac{\lambda_{\max}}{\lambda_{\min}}$$
+                </div>
+                <p>The condition number measures &ldquo;how elliptical&rdquo; the loss surface is:</p>
+                <ul>
+                    <li>\( \kappa \approx 1 \): nearly spherical → gradient descent converges quickly from any direction</li>
+                    <li>\( \kappa \gg 1 \): elongated elliptical contours → ill-conditioned, slow convergence</li>
+                </ul>
+                <span class="en"><p>When \( \kappa \) is large:</p></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+                <ul>
+                    <span class="en"><li>In the steep direction (\( \lambda_{\max} \)): gradient is large, updates overshoot, need tiny learning rate</li></span><span class="cn">while True: dw = compute_gradient(W) m = beta1 * m + (1 - beta1) * dw          # 更新一阶矩 v = beta2 * v + (1 - beta2) * dw**2       # 更新二阶矩 m_hat = m / (1 - beta1**t)                # 偏差校正 v_hat = v / (1 - beta2**t)                # 偏差校正 W -= learning_rate * m_hat / (sqrt(v_hat) + eps) ```</span>
+                    <span class="en"><li>In the shallow direction (\( \lambda_{\min} \)): gradient is tiny, updates crawl, converge extremely slowly</li></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+                    <span class="en"><li><strong>Result:</strong> no single learning rate works well for both directions</li></span><span class="cn">while True: dw = compute_gradient(W) m = beta1 * m + (1 - beta1) * dw          # 更新一阶矩 v = beta2 * v + (1 - beta2) * dw**2       # 更新二阶矩 m_hat = m / (1 - beta1**t)                # 偏差校正 v_hat = v / (1 - beta2**t)                # 偏差校正 W -= learning_rate * m_hat / (sqrt(v_hat) + eps) ```</span>
+                </ul>
+
+                <div class="math-block">
+                    $$L(w_{t+1}) - L(w^*) \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^2 \big(L(w_t) - L(w^*)\big)$$
+                </div>
+
+                <h3>23.5 Optimal Learning Rate from Hessian</h3>
+                <span class="en"><p>For a quadratic \( f(W) = \frac{1}{2} W^T H W - b^T W \):</p></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                <div class="math-block">
+                    $$\alpha^* = \frac{2}{\lambda_{\max} + \lambda_{\min}}$$
+                </div>
+                <span class="en"><p>Convergence rate: \( \left(\frac{\kappa - 1}{\kappa + 1}\right)^t \to 0 \). When \( \kappa = 1 \): one-step convergence. When \( \kappa = 100 \): ~100 steps. When \( \kappa = 10000 \): ~10000 steps.</p></span><span class="cn">$$\left(\frac{\kappa - 1}{\kappa + 1}\right)^t \to 0 \quad \text{当 } t \to \infty$$</span>
+
+                <div class="info-box">
+                    <strong>This is why adaptive learning rates (RMSProp, Adam) are needed:</strong> They automatically reduce step size in high-curvature directions and increase it in low-curvature directions, implicitly &ldquo;preconditioning&rdquo; the Hessian.
+                </div>
+            </section>
+
+            <!-- Section 24: Newton's Method & Modern Optimizers -->
+            <section id="newton">
+                <h2>24. Newton&rsquo;s Method &amp; Modern Optimizers as Approximate Newton</h2>
+
+                <h3>24.1 Newton&rsquo;s Method</h3>
+                <div class="math-block">
+                    $$w_{t+1} = w_t - H^{-1} \nabla f(w_t)$$
+                </div>
+                <span class="en"><p>Near a minimum with condition number \( \kappa \), Newton&rsquo;s method achieves <strong>quadratic convergence</strong> (error squares each step), vs. the <strong>linear convergence</strong> of gradient descent.</p></span><span class="cn">| 策略 | 说明 | |---|---| | Step decay | 在固定轮次（如 30, 60, 90 epoch）将学习率乘以 0.1 | | Cosine annealing | $\eta_t = \frac{\eta_0}{2}(1 + \cos(\frac{\pi t}{T}))$，余弦衰减 | | Linear warmup | 前 ~5000 步将学习率从 0 线性增加到初始值，避免初始梯度爆炸 | | Inverse sqrt | $\eta_t = \eta_0 / \sqrt{t}$，倒数平方根衰减 |</span>
+
+                <h3>24.2 GD vs Newton Comparison <span class="cn">对比</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Gradient Descent</th>
+                            <th>Newton&rsquo;s Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Per-iteration cost</td>
+                            <td>\( O(n) \)</td>
+                            <td>\( O(n^3) \) (invert H) + \( O(n^2) \) (compute H)</td>
+                        </tr>
+                        <tr>
+                            <td>Memory</td>
+                            <td>\( O(n) \)</td>
+                            <td>\( O(n^2) \) (store H)</td>
+                        </tr>
+                        <tr>
+                            <td>Convergence rate</td>
+                            <td>Linear (depends on \( \kappa \))</td>
+                            <td>Quadratic (near minimum)</td>
+                        </tr>
+                        <tr>
+                            <td>Non-convex behavior</td>
+                            <td>Always descends (with small \( \alpha \))</td>
+                            <td>May move toward saddle points or maxima</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <span class="en"><p>For modern neural networks where \( n \) can be billions, storing or inverting \( H \) is infeasible. Instead, <strong>adaptive first-order methods</strong> like Adam approximate the benefits of second-order information cheaply.</p></span><span class="cn">**奥卡姆剃刀**（Occam's Razor）：Among multiple competing hypotheses, the simplest is the best.</span>
+
+                <h3>24.3 Modern Optimizers as Approximate Newton</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Implicit \( H^{-1} \) Approximation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SGD</td>
+                            <td>Identity matrix \( I \) (ignores curvature entirely)</td>
+                        </tr>
+                        <tr>
+                            <td>Momentum</td>
+                            <td>First-order accumulation approximates diagonal curvature</td>
+                        </tr>
+                        <tr>
+                            <td>RMSProp</td>
+                            <td>Squared gradient accumulation approximates diagonal of \( H \), then takes reciprocal</td>
+                        </tr>
+                        <tr>
+                            <td>Adam</td>
+                            <td>Momentum + RMSProp = first-order + second-order hybrid approximation</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>24.4 Robbins-Monro Conditions</h3>
+                <span class="en"><p>The <strong>Robbins-Monro Theorem</strong> (1951) provides conditions for SGD convergence:</p></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                <div class="math-block">
+                    $$\sum_{t=1}^{\infty} \alpha_t = \infty \quad \text{(A1)} \qquad \text{and} \qquad \sum_{t=1}^{\infty} \alpha_t^2 < \infty \quad \text{(A2)}$$
+                </div>
+                <ul>
+                    <li><strong>(A1):</strong> Ensures <strong>sufficient total movement</strong> &mdash; the optimizer can always reach the optimum regardless of initialization distance</li>
+                    <span class="en"><li><strong>(A2):</strong> Ensures <strong>noise doesn&rsquo;t accumulate</strong> &mdash; stochastic perturbations vanish over time</li></span><span class="cn">**反向传播**： - $\frac{\partial f}{\partial f} = 1$ （base case） - $\frac{\partial f}{\partial z} = q = 3$ （乘法门：梯度互换） - $\frac{\partial f}{\partial q} = z = -4$ （乘法门：梯度互换） - $\frac{\partial f}{\partial x} = \frac{\partial f}{\partial q} \cdot \frac{\partial q}{\partial x} = -4 \times 1 = -4$ （加法门：梯度直通） - $\frac{\partial f}{\partial y} = \frac{\partial f}{\partial q} \cdot \frac{\partial q}{\partial y} = -4 \times 1 = -4$ （加法门：梯度直通）</span>
+                </ul>
+
+                <h3>24.5 Common Schedules Satisfying Robbins-Monro</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Schedule</th>
+                            <th>Formula</th>
+                            <th>\( \sum \alpha_t \)</th>
+                            <th>\( \sum \alpha_t^2 \)</th>
+                            <th>RM Satisfied?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>\( 1/t \) decay</td>
+                            <td>\( \alpha_t = c/t \)</td>
+                            <td>\( \infty \) (harmonic)</td>
+                            <td>\( c^2 \pi^2/6 < \infty \)</td>
+                            <td>Yes</td>
+                        </tr>
+                        <tr>
+                            <td>\( 1/\sqrt{t} \) decay</td>
+                            <td>\( \alpha_t = c/\sqrt{t} \)</td>
+                            <td>\( \infty \)</td>
+                            <td>\( \infty \)</td>
+                            <td><strong>No</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Polynomial</td>
+                            <td>\( \alpha_t = c/t^\beta \)</td>
+                            <td>\( \infty \) for \( \beta \leq 1 \)</td>
+                            <td>\( < \infty \) for \( \beta > 0.5 \)</td>
+                            <td>Yes if \( \beta \in (0.5, 1] \)</td>
+                        </tr>
+                        <tr>
+                            <td>Constant</td>
+                            <td>\( \alpha_t = c \)</td>
+                            <td>\( \infty \)</td>
+                            <td>\( \infty \)</td>
+                            <td><strong>No</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="success-box">
+                    <strong>Practical implication:</strong> The classical \( 1/t \) schedule satisfies RM exactly, but in practice, cyclical or cosine annealing often works better because they periodically escape sharp minima &mdash; trading strict convergence for better generalization.
+                </div>
+
+                <h3>24.6 Why Constant LR Works in Practice</h3>
+                <span class="en"><p>In non-convex deep learning, SGD with constant learning rate <strong>converges to stationary points</strong> (\( \|\nabla L\| \to 0 \)) at rate \( O(1/\sqrt{T}) \). The noise from constant LR has benefits:</p></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                <ol>
+                    <li><strong>Escape saddle points:</strong> noise pushes parameters out of zero-gradient regions</li>
+                    <li><strong>Prefer flat optima:</strong> noise causes parameters to oscillate and settle in &ldquo;wide&rdquo; regions (better generalization)</li>
+                </ol>
+            </section>
+
+            <!-- Section 25: Summary -->
+            <section id="summary">
+                <h2>25. Summary <span class="cn">5. 本讲总结</span></h2>
+                <div class="info-box">
+                    <ol>
+                        <li><strong>Non-linear activation functions</strong> are the key to neural network expressiveness &mdash; without them, multi-layer networks collapse to linear classifiers.</li>
+                        <li><strong>Backpropagation</strong> recursively applies the chain rule along computation graphs. Each node only needs upstream gradient and local gradient.</li>
+                        <span class="en"><li><strong>Regularization</strong> goes beyond penalty terms: Dropout, BN, Stochastic Depth, Fractional Pooling are all structural techniques.</li></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                        <span class="en"><li><strong>Optimizers</strong> evolve from SGD → Momentum → RMSProp → Adam, with the core trend of increasingly <em>adaptive</em> learning rates.</li></span><span class="cn">| 方法 | 隐式近似 $H^{-1}$ 的方式 | |---|---| | SGD | 用单位矩阵 $I$ 近似 $H^{-1}$（完全忽略曲率） | | Momentum | 用一阶累积近似曲率的对角线 | | RMSProp | 用梯度平方的累积近似 $H$ 的对角线，然后取倒数 | | Adam | Momentum + RMSProp = 一阶 + 二阶混合近似 |</span>
+                        <li><strong>Pooling</strong> is the core downsampling operation in CNNs: Max Pooling retains salient features, Average Pooling preserves overall info. Modern trend: strided convolutions replace explicit pooling.</li>
+                        <span class="en"><li>BN&rsquo;s regularization is a <strong>byproduct</strong> of mini-batch random noise. Transformers use LayerNorm instead of BN.</li></span><span class="cn">**特点**： - 不依赖 batch size（每个样本独立归一化） - 训练和测试行为一致（不需要 running statistics） - NLP / Transformer 的标准选择 - 正则化效果比 BN 弱（因为没有 mini-batch 随机性）</span>
+                        <li><strong>Stochastic Depth</strong> randomly drops entire residual branches: regularization (implicit ensemble) + speedup (25-50% training time reduction). Keep shallow, drop deep.</li>
+                        <span class="en"><li><strong>Fractional Pooling</strong> introduces spatial randomness via random partitioning, making models spatial-position-invariant.</li></span><span class="cn">| | Max Pooling | Random Pooling | Fractional Max Pooling | |---|---|---|---| | 确定性 | 完全确定 | 随机 | 随机 | | 下采样比例 | 整数倍 | 整数倍 | 任意比例 | | 正则化效果 | 无 | 弱 | 较强 | | 计算开销 | 小 | 略大（需采样） | 略大（需生成切分点） | | 实际使用 | 非常广泛 | 少见 | 少见 |</span>
+                        <span class="en"><li><strong>&ldquo;Batch&rdquo; has two meanings:</strong> GD batch = &ldquo;data per update&rdquo;; normalization batch = &ldquo;which dimension for statistics.&rdquo; BN/LN/GN/IN/RMSNorm form a unified spectrum.</li></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                        <span class="en"><li><strong>Hessian matrix</strong> describes second-order curvature. Condition number \( \kappa = \lambda_{\max}/\lambda_{\min} \) governs optimization difficulty. Modern optimizers implicitly approximate Newton&rsquo;s method \( H^{-1} \nabla F \).</li></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                        <span class="en"><li><strong>Robbins-Monro conditions</strong> \( \sum \alpha_t = \infty, \sum \alpha_t^2 < \infty \) guarantee exact SGD convergence. Constant LR is used in practice because noise is beneficial in non-convex landscapes.</li></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+                    </ol>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Lecture 7 Notes &mdash; Introduction to Artificial Intelligence</p>
+            <span class="en"><p>Topics: Neural Networks, Backpropagation, Adam, Regularization, Normalization, Hessian Analysis, Robbins-Monro</p></span><span class="cn">1. **非线性激活函数**是神经网络拥有强大表示能力的关键——没有它，多层网络退化为线性分类器 2. **反向传播**的本质是沿计算图递归应用链式法则，每个节点只需知道上游梯度和局部梯度 3. **正则化**不仅是加惩罚项，还包括 Dropout、BN、Stochastic Depth、Fractional Pooling 等结构层面的技巧 4. **优化器**从 SGD → Momentum → RMSProp → Adam 的演进，核心趋势是让学习率越来越"自适应" 5. **池化**是卷积网络中的核心下采样操作，Max Pooling 取最显著特征，Average Pooling 保留整体信息，现代趋势是用 stride 卷积替代显式池化 6. BN 的正则化效果是一个**副产品**（mini-batch 随机噪声），Transformer 不用 BN 而用 LayerNorm 7. **Stochastic Depth** 随机丢弃整条残差分支，既是正则化（隐式集成）也是加速手段（减少 25-50% 训练时间），浅层不丢、深层多丢 8. **Fractional Pooling** 在池化操作中引入空间随机性，通过随机切分位置打破确定性，使模型学到对空间位置不敏感的特征 9. **"Batch"有两层含义**：梯度下降中控制"一次更新看多少数据"（mini-batch GD），归一化中控制"按什么维度统计"（BN vs LN vs GN）。BN/LN/GN/IN/RMSNorm 构成一个统一谱系，区别只在于统计量跨哪些维度计算 10. **Hessian 矩阵**描述损失面的二阶曲率，条件数 $\kappa = \lambda_{\max}/\lambda_{\min}$ 决定优化难度，现代优化器（RMSProp、Adam）本质上是在隐式近似 Newton 法 $H^{-1} \nabla F$ 11. **Robbins-Monro 条件** $\sum \alpha_t = \infty, \sum \alpha_t^2 &lt; \infty$ 保证 SGD 精确收敛；实践中用常数学习率是因为深度学习的非凸性使噪声有利（逃逸鞍点、倾向平坦最优解），常数学习率 SGD 收敛到最优解附近半径为 $O(\alpha \sigma^2 / 2\mu)$ 的邻域 12. **Dvoretzky 定理**是 Robbins-Monro 的一般化：核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$ 中，$\sum\tilde{a}_t &lt; \infty$ 控制噪声累积，$\sum c_t = \infty$ 保证走到目标，通过无穷乘积引理和鞅收敛定理完成严格证明</span>
+        </footer>
+        </div>
+        </div>
+
+    // Language Toggle
+    (function() {
+        var body = document.body;
+        var btnEN = document.getElementById('btn-en');
+        var btnCN = document.getElementById('btn-cn');
+        var saved = localStorage.getItem('lang') || 'en';
+        if (saved === 'cn') {
+            body.classList.add('lang-cn');
+            if (btnCN) btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+        } else {
+            if (btnEN) btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+        }
+        if (btnEN) btnEN.addEventListener('click', function() {
+            body.classList.remove('lang-cn');
+            btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+            localStorage.setItem('lang', 'en');
+        });
+        if (btnCN) btnCN.addEventListener('click', function() {
+            body.classList.add('lang-cn');
+            btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+            localStorage.setItem('lang', 'cn');
+        });
+    })();
+
+</body>
+</html>
