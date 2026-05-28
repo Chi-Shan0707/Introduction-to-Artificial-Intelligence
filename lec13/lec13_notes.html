@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lec13: 计算机视觉与生成模型 — Detailed Notes</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --text: #333;
+            --muted: #7f8c8d;
+            --code-bg: #f8f9fa;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; color: var(--text); background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; min-width: 280px; background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%); color: white; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar header { background: transparent; padding: 2rem 1.5rem 1.5rem; text-align: left; }
+        .sidebar header h1 { font-size: 1.2rem; margin-bottom: 0.3rem; font-weight: 600; line-height: 1.3; }
+        .sidebar header .subtitle { font-size: 0.78rem; opacity: 0.7; line-height: 1.4; }
+        .sidebar .toc { flex: 1; padding: 0 1.5rem 2rem; background: transparent; border: none; overflow-y: auto; }
+        .sidebar .toc h2 { color: rgba(255,255,255,0.5); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.8rem; border: none; padding: 0; }
+        .sidebar .toc ul { columns: 1; list-style: none; }
+        .sidebar .toc li { margin-bottom: 0.1rem; }
+        .sidebar .toc a { color: rgba(255,255,255,0.78); text-decoration: none; font-size: 0.82rem; display: block; padding: 0.28rem 0.6rem; border-radius: 4px; transition: all 0.2s; line-height: 1.4; }
+        .sidebar .toc a:hover { background: rgba(255,255,255,0.12); color: white; }
+        .main-wrapper { flex: 1; min-width: 0; background: white; }
+        .main-wrapper main { max-width: 900px; margin: 0 auto; padding: 2rem 3rem; }
+        .main-wrapper footer { max-width: 900px; margin: 0 auto; padding: 1.5rem 3rem; }
+        main { padding: 2rem; }
+        section { margin-bottom: 3rem; }
+        h2 { color: var(--primary); font-size: 1.6rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--secondary); }
+        h3 { color: var(--dark); font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        h4 { color: var(--text); font-size: 1.1rem; margin: 1.2rem 0 0.5rem; }
+        p { margin-bottom: 1rem; text-align: justify; }
+        .math-block { background: var(--code-bg); padding: 1.2rem; margin: 1rem 0; border-left: 4px solid var(--secondary); border-radius: 4px; overflow-x: auto; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 1.5rem; border-radius: 8px; overflow-x: auto; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; line-height: 1.5; margin: 1rem 0; }
+        code { font-family: 'Fira Code', 'Courier New', monospace; background: var(--code-bg); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9em; }
+        pre code { background: transparent; padding: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        thead { background: var(--primary); color: white; }
+        th, td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; }
+        tbody tr:hover { background: var(--light); }
+        tbody tr:last-child td { border-bottom: none; }
+        .highlight-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+        .highlight-box h4 { color: white; margin-top: 0; }
+        .info-box { background: #e3f2fd; border-left: 4px solid var(--secondary); padding: 1rem 1.2rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+        .warning-box { background: #fff3e0; border-left: 4px solid var(--warning); padding: 1rem 1.2rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+        .success-box { background: #e8f5e9; border-left: 4px solid var(--success); padding: 1rem 1.2rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+        ul, ol { margin: 1rem 0 1rem 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        blockquote { border-left: 4px solid var(--accent); padding: 1rem 1.5rem; margin: 1.5rem 0; font-style: italic; color: var(--dark); background: var(--light); border-radius: 0 8px 8px 0; }
+        footer { background: var(--dark); color: white; text-align: center; padding: 2rem; font-size: 0.9rem; }
+        .algorithm { background: #1e1e1e; color: #d4d4d4; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; overflow-x: auto; }
+        section[id] { scroll-margin-top: 20px; }
+        @media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; min-width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; } .sidebar header { width: 100%; padding: 1.5rem; } .sidebar .toc { width: 100%; padding: 0 1.5rem 1rem; } .sidebar .toc ul { columns: 2; } .main-wrapper main { padding: 1.5rem; } .main-wrapper footer { padding: 1.5rem; } table { font-size: 0.85rem; } }
+        @media print { body { background: white; } .sidebar { position: relative; height: auto; width: 200px; min-width: 200px; } .main-wrapper { box-shadow: none; } }
+    </style>
+</head>
+<body>
+<div class="layout">
+<div class="sidebar">
+
+<header>
+    <h1>Lec13: 计算机视觉与生成模型</h1>
+    <div class="subtitle">Introduction to Artificial Intelligence — 复旦大学</div>
+    <div class="subtitle" style="margin-top:0.5rem; font-size:0.95rem; opacity:0.8;">GAN · WGAN · VAE · Diffusion · CLIP · SegGPT · SigLIP · DALL-E · BLIP</div>
+</header>
+
+<nav class="toc">
+    <h2>目录 Table of Contents</h2>
+    <ul>
+        <li><a href="#sec1">1. GAN 生成对抗网络</a></li>
+        <li><a href="#sec2">2. WGAN (Wasserstein GAN)</a></li>
+        <li><a href="#sec3">3. VAE 变分自编码器</a></li>
+        <li><a href="#sec4">4. Diffusion Models &amp; Stable Diffusion</a></li>
+        <li><a href="#sec5">5. 认知层次梯道</a></li>
+        <li><a href="#sec6">6. Zero-shot / One-shot / Few-shot</a></li>
+        <li><a href="#sec7">7. CLIP &amp; SegGPT</a></li>
+        <li><a href="#sec8">8. SigLIP</a></li>
+        <li><a href="#sec9">9. DALL-E &amp; BLIP</a></li>
+        <li><a href="#sec10">10. 对比学习现状</a></li>
+        <li><a href="#sec11">11. GAN vs VAE vs Diffusion 对比总结</a></li>
+        <li><a href="#sec12">12. Key Takeaways</a></li>
+    </ul>
+</nav>
+
+<main>
+
+<!-- ======================== Section 1: GAN ======================== -->
+<section id="sec1">
+<h2>1. GAN (生成对抗网络)</h2>
+
+<p>GAN (Generative Adversarial Networks) 的核心思想是<strong>极小极大博弈 (Minimax Game)</strong>。网络由两个相互对抗的模块组成：</p>
+
+<h3>1.1 两大角色</h3>
+
+<h4>生成器 (Generator, \(G\))</h4>
+<p>数学本质是一个映射函数 \(G: \mathcal{Z} \to \mathcal{X}\)。</p>
+<ul>
+    <li><strong>输入</strong>：从先验分布（如标准正态分布或均匀分布）中采样的随机噪声向量 \(z \in \mathcal{Z}\)，记作 \(z \sim p_z\)。</li>
+    <li><strong>输出</strong>：一张生成的假图片 \(G(z)\)，位于图像像素空间 \(\mathcal{X}\) 中。</li>
+</ul>
+
+<h4>判别器 (Discriminator, \(D\))</h4>
+<p>本质是一个二分类器网络，定义为映射函数 \(D: \mathcal{X} \to (0, 1)\)。</p>
+<ul>
+    <li><strong>输入</strong>：一张图片 \(x\)（真实样本 \(x \sim p_{data}\) 或生成样本 \(G(z)\)）。</li>
+    <li><strong>输出</strong>：\(D(x)\)，一个介于 0 到 1 之间的概率标量值，代表"输入图片 \(x\) 是真实图片"的置信度。越接近 1 越真，越接近 0 越假。</li>
+</ul>
+
+<h3>1.2 核心目标函数（Minimax Objective）</h3>
+
+<p>全局目标函数 \(V(D,G)\) 定义如下——判别器要尽力让它最大，生成器要让它最小：</p>
+
+<div class="math-block">
+$$ \min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{data}(x)}[\log D(x)] + \mathbb{E}_{z \sim p_z(z)}[\log(1 - D(G(z)))] $$
+</div>
+
+<h4>逐步解析公式中的每一项：</h4>
+<ul>
+    <li><strong>\(\mathbb{E}_{x \sim p_{data}}[\cdot]\)</strong>：从真实数据集中反复抽取真实样本 \(x\)，对后面的函数求期望（积分平均）。</li>
+    <li><strong>\(\log D(x)\)</strong>：真实样本的判别概率取对数。D 希望认定真图肯定是真的，即让 \(D(x) \to 1\)。当 \(D(x)\) 逼近 1 时，\(\log D(x)\) 趋近其最大值 0。</li>
+    <li><strong>\(\mathbb{E}_{z \sim p_z}[\cdot]\)</strong>：从噪声分布中不断抽取随机向量 \(z\)，喂给生成器得出假图 \(G(z)\) 并算期望。</li>
+    <li><strong>\(\log(1 - D(G(z)))\)</strong>：对于假图 \(G(z)\)，D 希望识破骗局让 \(D(G(z)) \to 0\)。此时 \((1 - D(G(z))) \to 1\)，对数 \(\log(1) = 0\) 达到最大值。</li>
+    <li><strong>G 的诉求</strong>：生成器希望尽量将全局目标函数压得越小越好。即生成以假乱真的图，使 \(D(G(z)) \to 1\)，那么 \((1-1) \to 0\)，导致 \(\log(0) \to -\infty\)，从而拉向极小值。</li>
+</ul>
+
+<h3>1.3 交替优化（Alternating Optimization）</h3>
+
+<p>因为博弈需要同时进行，但程序是一步一步走的，所以我们<strong>交替冻结对方参数</strong>来进行训练。</p>
+
+<h4>Step 1：训练判别器 D（最大化 \(\max_D\)）</h4>
+<p>固定生成器 \(G\) 参数。这就是标准的<strong>交叉熵分类损失 (Binary Cross Entropy)</strong>。为套用框架最小化优化的惯例，加负号转为极小化：</p>
+<div class="math-block">
+$$ \mathcal{L}_D = - \mathbb{E}_{x \sim p_{data}}[\log D(x)] - \mathbb{E}_{z \sim p_z}[\log (1 - D(G(z)))] $$
+</div>
+
+<h4>Step 2：训练生成器 G（最小化 \(\min_G\)）</h4>
+<p>固定 \(D\) 网络参数。目标函数第一项和 G 无关被抛弃，G 只需最小化第二项。</p>
+
+<div class="warning-box">
+<h4>⚠ 原始形式的梯度消失问题</h4>
+<p>在训练初期，\(G\) 生成的图质量很差，\(D\) 能轻松给出 \(D(G(z)) \approx 0\)。但函数 \(\log(1 - D(G(z)))\) 在 \(D(G(z)) \approx 0\) 处的导数接近 0，生成器根本收不到有效的梯度修正信号——这就是<strong>梯度消失 (Gradient Vanishing)</strong>。</p>
+</div>
+
+<h4>解决方案：Non-saturating Loss（非饱和启发式损失）</h4>
+<p>抛弃"最小化被认出是假图"，直接改成"<strong>极大化被认出来是真的对数概率</strong>"：</p>
+<div class="math-block">
+$$ \mathcal{L}_G = - \mathbb{E}_{z \sim p_z}[\log D(G(z))] $$
+</div>
+<p>这个变换让 G 的梯度在训练初期始终保持强劲，避免了梯度消失。</p>
+
+</section>
+
+<!-- ======================== Section 2: WGAN ======================== -->
+<section id="sec2">
+<h2>2. WGAN (Wasserstein GAN)</h2>
+
+<h3>2.1 传统 GAN 的数学命门：JS 散度崩溃</h3>
+
+<p>在最优判别器 \(D^*\) 下，传统 GAN 的博弈目标本质上是在<strong>最小化真实分布 \(p_r\) 和生成分布 \(p_g\) 的 JS 散度 (Jensen-Shannon Divergence)</strong>。</p>
+
+<div class="warning-box">
+<h4>⚠ JS 散度的致命缺陷</h4>
+<p>在高维空间中（如 \(128 \times 128\) 的图像），真实数据分布构成的流形(Manifold)极其微小。初始化网络产生的生成分布，与真实分布极大概率是<strong>完全不重叠的平行宇宙</strong>。根据 JS 散度的数学性质：当两个概率分布完全没有交集时，JS 散度<strong>永远锁死为常数 \(\log 2\)</strong>。常数求导等于零——梯度消失，模型当场挂机。</p>
+</div>
+
+<h3>2.2 Wasserstein 距离（Earth-Mover Distance）</h3>
+
+<p>WGAN 引入概率论中的 Wasserstein 距离来替代 JS 散度：</p>
+<div class="math-block">
+$$ W(p_r, p_g) = \inf_{\gamma \sim \Pi(p_r, p_g)} \mathbb{E}_{(x,y) \sim \gamma}[\|x - y\|] $$
+</div>
+
+<p><strong>直觉理解</strong>：把概率分布想象成地面上的沙丘。\(\Pi(p_r, p_g)\) 是所有"把生成分布沙丘铲平移成真实分布沙丘"的搬运方案集合。\(\gamma(x,y)\) 是从坐标 \(x\) 搬到坐标 \(y\) 的土方量。公式在找所有搬运方案中，"搬走重量 × 距离"代价最小的那一项（下确界 \(\inf\)）。</p>
+
+<div class="success-box">
+<h4>✅ 打破零梯度咒怨</h4>
+<p>Wasserstein 距离度量的是两个分布在<strong>物理坐标空间中的远近距离</strong>。即使两个分布完全不重叠，只要生成分布朝真实方向靠近一厘米，距离也会老老实实减少，导数永远呈"非零"状态。模型每时每刻都拥有极为踏实的<strong>梯度渐进推背感</strong>。</p>
+</div>
+
+<h3>2.3 Kantorovich-Rubinstein 对偶</h3>
+
+<p>直接求"最佳运输下确界"是 NP-hard 的。通过 Kantorovich-Rubinstein 理论的对偶变换：</p>
+<div class="math-block">
+$$ W(p_r, p_g) = \sup_{\|f\|_L \le 1} \mathbb{E}_{x \sim p_r}[f(x)] - \mathbb{E}_{x \sim p_g}[f(x)] $$
+</div>
+
+<h4>网络改造要点：</h4>
+<ul>
+    <li><strong>从判别器 D 到批评家 Critic \(f(\cdot)\)</strong>：不再是分类器！\(f(x)\) 输出一个无界实数值 \(\mathbb{R} \in (-\infty, \infty)\)，评价多高分端看图有多好。<strong>剥去结尾的 Sigmoid 激活函数</strong>。</li>
+    <li><strong>\(\|f\|_L \le 1\)（Lipschitz 1 约束）</strong>：网络函数 \(f\) 不允许剧烈震荡，自变量挪动一寸，函数值变化绝不能多出一分。即梯度绝对值恒 \(\le 1\)。</li>
+</ul>
+
+<h3>2.4 实现 Lipschitz 约束的方法</h3>
+
+<h4>方法一：Weight Clipping（权重裁剪，WGAN 原始方法）</h4>
+<p>暴力做法：每次参数更新后，将超出范围（如 \([-0.01, 0.01]\)）的权重截断。缺点是会损害网络拟合能力。</p>
+
+<h4>方法二：Gradient Penalty（梯度惩罚，WGAN-GP）</h4>
+<p>在损失函数中加入对梯度偏离 1 的惩罚项，更优雅地施加 Lipschitz 约束。</p>
+
+<h3>2.5 最终 WGAN-GP 损失函数</h3>
+
+<div class="math-block">
+$$ \mathcal{L}_{Critic} = \mathbb{E}_{z}[f(G(z))] - \mathbb{E}_{x}[f(x)] + \lambda \mathbb{E}_{\hat{x}} \left[(\|\nabla_{\hat{x}} f(\hat{x})\|_2 - 1)^2\right] $$
+</div>
+<div class="math-block">
+$$ \mathcal{L}_G = - \mathbb{E}_{z}[f(G(z))] $$
+</div>
+
+<p>其中 \(\hat{x}\) 是真实样本与生成样本之间的随机插值点，\(\lambda\) 是梯度惩罚系数（通常取 10）。第三项就是梯度惩罚：强制让 \(\hat{x}\) 处的梯度范数接近 1。</p>
+
+</section>
+
+<!-- ======================== Section 3: VAE ======================== -->
+<section id="sec3">
+<h2>3. VAE (变分自编码器, Variational Autoencoder)</h2>
+
+<p>VAE 不属于对抗门派，而是拥抱贝叶斯变分推理与神经网络的<strong>后验概率派重器</strong>。</p>
+
+<h3>3.1 编码器 (Encoder): \(q_\phi(z|x)\)</h3>
+
+<p>VAE 的编码器抛弃了传统 AutoEncoder 将输入压成一个离散向量的做法。VAE 的编码器输出<strong>两个独立的向量</strong>：</p>
+<ul>
+    <li><strong>均值向量 \(\mu\)</strong>：潜在空间中的分布中心。</li>
+    <li><strong>对数方差 \(\log \sigma^2\)</strong>：分布的不确定性（宽度）。</li>
+</ul>
+
+<div class="info-box">
+<p>含义：一幅图像在潜在空间中不是一个点，而是一个以 \(\mu\) 为中心、\(\sigma\) 为宽度的<strong>概率高斯云雾</strong>。这种概率化表征使得 VAE 能够进行采样和插值生成。</p>
+</div>
+
+<h3>3.2 重参数化技巧 (Reparameterization Trick)</h3>
+
+<p>我们需要从编码器输出的高斯分布中采样一个向量 \(z\) 传给解码器。但"从随机分布中采样"这个操作<strong>没有梯度</strong>，会阻断反向传播——这是深度学习的命门。</p>
+
+<div class="highlight-box">
+<h4>重参数化神之一笔</h4>
+<p>不直接从 \(q_\phi(z|x)\) 中采样，而是从一个外部的标准正态噪声中采样 \(\epsilon \sim \mathcal{N}(0, I)\)，然后通过线性变换得到：</p>
+<p style="text-align:center; font-size:1.2rem; margin-top:0.5rem;">$$ z = \mu + \sigma \odot \epsilon $$</p>
+<p>这样梯度可以顺畅地流回 \(\mu\) 和 \(\sigma\)（\(\epsilon\) 充当了随机性的"替死鬼"，它本身不需要计算偏导）。</p>
+</div>
+
+<h3>3.3 解码器 (Decoder): \(p_\theta(x|z)\)</h3>
+
+<p>根据获得的潜在向量 \(z\)，通过解码网络重建出与原始图像相似的输出 \(x'\)。</p>
+
+<h3>3.4 VAE 的损失函数：ELBO</h3>
+
+<p>我们要最大化数据的似然概率 \(p(x)\)，但这涉及对所有潜在变量的复杂积分（Intractable）。通过变分推导，我们转为最大化<strong>证据下界 (ELBO, Evidence Lower Bound)</strong>，等价于最小化以下损失：</p>
+
+<div class="math-block">
+$$ \mathcal{L}_{VAE} = \underbrace{-\mathbb{E}_{q_\phi(z|x)}[\log p_\theta(x|z)]}_{\text{重建损失 Reconstruction Loss}} + \underbrace{\mathcal{D}_{KL}(q_\phi(z|x) \| \mathcal{N}(0, I))}_{\text{KL 散度正则化}} $$
+</div>
+
+<h4>第一项：重建损失 (Reconstruction Loss)</h4>
+<p>衡量解码器输出 \(x'\) 与原始输入 \(x\) 的差异。通常使用 L2 Mean Squared Error (MSE)：</p>
+<div class="math-block">
+$$ \mathcal{L}_{recon} = \|x - x'\|^2 $$
+</div>
+
+<h4>第二项：KL 散度 (KL Divergence)</h4>
+<p>KL 散度度量两个分布的差异。这里将编码器输出的分布 \(q_\phi(z|x)\) 向标准正态分布 \(\mathcal{N}(0, I)\) 靠拢：</p>
+<div class="math-block">
+$$ \mathcal{D}_{KL}(q_\phi(z|x) \| \mathcal{N}(0, I)) = -\frac{1}{2} \sum_{j=1}^{d} \left(1 + \log \sigma_j^2 - \mu_j^2 - \sigma_j^2\right) $$
+</div>
+
+<div class="info-box">
+<h4>为什么要正则化到 \(\mathcal{N}(0, I)\)？</h4>
+<p>如果不加 KL 正则化，不同输入的编码会散布在潜在空间各处，彼此孤立不连通。未来在中间盲点做插值生成时，就会产生"缝合怪物"。KL 正则化强制所有编码聚集在原点附近的标准高斯云中，使得任意两点之间的插值都能生成有意义的图像。</p>
+</div>
+
+</section>
+
+<!-- ======================== Section 4: Diffusion ======================== -->
+<section id="sec4">
+<h2>4. Diffusion Models &amp; Stable Diffusion</h2>
+
+<h3>4.1 DDPM (Denoising Diffusion Probabilistic Models)</h3>
+
+<p>扩散模型从高能物理和热力学中获得灵感，采用"先破坏后重建"的策略。</p>
+
+<h4>正向扩散 (Forward Diffusion) — 加噪损毁</h4>
+<p>依托马尔科夫链 (Markov Chain)，将原始图像通过 \(T\) 步（通常上千步），每一步缓慢加入高斯噪声，直到 \(x_T\) 变成完全的随机噪声。</p>
+
+<p>利用累积加法特性，可以直接计算任意时刻 \(t\) 的状态（无需逐步迭代）：</p>
+<div class="math-block">
+$$ q(x_t | x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha}_t}\, x_0,\; (1-\bar{\alpha}_t)\, I) $$
+</div>
+<p>等价的采样形式：</p>
+<div class="math-block">
+$$ x_t = \sqrt{\bar{\alpha}_t}\, x_0 + \sqrt{1-\bar{\alpha}_t}\, \epsilon, \quad \epsilon \sim \mathcal{N}(0, I) $$
+</div>
+<p>其中 \(\bar{\alpha}_t = \prod_{s=1}^{t} (1 - \beta_s)\) 是随时间递减的<strong>信息保留系数</strong>，\(\beta_s\) 是预设的噪声调度 (noise schedule)。</p>
+
+<h4>逆向去噪 (Reverse Denoising) — 向死而生</h4>
+<p>训练一个带时间嵌入的 U-Net 网络 \(\epsilon_\theta(x_t, t)\) 来学习逆过程 \(p_\theta(x_{t-1} | x_t)\)，从纯噪声 \(x_T\) 中逐步恢复出原始图像。</p>
+
+<div class="highlight-box">
+<h4>简洁损失函数 (Simple Loss)</h4>
+<p>伟大的数学推导揭示了一个极其简洁的损失形式——让 U-Net 直接<strong>预测在时刻 \(t\) 加入的噪声 \(\epsilon\)</strong>：</p>
+<p style="text-align:center; font-size:1.05rem;">$$ \mathcal{L}_{simple} = \mathbb{E}_{x_0, \epsilon \sim \mathcal{N}(0, I),\, t}\left[ \left\| \epsilon - \epsilon_\theta(x_t, t) \right\|^2 \right] $$</p>
+<p>白话：拿网络猜测的噪声 \(\epsilon_\theta\) 与原始真实噪声 \(\epsilon\) 做差，算平方误差，要求它们尽可能一致。</p>
+</div>
+
+<h3>4.2 Stable Diffusion (LDM, Latent Diffusion Model)</h3>
+
+<p>原始扩散模型的最大瓶颈：在高分辨率像素空间（如 \(1024 \times 1024\)）中做 U-Net 去噪，计算量极其巨大。</p>
+
+<h4>三大核心创新：</h4>
+
+<h4>Step 1：VAE 压缩（宇宙折叠术）</h4>
+<p>用预训练好的 VAE 的 Encoder，将高分辨率图像压缩到低维<strong>潜在空间 (Latent Space)</strong>（如 \(128 \times 128\) 但通道更深），尺寸缩小数十倍。</p>
+
+<h4>Step 2：潜在空间扩散（微界降维打击）</h4>
+<p>在压缩后的潜在空间中进行加噪和去噪。计算量呈指数级下降，使得消费级显卡也能运行。</p>
+
+<h4>Step 3：Cross-Attention 文本条件控制</h4>
+<p>将文本 Prompt 通过 CLIP 文本编码器转化为语义向量 (Text Embeddings)。在 U-Net 的每个注意力层中：</p>
+<ul>
+    <li><strong>Q (Query)</strong>：来自图像特征</li>
+    <li><strong>K (Key), V (Value)</strong>：来自文本语义</li>
+</ul>
+<p>通过 Cross-Attention 机制，强制图像生成过程朝文本描述的方向收敛，实现"言生图"(Text-to-Image)。</p>
+
+</section>
+
+<!-- ======================== Section 5: 认知层次梯道 ======================== -->
+<section id="sec5">
+<h2>5. 认知层次梯道</h2>
+
+<p>如同孩童从认文断字到知兴替出谋决策，AI 在计算机视觉领域也可按层次划分认知境界：</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>层次</th>
+            <th>名称</th>
+            <th>核心能力</th>
+            <th>典型任务</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>L1</strong></td>
+            <td>形式 (Syntax / Form)</td>
+            <td>关注图像最底层的物理信号：边缘、频率、颜色、纹理</td>
+            <td>降噪、超分辨率、Canny 边缘检测</td>
+        </tr>
+        <tr>
+            <td><strong>L2</strong></td>
+            <td>语义 (Semantics)</td>
+            <td>将像素赋予人类概念身份：识别"这是可乐瓶"、"这是斑马"</td>
+            <td>图像分类、目标检测 (YOLO)、语义/实例分割</td>
+        </tr>
+        <tr>
+            <td><strong>L3</strong></td>
+            <td>推理 (Reasoning)</td>
+            <td>理解物体间的因果关系和空间逻辑</td>
+            <td>VQA (视觉问答)、视觉关系抽取</td>
+        </tr>
+        <tr>
+            <td><strong>L4</strong></td>
+            <td>语用 (Pragmatics)</td>
+            <td>基于理解做出行动决策（具身智能 Embodied AI）</td>
+            <td>自动驾驶紧急制动、机器人操作</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>L1：形式层 (Syntax / Form)</h3>
+<p>这是只关注图像数据最底层的物理信号层。对应深度模型中浅层卷积核提取的特征：高频边缘、拉普拉斯角点等。典型任务只做修补改切：降噪、超分辨率、边缘检测。</p>
+
+<h3>L2：语义层 (Semantics)</h3>
+<p>将无心的 RGB 像素赋予到人类主观的概念身份。"不再只能识别这是黑白横杠色长条，更知道这是人类定名为'可乐瓶'或'奔跑中的斑马'。"网络后层的 Softmax 分类向量和 Bounding Box 坐标是其数学表征。</p>
+
+<h3>L3：推理层 (Reasoning)</h3>
+<p>不满足死认死物，发掘物体间的内在因果联系。例如：看到一辆前凹的车和一根倒下的电线杆，不仅识别"车"和"杆"，还能推理出"电线杆是被车撞倒的"。典型任务包括 VQA 和视觉关系抽取。</p>
+
+<h3>L4：语用层 (Pragmatics)</h3>
+<p>最高境界——"看清后行动"。自动驾驶汽车在风雪夜看到八边形停车牌，经过形式→语义→推理三层判断后，最终下达<strong>紧急制动指令</strong>。冰冷的数字由"看"走通于改变现实的"行动"。</p>
+
+</section>
+
+<!-- ======================== Section 6: Zero/One/Few-shot ======================== -->
+<section id="sec6">
+<h2>6. Zero-shot / One-shot / Few-shot 学习</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>范式</th>
+            <th>定义</th>
+            <th>示例</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Zero-shot</strong></td>
+            <td>不看任何任务示例，直接凭借预训练知识给出结果</td>
+            <td>CLIP 从未专门训练过"斑马"分类，却能识别斑马</td>
+        </tr>
+        <tr>
+            <td><strong>One-shot</strong></td>
+            <td>只给模型展示一个正确示例</td>
+            <td>给出"Apple → Pomme"，问"Banana → ?"</td>
+        </tr>
+        <tr>
+            <td><strong>Few-shot</strong></td>
+            <td>提供少量（3-5 个）示例帮助模型理解任务格式</td>
+            <td>给出 3 对英法翻译示例，再问新词</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>6.1 NLP 中的 Zero-shot：零样本翻译</h3>
+<p><strong>"没见过"指的是什么？</strong> 指在微调阶段或 Prompt 中没有给过"英法翻译"这个具体任务的配对样本。</p>
+<p><strong>为什么能翻译？</strong> 在无监督预训练阶段，模型"阅读"了海量互联网数据，其中包含英法对照文本。它在高维语义空间中发现 "Apple" 和 "Pomme" 的上下文分布规律重合。</p>
+
+<div class="success-box">
+<p><strong>本质</strong>：Zero-shot 不是"从无到有创造知识"，而是<strong>"激发已经存在于参数权重中的庞大潜意识记忆"</strong>。</p>
+</div>
+
+<h3>6.2 CV 中的 Zero-shot：跨模态属性迁移</h3>
+<p>传统分类网络识别"斑马"需要几千张标注图片。Zero-shot CV（如 CLIP）通过<strong>属性知识迁移</strong>和<strong>跨模态对齐</strong>做到：训练时见过"马"和"黑白条纹"的概念，推理时通过文本描述"斑马是身上有黑白条纹的马"，在特征空间中推理出结果。</p>
+
+</section>
+
+<!-- ======================== Section 7: CLIP & SegGPT ======================== -->
+<section id="sec7">
+<h2>7. CLIP &amp; SegGPT</h2>
+
+<h3>7.1 CLIP (Contrastive Language-Image Pretraining)</h3>
+
+<p>CLIP 由 OpenAI 提出，彻底打通了视觉与语言的次元壁。</p>
+
+<h4>背景与痛点</h4>
+<p>传统图像分类（如 ResNet 在 ImageNet 上训练）必须预先设定封闭的分类标签，遇到没见过的第 1001 种物体就彻底失败。</p>
+
+<h4>CLIP 的预训练：对比学习</h4>
+<ul>
+    <li>从互联网暴力爬取 <strong>4 亿对"图像-文本"对</strong>。</li>
+    <li>双路编码器：图像编码器 (ViT) + 文本编码器 (Transformer)。</li>
+    <li><strong>训练目标</strong>：计算同一批次内图片特征与文本特征的<strong>余弦相似度</strong>。对应的图文对拉近（相似度最大化），不相关的推远。</li>
+</ul>
+
+<div class="math-block">
+$$ \text{sim}(I_i, T_j) = \frac{I_i \cdot T_j}{\|I_i\| \cdot \|T_j\|} $$
+</div>
+
+<h4>Zero-shot 分类的实现</h4>
+<p>训练结束后，分类完全不需要分类头：</p>
+<ol>
+    <li>将候选文本（"A photo of a cat"、"A photo of a dog"）送入文本编码器得到向量。</li>
+    <li>将待测图像送入图像编码器得到向量。</li>
+    <li>计算余弦相似度，选择最高的文本类别。</li>
+</ol>
+
+<div class="highlight-box">
+<h4>CLIP "没见过 Panda" 的真正含义</h4>
+<p><strong>没见过的</strong>：没有练过"大熊猫专属考卷"，没有传统分类头，从未做过"这幅图属于A、B、C哪个类别"的训练。</p>
+<p><strong>见过的</strong>：在 4 亿图文对中，100% 已经瞥见过游客拍的大熊猫图片和配文（"Today I saw a cute panda eating bamboo..."）。它学到的是<strong>跨维度的坐标映射</strong>——将图片特征悄悄推向单词 "panda" 所在的同一坐标区域。</p>
+<p>这是<strong>降维打击式的跨模态能力涌现</strong>！</p>
+</div>
+
+<h3>7.2 SegGPT (Segment Everything Everywhere All at Once)</h3>
+
+<p>SegGPT 由智源研究院 BAAI 提出，将 GPT 的 in-context learning 思想带入图像分割。</p>
+
+<h4>传统分割 vs SegGPT</h4>
+<ul>
+    <li><strong>传统</strong>：不同任务需要不同的网络（医疗分割、人像分割、实例分割各一套）。</li>
+    <li><strong>SegGPT</strong>：用<strong>纯粹的填色游戏</strong>统一所有分割任务。</li>
+</ul>
+
+<h4>运作方式：视觉 Prompt</h4>
+<ol>
+    <li>给一张提示图 A，用红色涂满"苹果"轮廓（Visual Prompt）。</li>
+    <li>给测试图 B，告诉模型："看图 A 的画法，把图 B 照着处理。"</li>
+    <li>SegGPT 的 Transformer 凭借注意力机制感知 A 中红光包裹的是"苹果"，在 B 中自动找到苹果实体并输出红色掩码。</li>
+</ol>
+
+<div class="success-box">
+<p><strong>革命性意义</strong>：不需要为特殊场景死磕修改网络头部。只需扔一张正确标注的演示图 (One-shot/Few-shot)，就能将任何未知图片中的相同目标切分出来。实现了<strong>"万物皆可分割、图文即是 Prompt"</strong>的统一泛化。</p>
+</div>
+
+</section>
+
+<!-- ======================== Section 8: SigLIP ======================== -->
+<section id="sec8">
+<h2>8. SigLIP (Sigmoid Loss for Language-Image Pre-Training)</h2>
+
+<p>SigLIP 由 Google 提出，是对 CLIP 底层数学机制的直接改良，解决了 CLIP 最致命的算力瓶颈。</p>
+
+<h3>8.1 CLIP 的 Softmax 瓶颈</h3>
+
+<p>传统 CLIP 使用基于 Softmax 的 InfoNCE Loss。为了让模型知道"图 A"和"文 A"最配，计算 Loss 时必须把同一批次内<strong>所有负样本的相似度加起来作为分母归一化</strong>。</p>
+
+<div class="warning-box">
+<h4>⚠ 瓶颈所在</h4>
+<p>Batch Size 必须开得极其巨大（如 32768）效果才好。多卡并行训练时，显卡之间为了算全局分母需要疯狂通信，造成显存灾难和通信墙。</p>
+</div>
+
+<h3>8.2 SigLIP 的 Sigmoid 破局</h3>
+
+<p>SigLIP 彻底抛弃 Softmax 全局归一化，换成最基础的<strong>成对二分类 Sigmoid Loss</strong>：</p>
+
+<div class="math-block">
+$$ \mathcal{L}_{SigLIP} = -\frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{N} \log \sigma\left(y_{ij} \cdot (z_i^T z_j' - b)\right) $$
+</div>
+
+<p>其中 \(y_{ij} = 1\) 当图文配对，\(y_{ij} = -1\) 当不配对。每对图文独立判断，互不干涉。</p>
+
+<h3>8.3 SigLIP 的优势</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>维度</th>
+            <th>CLIP (Softmax)</th>
+            <th>SigLIP (Sigmoid)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>损失函数</td>
+            <td>InfoNCE (全局归一化)</td>
+            <td>成对 Sigmoid (独立二分类)</td>
+        </tr>
+        <tr>
+            <td>Batch Size 要求</td>
+            <td>极大 (32768+)</td>
+            <td>较小即可</td>
+        </tr>
+        <tr>
+            <td>多卡通信</td>
+            <td>需要全局同步</td>
+            <td>通信解绑，无需全局同步</td>
+        </tr>
+        <tr>
+            <td>精度</td>
+            <td>基线</td>
+            <td>同等算力下更优</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="success-box">
+<p><strong>现状</strong>：新一代开源多模态模型（如 Google 的 PaliGemma）底层视觉"眼睛"已从 CLIP-ViT 替换为更强大的 SigLIP。</p>
+</div>
+
+</section>
+
+<!-- ======================== Section 9: DALL-E & BLIP ======================== -->
+<section id="sec9">
+<h2>9. DALL-E &amp; BLIP</h2>
+
+<h3>9.1 DALL-E 2：CLIP + Diffusion 的联合体</h3>
+
+<p>DALL-E 2 是"言出法随"画师，将 CLIP 的多模态对齐能力与扩散模型的生成能力完美结合。</p>
+
+<h4>三步流水线：</h4>
+<ol>
+    <li><strong>文本入脑</strong>：用 CLIP 文本编码器将 Prompt（如"一只穿着宇航服骑马的狗"）压缩为高维<strong>文本特征向量</strong>。</li>
+    <li><strong>Prior 模型转换</strong>：一个专门的小模块将文本向量翻译为对应的<strong>"图像特征向量"</strong>——预测：如果真有这么一张图，它在 CLIP 空间中的坐标在哪？</li>
+    <li><strong>扩散解码 (Diffusion Decoder)</strong>：将预测的图像特征作为条件，喂给级联扩散模型，从白噪声中逆向去噪，最终画出图像。</li>
+</ol>
+
+<div class="info-box">
+<p><strong>意义</strong>：不需要让一个网络从零搞懂写诗和画画。利用 CLIP 作为多模态"神枢基座"，调度下游的图像生成引擎，就能搭建出威力无与伦比的联合生成系统。</p>
+</div>
+
+<h3>9.2 BLIP / BLIP-2：Bridge 桥接思想</h3>
+
+<p>BLIP-2 展现了一种极其精妙的积木式"搭桥"思路，成为当前大多数前沿多模态大语言模型 (LVLM) 竞相效仿的最优解。</p>
+
+<h4>核心构想：一双神眼 + 一个最强大脑 + 一座桥梁</h4>
+
+<table>
+    <thead>
+        <tr>
+            <th>组件</th>
+            <th>角色</th>
+            <th>状态</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>视觉模型 (眼)</strong></td>
+            <td>预训练好的 ViT 图像编码器</td>
+            <td>冻结 (Frozen)</td>
+        </tr>
+        <tr>
+            <td><strong>语言模型 (脑)</strong></td>
+            <td>预训练好的大语言模型 (LLM)</td>
+            <td>冻结 (Frozen)</td>
+        </tr>
+        <tr>
+            <td><strong>桥梁 (Bridge / Q-Former)</strong></td>
+            <td>轻量级转换网络</td>
+            <td>唯一可训练的部分</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Bridge 在做什么？</h4>
+<p>ViT 看到图片吐出"视觉 Patch 特征"（浮点数高维矩阵），LLM 一辈子只吃"文字向量"，看不懂视觉矩阵。Bridge 充当<strong>"降维同声传译官"</strong>：学习消化视觉图块矩阵，翻译映射为对等的"软文字特征 (Soft Tokens)"，伪装成语言输入传给 LLM。</p>
+
+<div class="highlight-box">
+<h4>为什么这种思路被惊为天人？</h4>
+<p><strong>极度省钱高效</strong>：白嫖了巨头花上千万美元烧结好的"静态神眼"和"静态神脑"，只需用几张显卡训练那根"桥"。</p>
+<p><strong>解锁涌现级神迹</strong>：桥搭通后，后置大脑 LLM 完好保留了所有能力。你可以丢一张街景图，命令 LLM："请看这幅图，写一首表达现代都市落寞的中文现代诗。"图景顺着小桥流过去，点燃了大模型深藏的才气。</p>
+</div>
+
+</section>
+
+<!-- ======================== Section 10: 对比学习现状 ======================== -->
+<section id="sec10">
+<h2>10. 对比学习 (Contrastive Learning) 现状</h2>
+
+<h3>10.1 巅峰地位：多模态对齐基建霸主</h3>
+
+<h4>前生：纯视觉自监督</h4>
+<p>CLIP 之前，对比学习（如 SimCLR、MoCo）主要用于单模态视觉自监督：同一张图片的不同变换是正样本，不同图片是负样本。</p>
+
+<h4>登神：CLIP 跨模态降维打击</h4>
+<p>CLIP 将对比学习升格到"图-文"匹配，宣告天下：不需要复杂的分类系统，光靠对比学习算文本与图像的相似度矩阵，就能获得拥有全人类常识的特征空间。</p>
+
+<div class="success-box">
+<p><strong>当前地位</strong>：所有多模态巨星（Stable Diffusion、Midjourney、LLaVA），底层基座全由对比学习（CLIP、SigLIP、ALIGN）撑起来。在特征对齐这件事上，它是绝对的工业界第一重炮，无可替代。</p>
+</div>
+
+<h3>10.2 两大转变</h3>
+
+<h4>转变一：与视觉掩码重建 (MIM) 的融合</h4>
+<p>对比学习擅长<strong>全局宏观语义</strong>（一眼知道图中是狗、草地、飞盘），但对细微像素级特征非常粗糙。学术界随后提出了类 BERT 的视觉掩码建模（如 MAE），能极好地掌握微观局部像素逻辑。如今顶级模型将对比语义学习与掩码细节学习混用融合（如 EVA 架构）。</p>
+
+<h4>转变二：从判别框架走向生成式框架</h4>
+<p>对比学习底层逻辑是寻找相似度，是<strong>判别式的</strong>——"没有嘴，不会自然说话"。现在属于 LLM 大语言模型（自回归生成式网络）的时代。最新标配：</p>
+<ul>
+    <li><strong>先用对比模型</strong>（CLIP/SigLIP）完成图文对齐（粗排）。</li>
+    <li><strong>再送进生成式 LLM</strong> 进行深层语言自回归推理解读。</li>
+</ul>
+
+<blockquote>
+对比学习经历了从"学术热点"到"水和空气般的 AI 底层基建设施"的转变。未来更宏大的远景，是依靠对比学习构建的"多模态空间坐标"，全面托举起由生成式 AI 主导的推理时代。
+</blockquote>
+
+</section>
+
+<!-- ======================== Section 11: 对比总结表 ======================== -->
+<section id="sec11">
+<h2>11. GAN vs VAE vs Diffusion 对比总结</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>维度</th>
+            <th>GAN</th>
+            <th>VAE</th>
+            <th>Diffusion</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>核心思想</strong></td>
+            <td>对抗博弈（生成器 vs 判别器）</td>
+            <td>变分推断（编码-解码 + 正则化）</td>
+            <td>逐步加噪再逐步去噪</td>
+        </tr>
+        <tr>
+            <td><strong>训练方式</strong></td>
+            <td>交替优化，不稳定</td>
+            <td>端到端优化，稳定</td>
+            <td>端到端优化，稳定</td>
+        </tr>
+        <tr>
+            <td><strong>损失函数</strong></td>
+            <td>对抗损失 (BCE / Wasserstein)</td>
+            <td>ELBO = 重建损失 + KL 散度</td>
+            <td>噪声预测 MSE</td>
+        </tr>
+        <tr>
+            <td><strong>生成质量</strong></td>
+            <td>锐利但多样性低（模式崩塌）</td>
+            <td>多样但偏模糊</td>
+            <td>高质量 + 高多样性</td>
+        </tr>
+        <tr>
+            <td><strong>潜在空间</strong></td>
+            <td>隐式（无显式编码器）</td>
+            <td>显式（有编码器，可插值）</td>
+            <td>无显式潜在空间（或 LDM 中有）</td>
+        </tr>
+        <tr>
+            <td><strong>推理速度</strong></td>
+            <td>快（单次前向）</td>
+            <td>快（单次前向）</td>
+            <td>慢（需多步迭代去噪）</td>
+        </tr>
+        <tr>
+            <td><strong>训练稳定性</strong></td>
+            <td>差（需技巧：Non-saturating、WGAN-GP）</td>
+            <td>好</td>
+            <td>好</td>
+        </tr>
+        <tr>
+            <td><strong>似然估计</strong></td>
+            <td>无</td>
+            <td>有（ELBO 下界）</td>
+            <td>有（变分下界）</td>
+        </tr>
+        <tr>
+            <td><strong>典型应用</strong></td>
+            <td>早期图像生成、超分辨率</td>
+            <td>图像压缩、插值生成、特征学习</td>
+            <td>Stable Diffusion、DALL-E、Midjourney</td>
+        </tr>
+        <tr>
+            <td><strong>当前地位</strong></td>
+            <td>逐渐被 Diffusion 取代</td>
+            <td>作为组件（如 LDM 的压缩器）</td>
+            <td>当前图像生成的主流范式</td>
+        </tr>
+    </tbody>
+</table>
+
+</section>
+
+<!-- ======================== Section 12: Key Takeaways ======================== -->
+<section id="sec12">
+<h2>12. Key Takeaways</h2>
+
+<div class="highlight-box">
+<h4>核心要点总结</h4>
+<ol style="margin-top:0.5rem;">
+    <li><strong>GAN</strong>：通过极小极大博弈训练生成器和判别器。Non-saturating Loss 解决了初期梯度消失问题。</li>
+    <li><strong>WGAN</strong>：用 Wasserstein 距离替代 JS 散度，解决了分布不重叠时梯度为零的致命缺陷。WGAN-GP 用梯度惩罚替代权重裁剪。</li>
+    <li><strong>VAE</strong>：通过编码器输出 \(\mu\) 和 \(\log\sigma^2\)，用重参数化技巧 \(z = \mu + \sigma \odot \epsilon\) 实现可微采样。ELBO = 重建损失 + KL 正则化。</li>
+    <li><strong>Diffusion</strong>：前向加噪 \(x_t = \sqrt{\bar{\alpha}_t} x_0 + \sqrt{1-\bar{\alpha}_t} \epsilon\)，逆向用 U-Net 预测噪声。简洁损失 \(\|\epsilon - \epsilon_\theta\|^2\)。</li>
+    <li><strong>Stable Diffusion (LDM)</strong>：VAE 压缩 → 潜在空间扩散 → Cross-Attention 文本条件控制。消费级显卡也能运行。</li>
+    <li><strong>认知层次</strong>：形式 → 语义 → 推理 → 语用，从"看"到"行动"的递进。</li>
+    <li><strong>Zero-shot</strong>：不是无中生有，而是跨模态特征对齐（CV）和海量无监督知识打捞（NLP）。</li>
+    <li><strong>CLIP</strong>：4 亿图文对对比学习，余弦相似度对齐，无需分类头实现 Zero-shot 分类。</li>
+    <li><strong>SigLIP</strong>：Sigmoid 成对损失替代 Softmax，解绑多卡通信，更小 Batch 更优性能。</li>
+    <li><strong>BLIP-2</strong>：冻结的 ViT（眼）+ 冻结的 LLM（脑）+ 可训练的 Q-Former（桥）。极度省钱且解锁涌现能力。</li>
+    <li><strong>对比学习现状</strong>：从学术热点转变为 AI 底层基础设施，与 MIM 融合、向生成式框架演进。</li>
+</ol>
+</div>
+
+<div class="success-box">
+<h4>一句话概括本讲</h4>
+<p>计算机视觉经历了从 GAN 对抗生成、VAE 变分推断、到 Diffusion 扩散模型的范式演进；同时，以 CLIP 为代表的对比学习打通了视觉与语言的次元壁，催生了 DALL-E、BLIP 等多模态大模型，最终走向"看清世界 → 理解世界 → 改变世界"的具身智能之路。</p>
+</div>
+
+</section>
+
+</main>
+
+<footer>
+    <p>Lec13: 计算机视觉与生成模型 — Introduction to Artificial Intelligence, Fudan University</p>
+    <p style="margin-top:0.5rem; opacity:0.7;">Self-contained HTML notes | Generated for academic study purposes</p>
+</footer>
+
+</div>
+</body>
+</html>

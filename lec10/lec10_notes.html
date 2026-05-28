@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 10: Convolutional Neural Networks — Detailed</title>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --text: #333;
+            --muted: #7f8c8d;
+            --code-bg: #f8f9fa;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.7; color: var(--text); background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; min-width: 280px; background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%); color: white; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar header { background: transparent; padding: 2rem 1.5rem 1.5rem; text-align: left; }
+        .sidebar header h1 { font-size: 1.2rem; margin-bottom: 0.3rem; font-weight: 600; line-height: 1.3; }
+        .sidebar header .subtitle { font-size: 0.78rem; opacity: 0.7; line-height: 1.4; }
+        .sidebar .toc { flex: 1; padding: 0 1.5rem 2rem; background: transparent; border: none; overflow-y: auto; }
+        .sidebar .toc h2 { color: rgba(255,255,255,0.5); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.8rem; border: none; padding: 0; }
+        .sidebar .toc ul { columns: 1; list-style: none; }
+        .sidebar .toc li { margin-bottom: 0.1rem; }
+        .sidebar .toc a { color: rgba(255,255,255,0.78); text-decoration: none; font-size: 0.82rem; display: block; padding: 0.28rem 0.6rem; border-radius: 4px; transition: all 0.2s; line-height: 1.4; }
+        .sidebar .toc a:hover { background: rgba(255,255,255,0.12); color: white; }
+        .main-wrapper { flex: 1; min-width: 0; background: white; }
+        .main-wrapper main { max-width: 900px; margin: 0 auto; padding: 2rem 3rem; }
+        .main-wrapper footer { max-width: 900px; margin: 0 auto; padding: 1.5rem 3rem; }
+        main { padding: 2rem; }
+        section { margin-bottom: 3rem; }
+        h2 { color: var(--primary); font-size: 1.6rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--secondary); }
+        h3 { color: var(--dark); font-size: 1.25rem; margin: 1.5rem 0 0.75rem; }
+        h4 { color: var(--text); font-size: 1.1rem; margin: 1.2rem 0 0.5rem; }
+        p { margin-bottom: 1rem; text-align: justify; }
+        .math-block { background: var(--code-bg); padding: 1.2rem; margin: 1rem 0; border-left: 4px solid var(--secondary); border-radius: 4px; overflow-x: auto; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 1.5rem; border-radius: 8px; overflow-x: auto; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; line-height: 1.5; margin: 1rem 0; }
+        code { font-family: 'Fira Code', 'Courier New', monospace; background: var(--code-bg); padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9em; }
+        pre code { background: transparent; padding: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
+        thead { background: var(--primary); color: white; }
+        th, td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; }
+        tbody tr:hover { background: var(--light); }
+        tbody tr:last-child td { border-bottom: none; }
+        .highlight-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+        .highlight-box h4 { color: white; margin-top: 0; }
+        .info-box { background: #e3f2fd; border-left: 4px solid var(--secondary); padding: 1rem 1.2rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+        .warning-box { background: #fff3e0; border-left: 4px solid var(--warning); padding: 1rem 1.2rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+        .success-box { background: #e8f5e9; border-left: 4px solid var(--success); padding: 1rem 1.2rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+        ul, ol { margin: 1rem 0 1rem 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        blockquote { border-left: 4px solid var(--accent); padding: 1rem 1.5rem; margin: 1.5rem 0; font-style: italic; color: var(--dark); background: var(--light); border-radius: 0 8px 8px 0; }
+        footer { background: var(--dark); color: white; text-align: center; padding: 2rem; font-size: 0.9rem; }
+        .algorithm { background: #1e1e1e; color: #d4d4d4; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; overflow-x: auto; }
+        section[id] { scroll-margin-top: 20px; }
+        @media (max-width: 900px) { .layout { flex-direction: column; } .sidebar { width: 100%; min-width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; } .sidebar header { width: 100%; padding: 1.5rem; } .sidebar .toc { width: 100%; padding: 0 1.5rem 1rem; } .sidebar .toc ul { columns: 2; } .main-wrapper main { padding: 1.5rem; } .main-wrapper footer { padding: 1.5rem; } table { font-size: 0.85rem; } }
+        @media print { body { background: white; } .sidebar { position: relative; height: auto; width: 200px; min-width: 200px; } .main-wrapper { box-shadow: none; } }
+    
+        /* ===== Bilingual Toggle ===== */
+        .lang-toggle {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .lang-toggle button {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .lang-toggle button:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+        }
+        .lang-toggle button.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+        }
+        .cn { display: none; }
+        body.lang-cn .cn { display: inline; }
+        body.lang-cn .en { display: none; }
+        body.lang-cn .cn-block { display: block; }
+        body.lang-cn .en-block { display: none; }
+        .cn-block { display: none; }
+        /* Keep math, code, tables always visible */
+        .cn .MathJax, .cn code, .cn pre, .cn .math-block,
+        .cn .algorithm, .cn table { display: revert; }
+        body.lang-cn .en .MathJax,
+        body.lang-cn .en code,
+        body.lang-cn .en pre { display: revert; }
+        @media (max-width: 768px) {
+            .lang-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .lang-toggle button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+        <div class="lang-toggle">
+            <button id="btn-en">EN</button>
+            <button id="btn-cn">中文</button>
+        </div>
+
+<div class="layout">
+<div class="sidebar">
+<header>
+    <h1>Lecture 10: Convolutional Neural Networks (CNN) &mdash; In Depth</h1>
+    <p><span class="en"> class="subtitle"</span><span class="cn">| 任务 | 粒度 | 输出 | |------|------|------| | 图像分类 (Classification) | 最粗 | 整张图的类别标签 | | 目标检测 (Detection) | 中等 | 类别 + 边界框坐标 | | 语义分割 (Semantic Segmentation) | 精细 | 每个像素的类别 | | 实例分割 (Instance Segmentation) | 最精细 | 每个像素的类别 + 区分不同个体 |</span></p>
+    <span class="en"><p class="subtitle" style="margin-top:0.3rem; font-size:0.95rem; opacity:0.8;">Lecturer: Ding Henghui &nbsp;|&nbsp; Compiled 2026-05-07</p></span><span class="cn">卷积的过程永远只有四步： 1. **滑动卷积核** (Sliding) 2. **对应元素逐一相乘** (Element-wise multiplication) 3. **将所有乘积结果求和** (Summation) 4. **重复上述步骤** (Repeat)</span>
+</header>
+
+<nav class="toc">
+    <h2>Table of Contents </h2>
+    <ul>
+        <li><a href="#sec1">1. Introduction: Why CNNs?</a></li>
+        <li><a href="#sec1-1">&emsp;1.1 The Parameter Explosion Problem</a></li>
+        <li><a href="#sec1-2">&emsp;1.2 Two Core Priors for Image Data</a></li>
+        <li><a href="#sec1-3">&emsp;1.3 The Three-Layer Architecture Paradigm</a></li>
+        <li><a href="#sec2">2. The Convolution Operation</a></li>
+        <li><a href="#sec2-1">&emsp;2.1 The Four Essential Steps</a></li>
+        <li><a href="#sec2-2">&emsp;2.2 1D Convolution Examples</a></li>
+        <li><a href="#sec2-3">&emsp;2.3 2D Convolution Example</a></li>
+        <li><span class="en"><a href="#sec3">3. Padding and Output Size Control</a></li></span>
+        <li><a href="#sec3-1">&emsp;3.1 Why Padding?</a></li>
+        <li><a href="#sec3-2">&emsp;3.2 General Output Size Formula</a></li>
+        <li><a href="#sec3-3">&emsp;3.3 Common Configuration Lookup Table</a></li>
+        <li><a href="#sec3-4">&emsp;3.4 Stride Tradeoffs</a></li>
+        <li><span class="en"><a href="#sec4">4. Receptive Field</a></li></span>
+        <li><a href="#sec4-1">&emsp;4.1 Definition</a></li>
+        <li><a href="#sec4-2">&emsp;4.2 Single-Layer &amp; Multi-Layer RF</a></li>
+        <li><a href="#sec5">5. Multi-Channel Convolution &amp; Parameters</a></li>
+        <li><a href="#sec5-1">&emsp;5.1 Single-Channel to Multi-Channel</a></li>
+        <li><a href="#sec5-2">&emsp;5.2 Multi-Channel Input Convolution</a></li>
+        <li><a href="#sec5-3">&emsp;5.3 Parameter Count &amp; FLOPs</a></li>
+        <li><a href="#sec6">6. Special Convolution Types</a></li>
+        <li><span class="en"><a href="#sec6-1">&emsp;6.1 1&times;1 Convolution (Bottleneck)</a></li></span>
+        <li><span class="en"><a href="#sec6-2">&emsp;6.2 Depthwise Separable Convolution</a></li></span>
+        <li><span class="en"><a href="#sec6-3">&emsp;6.3 Dilated (Atrous) Convolution</a></li></span>
+        <li><a href="#sec6-4">&emsp;6.4 Transposed Convolution</a></li>
+        <li><a href="#sec6-5">&emsp;6.5 Deformable Convolution</a></li>
+        <li><span class="en"><a href="#sec6-6">&emsp;6.6 Group Convolution</a></li></span>
+        <li><span class="en"><a href="#sec7">7. Pooling Layer</a></li></span>
+        <li><a href="#sec7-1">&emsp;7.1 Purpose &amp; Max Pooling</a></li>
+        <li><span class="en"><a href="#sec7-2">&emsp;7.2 Average Pooling &amp; GAP</a></li></span>
+        <li><span class="en"><a href="#sec8">8. Batch Normalization</a></li></span>
+        <li><a href="#sec8-1">&emsp;8.1 Problem &amp; Formula</a></li>
+        <li><a href="#sec8-2">&emsp;8.2 Which Dimensions?</a></li>
+        <li><a href="#sec8-3">&emsp;8.3 Benefits</a></li>
+        <li><span class="en"><a href="#sec9">9. ReLU Activation</a></li></span>
+        <li><a href="#sec10">10. CNN Architecture Evolution</a></li>
+        <li><span class="en"><a href="#sec10-1">&emsp;10.1 LeNet-5 (1998)</a></li></span>
+        <li><span class="en"><a href="#sec10-2">&emsp;10.2 AlexNet (2012)</a></li></span>
+        <li><span class="en"><a href="#sec10-3">&emsp;10.3 VGG (2014)</a></li></span>
+        <li><span class="en"><a href="#sec10-4">&emsp;10.4 Inception / GoogLeNet (2014)</a></li></span>
+        <li><span class="en"><a href="#sec10-5">&emsp;10.5 ResNet (2015)</a></li></span>
+        <li><span class="en"><a href="#sec10-6">&emsp;10.6 DenseNet (2016)</a></li></span>
+        <li><a href="#sec10-7">&emsp;10.7 Vision Transformer (2020)</a></li>
+        <li><span class="en"><a href="#sec11">11. CNN Bottleneck vs. VAE Latent Space</a></li></span>
+        <li><a href="#sec12">12. Summary &mdash; Key Takeaways</a></li>
+    </ul>
+</nav>
+</div>
+<div class="main-wrapper">
+<main>
+
+<!-- ============================================================ -->
+<section id="sec1">
+<h2>1. Introduction: Why CNNs? <span class="cn">为什么需要CNN？</span></h2>
+
+<h3 id="sec1-1">1.1 The Parameter Explosion Problem</h3>
+
+<p>
+Consider processing a <strong>1000 &times; 1000</strong> grayscale image with a standard fully-connected deep neural network.
+The input dimension alone is 1,000,000 (\(= 10^6\)).
+If the first hidden layer also has \(10^6\) neurons and is fully connected to the input,
+the weight matrix for <em>this single layer</em> contains:
+</p>
+
+<div class="math-block">
+$$
+\text{Parameters} = 10^6 \times 10^6 = 10^{12}
+$$
+</div>
+
+<span class="en"><p>
+If each parameter is stored as a 32-bit float (4 bytes), this one layer requires:
+</p></span><span class="cn">| 任务 | 粒度 | 输出 | |------|------|------| | 图像分类 (Classification) | 最粗 | 整张图的类别标签 | | 目标检测 (Detection) | 中等 | 类别 + 边界框坐标 | | 语义分割 (Semantic Segmentation) | 精细 | 每个像素的类别 | | 实例分割 (Instance Segmentation) | 最精细 | 每个像素的类别 + 区分不同个体 |</span>
+
+<div class="math-block">
+$$
+10^{12} \times 4 \;\text{bytes} = 4 \;\text{TB}
+$$
+</div>
+
+<div class="warning-box">
+<strong>Key insight:</strong> 4 TB just for one layer's weights &mdash; before even considering biases, gradients, optimizer states, or subsequent layers. For color images (3 channels) the problem is 3&times; worse. This is completely infeasible for any hardware.
+</div>
+
+<p>
+The central question becomes: <strong>How can we drastically reduce the number of parameters while preserving task performance?</strong>
+The answer lies in exploiting two intrinsic properties of natural images.
+</p>
+
+<h3 id="sec1-2">1.2 Two Core Priors for Image Data</h3>
+
+<table>
+<thead>
+<tr><th>Prior</th><th>Observation</th><th>CNN Design Response</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Locality</strong></td><td>Nearby pixels are strongly correlated; distant pixels are weakly correlated. Objects occupy local regions.</td><td><strong>Local connectivity</strong> &mdash; each convolution kernel only connects to a small spatial region of the input.</td></tr>
+<tr><td><strong>Local Invariance</strong></td><td>The same object can appear at different positions and scales while retaining its semantic meaning.</td><td><strong>Weight sharing</strong> &mdash; the same kernel slides across the entire image, so features are detected regardless of location.</td></tr>
+</tbody>
+</table>
+
+<div class="info-box">
+<strong>Prior 1 &mdash; Locality (Solution):</strong> Define a method that <em>extracts local features</em>: the first few layers of the network only explore local regions of the input image. Then <em>traverse the entire image</em> with this method, and the final layers aggregate these local features to make predictions at the whole-image level.
+</div>
+
+<div class="info-box">
+<strong>Prior 2 &mdash; Local Invariance (Solution):</strong> Design a network such that scale changes, translations, and other spatial transformations of an object do not affect its semantic representation. This motivates <em>weight sharing</em> across spatial positions.
+</div>
+
+<h3 id="sec1-3">1.3 The Three-Layer Architecture Paradigm</h3>
+
+<p>Based on these two priors, CNNs adopt a classic repeating pattern:</p>
+
+<pre><code>Input Image
+    ↓
+[Convolution Layer]  → Extract local features (shared weights)
+    ↓
+[Activation (ReLU)]  → Introduce non-linearity
+    ↓
+[Pooling Layer]      → Downsample, increase translation invariance
+    ↓
+[Convolution Layer]  → Extract higher-level features
+    ↓
+[Pooling Layer]      → Further reduce spatial dimensions
+    ↓
+    ...
+    ↓
+[Fully Connected]    → Aggregate global information
+    ↓
+[Softmax]            → Output class probabilities
+</code></pre>
+
+<div class="info-box">
+<strong>Key insight:</strong> The "Conv + Pool" combination covers different object scales. Early layers detect edges/textures; deeper layers detect object parts and whole objects.
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec2">
+<h2>2. The Convolution Operation <span class="cn">2. <span class="cn">卷积操作</span></span></h2>
+
+<h3 id="sec2-1">2.1 The Four Essential Steps</h3>
+
+<p>Regardless of dimensionality (1D, 2D, or 3D), convolution always follows the same four steps:</p>
+
+<ol>
+    <span class="en"><li><strong>Slide</strong> the kernel to a position on the input</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+    <span class="en"><li><strong>Multiply</strong> element-wise between kernel and the input region it covers</li></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+    <span class="en"><li><strong>Sum</strong> all products into a single scalar</li></span><span class="cn">卷积的过程永远只有四步： 1. **滑动卷积核** (Sliding) 2. **对应元素逐一相乘** (Element-wise multiplication) 3. **将所有乘积结果求和** (Summation) 4. **重复上述步骤** (Repeat)</span>
+    <span class="en"><li><strong>Repeat</strong> for every valid position</li></span><span class="cn">卷积的过程永远只有四步： 1. **滑动卷积核** (Sliding) 2. **对应元素逐一相乘** (Element-wise multiplication) 3. **将所有乘积结果求和** (Summation) 4. **重复上述步骤** (Repeat)</span>
+</ol>
+
+<div class="highlight-box">
+<h4>Core Principle: Multiply &amp; Sum</h4>
+<span class="en"><p>The convolution operation is fundamentally a dot product between the kernel weights and a local patch of the input. This dot product measures how well the kernel's pattern matches the local input pattern.</p></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+</div>
+
+<h3 id="sec2-2">2.2 1D Convolution Example <span class="cn">例子</span>s</h3>
+
+<h4>Example <span class="cn">例子</span> 2.1: Basic 1D Convolution</h4>
+
+<pre><code>Input Vector:  [1, 2, 3, 4, 5, 6]
+Kernel:        [2, 2, 2]   (length 3)
+Stride:        1
+Padding:       0
+</code></pre>
+
+<table>
+<thead><tr><th>Position</th><th>Window Values</th><th>Element-wise Multiplication</th><th>Sum</th><th>Output</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>[1, 2, 3]</td><td>1&times;2, 2&times;2, 3&times;2</td><td>2+4+6</td><td><strong>12</strong></td></tr>
+<tr><td>2</td><td>[2, 3, 4]</td><td>2&times;2, 3&times;2, 4&times;2</td><td>4+6+8</td><td><strong>18</strong></td></tr>
+<tr><td>3</td><td>[3, 4, 5]</td><td>3&times;2, 4&times;2, 5&times;2</td><td>6+8+10</td><td><strong>24</strong></td></tr>
+<tr><td>4</td><td>[4, 5, 6]</td><td>4&times;2, 5&times;2, 6&times;2</td><td>8+10+12</td><td><strong>30</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>Output vector:</strong> <code>[12, 18, 24, 30]</code></p>
+
+<span class="en"><p>
+Output length = Input length &minus; Kernel length + 1 = 6 &minus; 3 + 1 = <strong>4</strong>.
+</p></span><span class="cn">假设 Input=256, Output=256, Kernel=3×3：</span>
+
+<h4>Example <span class="cn">例子</span> 2.2: Kernel with Zero Elements</h4>
+
+<pre><code>Input Vector:  [1, 2, 3, 4, 5, 6]
+Kernel:        [1, 0, 1]   (length 3)
+</code></pre>
+
+<table>
+<thead><tr><th>Position</th><th>Window Values</th><th>Element-wise Multiplication</th><th>Sum</th><th>Output</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>[1, 2, 3]</td><td>1&times;1, 2&times;0, 3&times;1</td><td>1+0+3</td><td><strong>4</strong></td></tr>
+<tr><td>2</td><td>[2, 3, 4]</td><td>2&times;1, 3&times;0, 4&times;1</td><td>2+0+4</td><td><strong>6</strong></td></tr>
+<tr><td>3</td><td>[3, 4, 5]</td><td>3&times;1, 4&times;0, 5&times;1</td><td>3+0+5</td><td><strong>8</strong></td></tr>
+<tr><td>4</td><td>[4, 5, 6]</td><td>4&times;1, 5&times;0, 6&times;1</td><td>4+0+6</td><td><strong>10</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>Output:</strong> <code>[4, 6, 8, 10]</code></p>
+
+<div class="info-box">
+<strong>Important:</strong> The zero in the kernel is a <em>meaningful design choice</em>. It allows the kernel to "skip" the middle element and only attend to the two ends. Every element of a convolution kernel is a learnable parameter &mdash; including zeros and negative numbers, which are discovered during training.
+</div>
+
+<h3 id="sec2-3">2.3 2D Convolution Example <span class="cn">例子</span></h3>
+
+<h4>Example 2.3: 2D Convolution Without Padding <span class="cn">填充 (Padding)</span></h4>
+
+<pre><code>Input Volume (4&times;4):
+  [0, 1, 1, 2]
+  [1, 0, 1, 1]
+  [2, 0, 1, 2]
+  [2, 1, 1, 2]
+
+Kernel (3&times;3):
+  [ 1, -1,  0]
+  [ 0,  1,  1]
+  [ 1,  0,  1]
+
+Stride = 1, Padding = 0
+</code></pre>
+
+<p><strong>Output size:</strong> \((4 - 3)/1 + 1 = 2\), i.e., 2&times;2.</p>
+
+<span class="en"><p><strong>Computing each output element:</strong></p></span><span class="cn">卷积的过程永远只有四步： 1. **滑动卷积核** (Sliding) 2. **对应元素逐一相乘** (Element-wise multiplication) 3. **将所有乘积结果求和** (Summation) 4. **重复上述步骤** (Repeat)</span>
+
+<h4>Output[0,0] &mdash; Top-left corner</h4>
+<pre><code>0&times;1 + 1&times;(-1) + 1&times;0
++ 1&times;0 + 0&times;1  + 1&times;1
++ 2&times;1 + 0&times;0  + 1&times;1
+= 0 - 1 + 0 + 0 + 0 + 1 + 2 + 0 + 1 = <strong>3</strong>
+</code></pre>
+
+<h4>Output[0,1] &mdash; Top-right corner</h4>
+<pre><code>1&times;1 + 1&times;(-1) + 2&times;0
++ 0&times;0 + 1&times;1  + 1&times;1
++ 0&times;1 + 1&times;0  + 2&times;1
+= 1 - 1 + 0 + 0 + 1 + 1 + 0 + 0 + 2 = <strong>5</strong>
+</code></pre>
+
+<h4>Output[1,0] &mdash; Bottom-left corner</h4>
+<pre><code>1&times;1 + 0&times;(-1) + 1&times;0
++ 2&times;0 + 0&times;1  + 1&times;1
++ 2&times;1 + 1&times;0  + 1&times;1
+= 1 + 0 + 0 + 0 + 0 + 1 + 2 + 0 + 1 = <strong>4</strong>
+</code></pre>
+
+<h4>Output[1,1] &mdash; Bottom-right corner</h4>
+<pre><code>0&times;1 + 1&times;(-1) + 1&times;0
++ 0&times;0 + 1&times;1  + 1&times;1
++ 1&times;1 + 1&times;0  + 2&times;1
+= 0 - 1 + 0 + 0 + 1 + 1 + 1 + 0 + 2 = <strong>5</strong>
+</code></pre>
+
+<p><strong>Output Volume:</strong></p>
+<pre><code>[3, 5]
+[4, 5]
+</code></pre>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec3">
+<h2>3. Padding <span class="cn">3. <span class="cn">填充 </span>(Padding)</span> and Output Size Control</h2>
+
+<h3 id="sec3-1">3.1 Why Padding <span class="cn">填充 (Padding)</span>?</h3>
+
+<p>
+In Example 2.3, a 4&times;4 input with a 3&times;3 kernel produced a 2&times;2 output &mdash; the spatial dimensions shrank.
+In deep networks with many layers, this shrinkage would rapidly reduce feature maps to 1&times;1, destroying spatial information.
+</p>
+
+<p><strong>Solution:</strong> Pad the input with zeros around its border before convolution.</p>
+
+<h4>Zero Padding <span class="cn">填充 (Padding)</span> Example</h4>
+
+<span class="en"><p>Padding the 4&times;4 input with 1 ring of zeros creates a 6&times;6 input:</p></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+
+<pre><code>[0, 0, 0, 0, 0, 0]
+[0, 0, 1, 1, 2, 0]
+[0, 1, 0, 1, 1, 0]
+[0, 2, 0, 1, 2, 0]
+[0, 2, 1, 1, 2, 0]
+[0, 0, 0, 0, 0, 0]
+</code></pre>
+
+<p>Now convolving with a 3&times;3 kernel at stride 1:</p>
+
+<div class="math-block">
+$$
+\text{Output Size} = \frac{6 - 3}{1} + 1 = 4 \times 4
+$$
+</div>
+
+<span class="en"><p><strong>The output is the same size as the original (unpadded) input!</strong></p></span><span class="cn">**场景**：Input channel = 256，Output channel = 256，卷积核 3×3。</span>
+
+<div class="info-box">
+This size-preserving padding strategy is essential when building deep networks; otherwise feature maps would rapidly shrink to 1&times;1.
+</div>
+
+<h3 id="sec3-2">3.2 General Output Size Formula <span class="cn">输出尺寸公式</span></h3>
+
+<div class="math-block">
+$$
+\text{Output Size} = \frac{\text{Input Size} + 2 \times \text{Padding} - \text{Kernel Size}}{\text{Stride}} + 1
+$$
+</div>
+
+<div class="warning-box">
+<strong>Note:</strong> The numerator must be evenly divisible by Stride. If not, frameworks like PyTorch will raise an error or truncate. Always verify that your configuration produces an integer result.
+</div>
+
+<h4>Example <span class="cn">例子</span> 2.4: Stride = 2 Down-sampling</h4>
+
+<pre><code>Input:   7&times;7
+Kernel:  3&times;3
+Padding: 0
+Stride:  2
+</code></pre>
+
+<div class="math-block">
+$$
+\text{Output Size} = \frac{7 + 0 - 3}{2} + 1 = \frac{4}{2} + 1 = 3
+$$
+</div>
+
+<p>Output is <strong>3&times;3</strong>. Stride=2 is one of the most common <strong>down-sampling</strong> mechanisms in CNNs, serving a similar role to pooling layers.</p>
+
+<h3 id="sec3-3">3.3 Common Configuration Lookup Table</h3>
+
+<table>
+<thead><tr><th>Goal</th><th>Kernel</th><th>Padding</th><th>Stride</th><th>Output/Input Ratio</th></tr></thead>
+<tbody>
+<tr><td>Preserve size</td><td>3&times;3</td><td>1</td><td>1</td><td>1:1</td></tr>
+<tr><td>Preserve size</td><td>5&times;5</td><td>2</td><td>1</td><td>1:1</td></tr>
+<tr><td>Preserve size</td><td>7&times;7</td><td>3</td><td>1</td><td>1:1</td></tr>
+<tr><td>Down-sample</td><td>3&times;3</td><td>1</td><td>2</td><td>1:2</td></tr>
+</tbody>
+</table>
+
+<div class="success-box">
+<strong>Rule of thumb:</strong> When <code>Padding = (Kernel Size &minus; 1) / 2</code> with stride=1, the spatial dimensions are preserved. This applies only for odd kernel sizes (3, 5, 7, ...).
+</div>
+
+<h3 id="sec3-4">3.4 Stride Tradeoffs</h3>
+
+<ul>
+    <span class="en"><li><strong>Small stride (e.g., 1):</strong> More detailed feature extraction, larger feature maps, higher computational cost.</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+    <li><strong>Large stride (e.g., 2):</strong> Faster feature extraction, smaller feature maps, lower cost, but may miss fine-grained details.</li>
+</ul>
+
+<span class="en"><p>In practice, early layers use stride=1 to preserve spatial detail, while deeper layers use stride=2 (or pooling) to progressively reduce spatial dimensions.</p></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec4">
+<h2>4. Receptive Field <span class="cn">4. 感受野</span></h2>
+
+<h3 id="sec4-1">4.1 Definition <span class="cn">定义</span></h3>
+
+<p>
+The <strong>receptive field</strong> of an output feature map element is the region in the <em>input image</em> that influences (is "seen by") that element.
+It answers: <em>How large an area of the original image does this neuron respond to?</em>
+</p>
+
+<h3 id="sec4-2">4.2 Single-Layer Receptive Field <span class="cn">感受野</span></h3>
+
+<span class="en"><p>
+For a single convolutional layer with a kernel of size \(k \times k\), the receptive field of each output element is simply \(k \times k\).
+</p></span><span class="cn">| Layer | 类型 | Kernel | Stride | Padding | 输出尺寸 | 参数量 | |-------|------|--------|--------|---------|---------|--------| | Input | - | - | - | - | 32×32×1 | 0 | | C1 | Conv | 5×5×1, 6个 | 1 | Valid | 28×28×6 | (5×5×1+1)×6 = 156 | | S2 | AvgPool | 2×2 | 2 | - | 14×14×6 | 0 | | C3 | Conv | 5×5×6, 16个 | 1 | Valid | 10×10×16 | (5×5×6+1)×16 = 2,416 | | S4 | AvgPool | 2×2 | 2 | - | 5×5×16 | 0 | | C5 | Conv/FC | 5×5×16, 120个 | 1 | Valid | 1×1×120 | (5×5×16)×120 = 48,000 | | F6 | FC | - | - | - | 84 | 120×84 = 10,080 | | Output | FC | - | - | - | 10 | 84×10 = 840 |</span>
+
+<h3>4.3 Multi-Layer Receptive Field <span class="cn">感受野</span></h3>
+
+<span class="en"><p>
+For a stack of \(L\) convolutional layers, each with kernel size \(k \times k\) and stride=1, the cumulative receptive field of the \(L\)-th layer is:
+</p></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+
+<div class="math-block">
+$$
+\text{Receptive Field} = L \times (k - 1) + 1
+$$
+</div>
+
+<h4>Example <span class="cn">例子</span> 2.5: Three Stacked 3&times;3 Convolutions</h4>
+
+<div class="math-block">
+$$
+RF = 3 \times (3 - 1) + 1 = 3 \times 2 + 1 = 7
+$$
+</div>
+
+<span class="en"><p>
+Three stacked 3&times;3 convolutions produce a receptive field equivalent to a single <strong>7&times;7</strong> kernel!
+This is the <strong>core theoretical justification</strong> for VGG's use of small kernels.
+</p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+
+<div class="highlight-box">
+<h4>Why Stacked Small Kernels Beat One Large Kernel</h4>
+<p>
+Three 3&times;3 layers (27 parameters per channel pair) achieve the same 7&times;7 receptive field as one 7&times;7 layer (49 parameters per channel pair), but with:
+</p>
+<ul>
+    <li>Fewer parameters (27 vs 49 per channel pair)</li>
+    <li>More non-linearity (3 ReLU layers vs 1)</li>
+    <span class="en"><li>Easier to train</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+</ul>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec5">
+<h2>5. Multi-Channel Convolution <span class="cn">5. <span class="cn">多通道卷积</span></span> and Parameter Calculation</h2>
+
+<h3 id="sec5-1">5.1 From Single-Channel to Multi-Channel</h3>
+
+<ul>
+    <span class="en"><li><strong>Single-channel input + single kernel</strong> &rarr; produces 1 feature map.</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+    <span class="en"><li><strong>Single-channel input + multiple kernels</strong> &rarr; each kernel extracts a different feature; number of output channels = number of kernels.</li></span><span class="cn">**场景**：Input channel = 256，Output channel = 256，卷积核 3×3。</span>
+</ul>
+
+<h3 id="sec5-2">5.2 Multi-Channel Input Convolution</h3>
+
+<span class="en"><p>
+A color (RGB) image has 3 channels. The convolution kernel <strong>must have the same number of channels</strong> as the input.
+Each kernel is a 3D volume of size \(k_h \times k_w \times C_{in}\); convolution sums across all channels to produce a single 2D feature map.
+</p></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+
+<h4>Example 2.6: Multi-Channel Convolution <span class="cn">多通道卷积</span></h4>
+
+<pre><code>Input Volume:  4&times;4&times;3  (Height &times; Width &times; Channels)
+Kernel:        3&times;3&times;3  (Height &times; Width &times; Input Channels)
+Number of kernels:  2
+Padding:       1
+Stride:        2
+</code></pre>
+
+<p><strong>Output size calculation:</strong></p>
+
+<div class="math-block">
+$$
+\frac{4 + 2 \times 1 - 3}{2} + 1 = \frac{5}{2} + 1 = 3.5 \;\longrightarrow\; \text{floor to } 3
+$$
+</div>
+
+<span class="en"><p>Output feature map: <strong>3&times;3</strong> with <strong>2 channels</strong>, i.e., a 3&times;3&times;2 volume.</p></span><span class="cn">- **单通道输入 + 单个卷积核**：输出 1 个 feature map。 - **单通道输入 + 多个卷积核**：每个卷积核提取一种特征，输出通道数 = 卷积核个数。</span>
+
+<div class="info-box">
+<strong>Two golden rules:</strong><br>
+1. <strong>Input channels = kernel depth</strong> (each kernel must match the input's channel count)<br>
+2. <strong>Output channels = number of kernels</strong> (each kernel produces one output channel)
+</div>
+
+<h3 id="sec5-3">5.3 Parameter Count Formula <span class="cn">公式</span></h3>
+
+<div class="math-block">
+$$
+\text{Params} = C_{out} \times (k_w \times k_h \times C_{in} + 1)
+$$
+</div>
+
+<p>Where:</p>
+<ul>
+    <li>\(C_{out}\): number of output channels (= number of kernels)</li>
+    <li>\(C_{in}\): number of input channels</li>
+    <li>\(k_w, k_h\): kernel width and height</li>
+    <li>\(+1\): bias term per output channel</li>
+</ul>
+
+<h4>Example <span class="cn">例子</span> 2.7: Full Parameter Calculation</h4>
+
+<pre><code>Input feature map:  7&times;7&times;3
+Kernel size:        3&times;3&times;3
+Number of kernels:  2
+Stride:             2
+Padding:            1
+Output feature map: 3&times;3&times;2
+</code></pre>
+
+<p><strong>Per-kernel parameters (weights only):</strong></p>
+<div class="math-block">
+$$
+3 \times 3 \times 3 = 27 \;\text{(without bias)}, \quad 28 \;\text{(with bias)}
+$$
+</div>
+
+<span class="en"><p><strong>Total layer parameters (with bias):</strong></p></span><span class="cn">参数量（Parameters）计算（PDF p59）</span>
+
+<div class="math-block">
+$$
+\text{Params} = 2 \times (3 \times 3 \times 3 + 1) = 2 \times 28 = \mathbf{56}
+$$
+</div>
+
+<h3>5.4 FLOPs (Floating-Point Operations) Calculation</h3>
+
+<div class="math-block">
+$$
+\text{FLOPs} = \bigl[(k_w \times k_h \times C_{in}) + (k_w \times k_h \times C_{in} - 1) + 1\bigr] \times C_{out} \times W_{out} \times H_{out}
+$$
+</div>
+
+<p>Where the three components are:</p>
+<ul>
+    <li>\(k_w \times k_h \times C_{in}\): number of multiplications per output element</li>
+    <li>\(k_w \times k_h \times C_{in} - 1\): number of additions (summing \(n\) products requires \(n-1\) additions)</li>
+    <li><span class="en">\(+1\): bias addition</span><span class="cn">其中： - $C_{out}$：输出通道数（卷积核个数） - $C_{in}$：输入通道数 - $k_w, k_h$：卷积核宽高 - $+1$：每个输出通道的**偏置项 (bias)**</span></li>
+    <li><span class="en">\(C_{out} \times W_{out} \times H_{out}\): total number of output elements</span><span class="cn">$$ \text{Output Size} = \frac{\text{Input Size} + 2 \times \text{Padding} - \text{Kernel Size}}{\text{Stride}} + 1 $$</span></li>
+</ul>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec6">
+<h2>6. Special Convolution Types <span class="cn">6. <span class="cn">特殊卷积类型</span></span></h2>
+
+<h3 id="sec6-1">6.1 1&times;1 Convolution (Pointwise Convolution)</h3>
+
+<span class="en"><p>
+1&times;1 convolution was introduced in <strong>Network in Network (NiN)</strong> and later popularized by <strong>Inception</strong> as a <em>bottleneck</em> layer. Despite its tiny spatial footprint, it is one of the most powerful tools in CNN design.
+</p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+
+<h4>Mathematical Definition <span class="cn">定义</span></h4>
+
+<span class="en"><p>For spatial position \((h, w)\), the 1&times;1 convolution computes:</p></span><span class="cn">$$ \frac{4 + 2 \times 1 - 3}{2} + 1 = \frac{5}{2} + 1 = 3.5 \rightarrow \text{实际取整为 } 3 $$</span>
+
+<div class="math-block">
+$$
+\text{Output}[h, w, c_{out}] = \sum_{c_{in}=0}^{C_{in}-1} \text{Input}[h, w, c_{in}] \times \text{Kernel}[0, 0, c_{in}, c_{out}] + \text{Bias}[c_{out}]
+$$
+</div>
+
+<span class="en"><p>
+A 1&times;1 convolution performs <strong>no spatial aggregation</strong> (receptive field is only 1&times;1).
+It operates purely as a <strong>linear combination across the channel dimension</strong>.
+</p></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+
+<h4>Channel Reduction: Numerical Example <span class="cn">例子</span></h4>
+
+<span class="en"><p>
+Consider reducing a <strong>2&times;2&times;4</strong> input (H=2, W=2, C=4) to <strong>2&times;2&times;2</strong> (C=2):
+</p></span><span class="cn">$$ \frac{4 + 2 \times 1 - 3}{2} + 1 = \frac{5}{2} + 1 = 3.5 \rightarrow \text{实际取整为 } 3 $$</span>
+
+<span class="en"><p><strong>Input data (4 channels, each 2&times;2):</strong></p></span><span class="cn">对于彩色图像（3 channels），问题更加严重（PDF p27）。</span>
+<pre><code>Channel 0:      Channel 1:      Channel 2:      Channel 3:
+[1, 2]          [5, 6]          [9,  10]        [13, 14]
+[3, 4]          [7, 8]          [11, 12]        [15, 16]
+</code></pre>
+
+<p><strong>Two 1&times;1 kernels</strong> (each of size 1&times;1&times;4):</p>
+<pre><code>Kernel 0 (→ output channel 0): [0.5, 0.5, 0,   0  ]
+Kernel 1 (→ output channel 1): [0,   0,   0.5, 0.5]
+</code></pre>
+
+<p><strong>Calculation at position [0,0]:</strong></p>
+<p>Input values at [0,0] across all channels: <code>[1, 5, 9, 13]</code></p>
+
+<pre><code>Output Channel 0 at [0,0]:
+  1&times;0.5 + 5&times;0.5 + 9&times;0 + 13&times;0 = 0.5 + 2.5 = <strong>3.0</strong>
+
+Output Channel 1 at [0,0]:
+  1&times;0 + 5&times;0 + 9&times;0.5 + 13&times;0.5 = 4.5 + 6.5 = <strong>11.0</strong>
+</code></pre>
+
+<p>Computing all positions, the final output is:</p>
+<pre><code>Channel 0:      Channel 1:
+[3,  4 ]        [11, 12]
+[5,  6 ]        [13, 14]
+</code></pre>
+
+<p><strong>Analysis:</strong></p>
+<ul>
+    <li>Spatial dimensions 2&times;2 are <strong>completely preserved</strong></li>
+    <span class="en"><li>Channels compressed from 4 to 2</li></span><span class="cn">对于彩色图像（3 channels），问题更加严重（PDF p27）。</span>
+    <span class="en"><li>Only 10 parameters: \(2 \times (1 \times 1 \times 4 + 1) = 10\)</li></span><span class="cn">若卷积核尺寸为 $k \times k$，则该层的感受野就是 $k \times k$。</span>
+</ul>
+
+<h4>1&times;1 Bottleneck: Parameter Comparison <span class="cn">对比</span></h4>
+
+<span class="en"><p><strong>Scenario:</strong> Input=256 channels, Output=256 channels, using 3&times;3 convolutions.</p></span><span class="cn">**场景**：Input channel = 256，Output channel = 256，卷积核 3×3。</span>
+
+<table>
+<thead><tr><th>Approach</th><th>Structure</th><th>Calculation</th><th>Parameters</th></tr></thead>
+<tbody>
+<tr><td><strong>Direct 3&times;3</strong></td><td>256 &rarr; 3&times;3 &rarr; 256</td><td>256 &times; 3 &times; 3 &times; 256</td><td><strong>589,824</strong></td></tr>
+<tr><td><strong>Bottleneck</strong></td><td>256 &rarr; 1&times;1&times;32 &rarr; 3&times;3 &rarr; 1&times;1 &rarr; 256</td><td>256&times;1&times;1&times;32 + 32&times;3&times;3&times;256</td><td><strong>81,920</strong></td></tr>
+</tbody>
+</table>
+
+<span class="en"><p>8,192 + 73,728 = 81,920. <strong>Compression ratio: 589,824 / 81,920 &asymp; 7.2&times;</strong></p></span><span class="cn">若卷积核尺寸为 $k \times k$，则该层的感受野就是 $k \times k$。</span>
+
+<p>
+The bottleneck works by: (1) using 1&times;1 to compress 256 channels to 32 (dimensionality reduction), (2) applying 3&times;3 convolution on the compact 32-channel representation, (3) using another 1&times;1 to restore 256 channels. Although this adds two extra layers, the total parameters drop dramatically while the additional non-linearities (ReLU) actually increase representational power.
+</p>
+
+<h3 id="sec6-2">6.2 Depthwise Separable Convolution</h3>
+
+<span class="en"><p>
+Depthwise separable convolution factorizes a standard convolution into two steps:
+<strong>Depthwise Convolution</strong> + <strong>Pointwise (1&times;1) Convolution</strong>.
+</p></span><span class="cn">2.6.2 深度可分离卷积 (Depthwise Separable Convolution)（PDF p63）</span>
+
+<h4>Step 1: Depthwise Convolution</h4>
+<span class="en"><p>
+Instead of each kernel spanning all input channels, depthwise convolution assigns <strong>one kernel per input channel</strong>:
+</p></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+<ul>
+    <span class="en"><li>Number of kernels = \(C_{in}\), each of size \(k \times k \times 1\)</li></span><span class="cn">拆解： - $k_w \times k_h \times C_{in}$：乘法次数 - $k_w \times k_h \times C_{in} - 1$：加法次数（n 个数求和需 n-1 次加法） - $+1$：偏置加法 - $C_{out} \times W \times H$：输出特征图总元素个数</span>
+    <span class="en"><li>Each kernel operates on exactly one channel independently</li></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+    <span class="en"><li>Output has the same number of channels as input (no cross-channel mixing yet)</li></span><span class="cn">**场景**：Input channel = 256，Output channel = 256，卷积核 3×3。</span>
+</ul>
+
+<h4>Step 2: Pointwise Convolution</h4>
+<span class="en"><p>
+A 1&times;1 convolution with \(C_{out}\) kernels mixes information across channels to produce the final output.
+</p></span><span class="cn">**场景**：Input channel = 256，Output channel = 256，卷积核 3×3。</span>
+
+<h4>Parameter Comparison <span class="cn">对比</span></h4>
+
+<span class="en"><p><strong>Scenario:</strong> \(C_{in} = C_{out} = 256\), kernel = 3&times;3</p></span><span class="cn">拆解： - $k_w \times k_h \times C_{in}$：乘法次数 - $k_w \times k_h \times C_{in} - 1$：加法次数（n 个数求和需 n-1 次加法） - $+1$：偏置加法 - $C_{out} \times W \times H$：输出特征图总元素个数</span>
+
+<table>
+<thead><tr><th>Type</th><th>Calculation</th></tr></thead>
+<tbody>
+<tr><td>Standard convolution</td><td>\(256 \times 3 \times 3 \times 256 = 589{,}824\)</td></tr>
+<tr><td>Depthwise</td><td>\(256 \times 3 \times 3 \times 1 = 2{,}304\)</td></tr>
+<tr><td>Pointwise (1&times;1)</td><td>\(256 \times 1 \times 1 \times 256 = 65{,}536\)</td></tr>
+<tr><td><strong>Depthwise separable total</strong></td><td><strong>67,840</strong></td></tr>
+</tbody>
+</table>
+
+<div class="success-box">
+<strong>Compression ratio:</strong> 589,824 / 67,840 &asymp; <strong>8.7&times;</strong><br>
+MobileNet is built entirely on depthwise separable convolutions, enabling efficient inference on mobile devices.
+</div>
+
+<h3 id="sec6-3">6.3 Dilated (Atrous) Convolution</h3>
+
+<p>
+Dilated convolution <strong>inserts zeros between kernel elements</strong>, controlled by a <strong>dilation rate</strong>. This enlarges the receptive field without increasing the number of parameters.
+</p>
+
+<h4>Visual Explanation</h4>
+
+<span class="en"><p>A standard 3&times;3 kernel covers a 3&times;3 region with 9 parameters:</p></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+<pre><code>[a, b, c]
+[d, e, f]
+[g, h, i]
+</code></pre>
+
+<p>With <strong>Dilation Rate = 2</strong>, the same 9 parameters now cover a <strong>5&times;5</strong> region:</p>
+<pre><code>[a, 0, b, 0, c]
+[0, 0, 0, 0, 0]
+[d, 0, e, 0, f]
+[0, 0, 0, 0, 0]
+[g, 0, h, 0, i]
+</code></pre>
+
+<ul>
+    <span class="en"><li><span class="en">Actual coverage: 5&times;5 (receptive field enlarged!)</span><span class="cn">$$ \text{Receptive Field} = L \times (k - 1) + 1 $$</span></li></span><span class="cn">2.4 感受野 (Receptive Field)（PDF p52）</span>
+    <span class="en"><li>Non-zero parameters: still <strong>9</strong> (unchanged!)</li></span><span class="cn">**解决方案：在输入周围填充 0（Zero Padding）**</span>
+</ul>
+
+<blockquote>
+<strong>Classroom analogy:</strong> Imagine 9 people standing in a tight 3&times;3 grid. When the teacher claps, everyone takes one step away from their neighbors in all directions. The grid expands to 5&times;5, but there are still only 9 people. The "coverage" increased, but the "headcount" (parameter count) stayed the same.
+</blockquote>
+
+<h4>Comparison: Methods to Increase Receptive Field <span class="cn">感受野</span></h4>
+
+<table>
+<thead><tr><th>Method</th><th>Parameter Change</th><th>Characteristics</th></tr></thead>
+<tbody>
+<tr><td>Increase kernel size</td><td>Increases</td><td>Direct but expensive</td></tr>
+<tr><td>Increase network depth</td><td>Increases</td><td>Requires stacking more layers</td></tr>
+<tr><td>Pooling / down-sampling</td><td>Unchanged</td><td>Loses spatial resolution</td></tr>
+<tr><td><strong>Dilated convolution</strong></td><td><strong>Unchanged</strong></td><td><strong>Preserves resolution while enlarging receptive field</strong></td></tr>
+</tbody>
+</table>
+
+<p>Dilated convolution is essential in semantic segmentation (e.g., DeepLab) because it provides large receptive fields without sacrificing spatial resolution.</p>
+
+<h3 id="sec6-4">6.4 Transposed Convolution</h3>
+
+<p>
+Also called <strong>deconvolution</strong>, transposed convolution is used for <strong>up-sampling</strong>.
+It works by inserting zeros between input elements and then applying a standard convolution, producing a larger output.
+</p>
+
+<p><strong>Common use cases:</strong></p>
+<ul>
+    <span class="en"><li><span class="en">Decoder in semantic segmentation (e.g., U-Net)</span><span class="cn">| 任务 | 粒度 | 输出 | |------|------|------| | 图像分类 (Classification) | 最粗 | 整张图的类别标签 | | 目标检测 (Detection) | 中等 | 类别 + 边界框坐标 | | 语义分割 (Semantic Segmentation) | 精细 | 每个像素的类别 | | 实例分割 (Instance Segmentation) | 最精细 | 每个像素的类别 + 区分不同个体 |</span></li></span><span class="cn">| 任务 | 粒度 | 输出 | |------|------|------| | 图像分类 (Classification) | 最粗 | 整张图的类别标签 | | 目标检测 (Detection) | 中等 | 类别 + 边界框坐标 | | 语义分割 (Semantic Segmentation) | 精细 | 每个像素的类别 | | 实例分割 (Instance Segmentation) | 最精细 | 每个像素的类别 + 区分不同个体 |</span>
+    <li>Generator in Generative Adversarial Networks (GANs)</li>
+    <span class="en"><li>Image super-resolution</li></span><span class="cn">AlexNet 在 ImageNet 2012 上将 Top-5 错误率从 26% 降到 15%，引爆了深度学习革命。</span>
+</ul>
+
+<h3 id="sec6-5">6.5 Deformable Convolution</h3>
+
+<span class="en"><p>
+Standard convolution uses a <strong>fixed sampling grid</strong> (e.g., a 3&times;3 grid always samples the 8 immediate neighbors plus center).
+Deformable convolution adds an <strong>offset learning sub-network</strong> that predicts 2D offsets for each sampling location, making the grid <strong>learnable</strong>.
+</p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+
+<p><strong>Advantages:</strong></p>
+<ul>
+    <li>Adapts to object shape variations and deformations</li>
+    <li>Better handles varying poses and non-rigid objects</li>
+    <span class="en"><li>Used in modern detection frameworks (e.g., DCNv2 in Detectron2)</li></span><span class="cn">| 任务 | 粒度 | 输出 | |------|------|------| | 图像分类 (Classification) | 最粗 | 整张图的类别标签 | | 目标检测 (Detection) | 中等 | 类别 + 边界框坐标 | | 语义分割 (Semantic Segmentation) | 精细 | 每个像素的类别 | | 实例分割 (Instance Segmentation) | 最精细 | 每个像素的类别 + 区分不同个体 |</span>
+</ul>
+
+<h3 id="sec6-6">6.6 Group Convolution</h3>
+
+<p>
+Group convolution divides the input channels into \(g\) groups, each processed independently, and then concatenates the results.
+</p>
+
+<ul>
+    <span class="en"><li><strong>Group = 1:</strong> Standard convolution (all input channels participate in every output channel)</li></span><span class="cn">**场景**：Input channel = 256，Output channel = 256，卷积核 3×3。</span>
+    <span class="en"><li><strong>Group = 2:</strong> Input channels split in half; each half is convolved independently</li></span><span class="cn">- **Group = 1**：标准卷积，所有输入通道参与每个输出通道的计算。 - **Group = 2**：输入通道分成两半，每半独立卷积，输出也分两半后拼接。 - **Group = $C_{in}$**（且 $C_{in}=C_{out}$）：即为 **Depthwise Convolution**。</span>
+    <span class="en"><li><span class="en"><strong>Group = \(C_{in}\)</strong> (with \(C_{in} = C_{out}\)): Equivalent to <strong>Depthwise Convolution</strong></span><span class="cn">- **Group = 1**：标准卷积，所有输入通道参与每个输出通道的计算。 - **Group = 2**：输入通道分成两半，每半独立卷积，输出也分两半后拼接。 - **Group = $C_{in}$**（且 $C_{in}=C_{out}$）：即为 **Depthwise Convolution**。</span></li></span><span class="cn">- **Group = 1**：标准卷积，所有输入通道参与每个输出通道的计算。 - **Group = 2**：输入通道分成两半，每半独立卷积，输出也分两半后拼接。 - **Group = $C_{in}$**（且 $C_{in}=C_{out}$）：即为 **Depthwise Convolution**。</span>
+</ul>
+
+<h4>Parameter Comparison <span class="cn">对比</span></h4>
+
+<span class="en"><p><strong>Scenario:</strong> \(C_{in} = C_{out} = 256\), kernel = 3&times;3</p></span><span class="cn">拆解： - $k_w \times k_h \times C_{in}$：乘法次数 - $k_w \times k_h \times C_{in} - 1$：加法次数（n 个数求和需 n-1 次加法） - $+1$：偏置加法 - $C_{out} \times W \times H$：输出特征图总元素个数</span>
+
+<table>
+<thead><tr><th>Grouping</th><th>Calculation</th><th>Total Parameters</th></tr></thead>
+<tbody>
+<tr><td>No groups (g=1)</td><td>256 &times; 3&times;3 &times; 256</td><td><strong>589,824</strong></td></tr>
+<tr><td>2 groups (g=2)</td><td>(128 &times; 3&times;3 &times; 128) &times; 2</td><td><strong>294,912</strong></td></tr>
+<tr><td>4 groups (g=4)</td><td>(64 &times; 3&times;3 &times; 64) &times; 4</td><td><strong>147,456</strong></td></tr>
+</tbody>
+</table>
+
+<div class="info-box">
+<strong>Pattern:</strong> With \(g\) groups, parameters reduce to \(1/g\) of the standard convolution.<br>
+<strong>Historical note:</strong> AlexNet originally used group convolution due to <strong>GPU memory limitations</strong> &mdash; the network was split across 2 GTX 580 GPUs. This constraint accidentally introduced a regularization effect, later formalized in architectures like ResNeXt.
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec7">
+<h2>7. Pooling <span class="cn">7. <span class="cn">池化</span></span> Layer</h2>
+
+<h3 id="sec7-1">7.1 Purpose of Pooling <span class="cn">池化</span></h3>
+
+<ol>
+    <li><strong>Down-sampling:</strong> Reduce spatial dimensions of feature maps, lowering computational cost for subsequent layers</li>
+    <li><strong>Translation invariance:</strong> Small shifts in object position do not change the output</li>
+    <li><strong>Prevent overfitting:</strong> Fewer parameters means less memorization of training data</li>
+    <li><strong>Reduce computational complexity:</strong> Fewer spatial positions to process in deeper layers</li>
+</ol>
+
+<h3>7.2 Max Pooling <span class="cn">池化</span></h3>
+
+<p>Takes the <strong>maximum value</strong> within each window.</p>
+
+<h4>Example 2.8: 2&times;2 Max Pooling <span class="cn">池化</span>, Stride=2</h4>
+
+<pre><code>Input (4&times;4):
+[0, 1, 1, 2]
+[1, 0, 1, 1]
+[2, 0, 1, 2]
+[2, 1, 1, 2]
+</code></pre>
+
+<p>Four 2&times;2 windows:</p>
+<pre><code>Window 1 (top-left):     [0, 1, 1, 0]  → max = <strong>1</strong>
+Window 2 (top-right):    [1, 2, 1, 1]  → max = <strong>2</strong>
+Window 3 (bottom-left):  [2, 0, 2, 1]  → max = <strong>2</strong>
+Window 4 (bottom-right): [1, 2, 1, 2]  → max = <strong>2</strong>
+</code></pre>
+
+<p><strong>Output (2&times;2):</strong></p>
+<pre><code>[1, 2]
+[2, 2]
+</code></pre>
+
+<h4>Example 2.9: Quiz &mdash; Max Pooling <span class="cn">池化</span></h4>
+
+<pre><code>Input (4&times;4):
+[0, 4, 1, 2]
+[1, 0, 9, 1]
+[2, 0, 1, 3]
+[8, 1, 1, 2]
+
+2&times;2 Max Pooling, Stride=2:
+
+Window 1: [0, 4, 1, 0] → max = <strong>4</strong>
+Window 2: [1, 2, 9, 1] → max = <strong>9</strong>
+Window 3: [2, 0, 8, 1] → max = <strong>8</strong>
+Window 4: [1, 3, 1, 2] → max = <strong>3</strong>
+
+Output:
+[4, 9]
+[8, 3]
+</code></pre>
+
+<h3 id="sec7-2">7.3 Average Pooling <span class="cn">池化</span></h3>
+
+<p>Takes the <strong>mean value</strong> within each window.</p>
+
+<h4>Example 2.10: 2&times;2 Average Pooling <span class="cn">池化</span>, Stride=2</h4>
+
+<p>Using the same input as Example 2.8:</p>
+
+<pre><code>Window 1: (0+1+1+0)/4 = <strong>0.5</strong>
+Window 2: (1+2+1+1)/4 = <strong>1.25</strong>
+Window 3: (2+0+2+1)/4 = <strong>1.25</strong>
+Window 4: (1+2+1+2)/4 = <strong>1.5</strong>
+
+Output:
+[0.5,  1.25]
+[1.25, 1.5 ]
+</code></pre>
+
+<h3>7.4 Max Pooling <span class="cn">池化</span> vs. Average Pooling</h3>
+
+<table>
+<thead><tr><th>Aspect</th><th>Max Pooling</th><th>Average Pooling</th></tr></thead>
+<tbody>
+<tr><td><strong>Operation</strong></td><td>Takes maximum in window</td><td>Takes mean in window</td></tr>
+<tr><td><strong>Preserves</strong></td><td>Strongest response (edges, textures)</td><td>Background information, smooth features</td></tr>
+<tr><td><strong>Best for</strong></td><td>Texture/edge detection; most CNN layers</td><td>Global feature aggregation (GAP at network end)</td></tr>
+<tr><td><strong>Popularity</strong></td><td>Dominant choice in most architectures</td><td>Used mainly as Global Average Pooling (GAP) to replace FC layers</td></tr>
+</tbody>
+</table>
+
+<p>
+The <strong>Global Average Pooling (GAP)</strong> variant &mdash; where the window size equals the entire feature map &mdash; reduces each channel to a single scalar. GoogLeNet and ResNet use GAP to replace large fully-connected layers, dramatically reducing parameters.
+</p>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec8">
+<h2>8. Batch Normalization <span class="cn">8. <span class="cn">批归一化</span></span></h2>
+
+<h3 id="sec8-1">8.1 Problem: Internal Covariate Shift</h3>
+
+<p>
+During training of deep networks, the distribution of each layer's inputs changes continuously as the parameters of previous layers are updated.
+This phenomenon, called <strong>Internal Covariate Shift</strong>, causes:
+</p>
+
+<ul>
+    <span class="en"><li>Gradients in lower layers to vanish or explode</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+    <span class="en"><li>High sensitivity to weight initialization</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+    <span class="en"><li>Need for small learning rates (slowing training)</li></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+</ul>
+
+<h3>8.2 The BatchNorm Formula <span class="cn">公式</span></h3>
+
+<span class="en"><p>For each mini-batch, normalize each channel to zero mean and unit variance, then apply a learned scale and shift:</p></span><span class="cn">对每一个 mini-batch，将输入标准化到均值为 0、方差为 1 的分布，再学习一个 scale ($\gamma$) 和 shift ($\beta$) 进行还原：</span>
+
+<div class="math-block">
+$$
+\hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}, \qquad y_i = \gamma \hat{x}_i + \beta
+$$
+</div>
+
+<p>Where:</p>
+<ul>
+    <li><span class="en">\(\mu_B\): mean of the mini-batch</span><span class="cn">对每一个 mini-batch，将输入标准化到均值为 0、方差为 1 的分布，再学习一个 scale ($\gamma$) 和 shift ($\beta$) 进行还原：</span></li>
+    <li>\(\sigma_B^2\): variance of the mini-batch</li>
+    <li>\(\epsilon\): small constant for numerical stability (typically \(10^{-5}\))</li>
+    <li>\(\gamma, \beta\): learnable scale and shift parameters (per channel)</li>
+</ul>
+
+<h3 id="sec8-2">8.3 Which Dimensions Does BN Normalize Over?</h3>
+
+<p>For a 4D input tensor of shape <code>[N, C, H, W]</code> (batch, channels, height, width):</p>
+
+<table>
+<thead><tr><th>Normalization</th><th>Computed Over</th><th>Mean/Var Shape</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><strong>Batch Norm (training)</strong></td><td>N &times; H &times; W</td><td>[C]</td><td>For each channel, compute mean/var across batch and spatial dims</td></tr>
+<tr><td><strong>Layer Norm</strong></td><td>C &times; H &times; W</td><td>[N]</td><td>For each sample, compute mean/var across all channels and spatial dims</td></tr>
+<tr><td><strong>Instance Norm</strong></td><td>H &times; W</td><td>[N, C]</td><td>For each sample and each channel, compute mean/var independently</td></tr>
+</tbody>
+</table>
+
+<div class="warning-box">
+<strong>Key point:</strong> BatchNorm normalizes <em>per channel</em>. The output tensor shape is <strong>identical</strong> to the input: <code>[N, C, H, W]</code>. Spatial dimensions H and W are fully preserved; only the numerical distribution within each channel is recalibrated.
+</div>
+
+<span class="en"><p><strong>BatchNorm2d step-by-step:</strong></p></span><span class="cn">具体过程（以 BatchNorm2d 为例）： 1. 对输入 `[N, C, H, W]`，将维度重排视为 `[N×H×W, C]`； 2. 对每一列（即每个 channel）计算均值 $\mu_c$ 和方差 $\sigma_c^2$； 3. 用该列的均值方差标准化该列所有元素； 4. 再用可学习的 $\gamma_c$ 和 $\beta_c$ 做缩放和平移。</span>
+<ol>
+    <li>Reshape input <code>[N, C, H, W]</code> as <code>[N&times;H&times;W, C]</code></li>
+    <span class="en"><li>For each column (channel), compute \(\mu_c\) and \(\sigma_c^2\)</li></span><span class="cn">具体过程（以 BatchNorm2d 为例）： 1. 对输入 `[N, C, H, W]`，将维度重排视为 `[N×H×W, C]`； 2. 对每一列（即每个 channel）计算均值 $\mu_c$ 和方差 $\sigma_c^2$； 3. 用该列的均值方差标准化该列所有元素； 4. 再用可学习的 $\gamma_c$ 和 $\beta_c$ 做缩放和平移。</span>
+    <span class="en"><li>Standardize each column using its own \(\mu_c\) and \(\sigma_c^2\)</li></span><span class="cn">具体过程（以 BatchNorm2d 为例）： 1. 对输入 `[N, C, H, W]`，将维度重排视为 `[N×H×W, C]`； 2. 对每一列（即每个 channel）计算均值 $\mu_c$ 和方差 $\sigma_c^2$； 3. 用该列的均值方差标准化该列所有元素； 4. 再用可学习的 $\gamma_c$ 和 $\beta_c$ 做缩放和平移。</span>
+    <span class="en"><li><span class="en">Apply learned \(\gamma_c\) (scale) and \(\beta_c\) (shift)</span><span class="cn">对每一个 mini-batch，将输入标准化到均值为 0、方差为 1 的分布，再学习一个 scale ($\gamma$) 和 shift ($\beta$) 进行还原：</span></li></span><span class="cn">对每一个 mini-batch，将输入标准化到均值为 0、方差为 1 的分布，再学习一个 scale ($\gamma$) 和 shift ($\beta$) 进行还原：</span>
+    <li>Reshape back to <code>[N, C, H, W]</code></li>
+</ol>
+
+<span class="en"><p>BN is a pure <strong>distribution calibration operation</strong> &mdash; it does not change any spatial or channel dimension.</p></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+
+<h3 id="sec8-3">8.4 Benefits of Batch Normalization <span class="cn">批归一化</span></h3>
+
+<ol>
+    <li><strong>Improved gradient flow:</strong> Prevents gradients from vanishing or exploding</li>
+    <li><strong>Higher learning rates:</strong> Allows faster convergence without instability</li>
+    <li><strong>Reduced initialization sensitivity:</strong> Network trains well with a wider range of initial weights</li>
+    <li><strong>Regularization effect:</strong> The stochasticity of batch statistics acts as a mild regularizer</li>
+    <li><strong>Reduced need for Dropout:</strong> The regularizing effect partially substitutes for Dropout</li>
+</ol>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec9">
+<h2>9. ReLU Activation <span class="cn">9. ReLU激活</span></h2>
+
+<h3>9.1 Definition <span class="cn">定义</span></h3>
+
+<div class="math-block">
+$$
+\text{ReLU}(x) = \max(0, x)
+$$
+</div>
+
+<h3>9.2 Example <span class="cn">例子</span> 2.11: Element-wise ReLU Application</h3>
+
+<pre><code>Input:
+[ 0, -4,  1,  2]
+[ 1,  0, -3,  1]
+[-2,  2,  1,  3]
+[ 1, -1,  1, -2]
+
+Output (apply max(0, x) element-wise):
+[ 0,  0,  1,  2]
+[ 1,  0,  0,  1]
+[ 0,  2,  1,  3]
+[ 1,  0,  1,  0]
+</code></pre>
+
+<p>All negative values become 0; all non-negative values remain unchanged.</p>
+
+<h3>9.3 Advantages <span class="cn">优点</span> over Sigmoid / Tanh</h3>
+
+<table>
+<thead><tr><th>Property</th><th>ReLU</th><th>Sigmoid / Tanh</th></tr></thead>
+<tbody>
+<tr><td>Computation</td><td>Simple comparison (no exponentials)</td><td>Requires expensive exp() operations</td></tr>
+<tr><td>Gradient (positive region)</td><td>Constant 1 (no vanishing)</td><td>Saturates to near 0 for large inputs</td></tr>
+<tr><td>Sparsity</td><td>Many neurons output exactly 0</td><td>Outputs are dense, rarely exactly zero</td></tr>
+<tr><td>Training speed</td><td>Significantly faster</td><td>Slower convergence in deep networks</td></tr>
+</tbody>
+</table>
+
+<div class="info-box">
+<strong>Historical note:</strong> AlexNet (2012) was the first large-scale CNN to successfully use ReLU instead of Sigmoid/Tanh, demonstrating dramatically faster training. This was one of its most impactful innovations.
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec10">
+<h2>10. CNN Architecture Evolution</h2>
+
+<h3>10.1 The Four Tasks of Computer Vision</h3>
+
+<table>
+<thead><tr><th>Task</th><th>Granularity</th><th>Output</th></tr></thead>
+<tbody>
+<tr><td>Image Classification</td><td>Coarsest</td><td>One class label per image</td></tr>
+<tr><td>Object Detection</td><td>Medium</td><td>Class labels + bounding box coordinates</td></tr>
+<tr><td>Semantic Segmentation</td><td>Fine</td><td>Per-pixel class label</td></tr>
+<tr><td>Instance Segmentation</td><td>Finest</td><td>Per-pixel class label + distinguish between individual objects</td></tr>
+</tbody>
+</table>
+
+<h3>10.2 Timeline of Key Milestones</h3>
+
+<pre><code>1998  LeNet-5    (Yann LeCun)          — CNN prototype
+2012  AlexNet    (Krizhevsky et al.)    — Deep Learning explosion
+2014  VGG        (Simonyan &amp; Zisserman) — Small kernels + depth
+2014  GoogLeNet / Inception (Google)    — Multi-scale + 1&times;1 bottleneck
+2015  ResNet     (He et al., Microsoft)  — Residual connections, 100+ layers
+2016  DenseNet   (Huang et al.)         — Dense connectivity
+2020  ViT        (Dosovitskiy et al.)   — Transformer meets vision
+</code></pre>
+
+<p>The 2018 Turing Award was given to Yoshua Bengio, Geoffrey Hinton, and Yann LeCun for their pioneering work in deep neural networks.</p>
+
+<h3 id="sec10-1">10.3 LeNet-5 (1998)</h3>
+
+<span class="en"><p>
+<strong>Historical significance:</strong> Yann LeCun's paper formally proposed LeNet-5, establishing the fundamental CNN architecture: alternating convolution and pooling layers, followed by fully-connected layers.
+</p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+
+<table>
+<thead><tr><th>Layer</th><th>Type</th><th>Kernel</th><th>Stride</th><th>Padding</th><th>Output Size</th><th>Parameters</th></tr></thead>
+<tbody>
+<tr><td>Input</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>32&times;32&times;1</td><td>0</td></tr>
+<tr><td>C1</td><td>Conv</td><td>5&times;5&times;1, 6 kernels</td><td>1</td><td>Valid</td><td>28&times;28&times;6</td><td>(5&times;5&times;1+1)&times;6 = 156</td></tr>
+<tr><td>S2</td><td>AvgPool</td><td>2&times;2</td><td>2</td><td>&mdash;</td><td>14&times;14&times;6</td><td>0</td></tr>
+<tr><td>C3</td><td>Conv</td><td>5&times;5&times;6, 16 kernels</td><td>1</td><td>Valid</td><td>10&times;10&times;16</td><td>(5&times;5&times;6+1)&times;16 = 2,416</td></tr>
+<tr><td>S4</td><td>AvgPool</td><td>2&times;2</td><td>2</td><td>&mdash;</td><td>5&times;5&times;16</td><td>0</td></tr>
+<tr><td>C5</td><td>Conv/FC</td><td>5&times;5&times;16, 120 kernels</td><td>1</td><td>Valid</td><td>1&times;1&times;120</td><td>(5&times;5&times;16)&times;120 = 48,000</td></tr>
+<tr><td>F6</td><td>FC</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>84</td><td>120&times;84 = 10,080</td></tr>
+<tr><td>Output</td><td>FC</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>10</td><td>84&times;10 = 840</td></tr>
+</tbody>
+</table>
+
+<div class="info-box">
+<strong>Note:</strong> Layer C5 is described as a convolutional layer in LeCun's original paper, but since the input (5&times;5&times;16) exactly matches the kernel size (5&times;5&times;16), there is no room for sliding. The output is 1&times;1&times;120, making it functionally equivalent to a fully-connected layer.
+</div>
+
+<h3 id="sec10-2">10.4 AlexNet (2012)</h3>
+
+<span class="en"><p>
+AlexNet won ImageNet 2012 by reducing the Top-5 error rate from 26% to 15%, <strong>igniting the deep learning revolution</strong>.
+</p></span><span class="cn">AlexNet 在 ImageNet 2012 上将 Top-5 错误率从 26% 降到 15%，引爆了深度学习革命。</span>
+
+<h4>Key Innovations</h4>
+
+<table>
+<thead><tr><th>Innovation</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><strong>ReLU Activation</strong></td><td>First large-scale CNN to replace Sigmoid with ReLU, achieving much faster training</td></tr>
+<tr><td><strong>GPU Training</strong></td><td>Trained on 2 NVIDIA GTX 580 GPUs (3 GB each)</td></tr>
+<tr><td><strong>Group Convolution</strong></td><td>Split convolution across 2 GPUs due to memory constraints</td></tr>
+<tr><td><strong>Data Augmentation</strong></td><td>Random cropping, horizontal flipping, PCA color jittering</td></tr>
+<tr><td><strong>Dropout (p=0.5)</strong></td><td>Applied in FC layers to prevent overfitting</td></tr>
+<tr><td><strong>LRN</strong></td><td>Local Response Normalization (later superseded by BatchNorm)</td></tr>
+</tbody>
+</table>
+
+<h4>Layer Structure (8 layers: 5 conv + 3 FC, input 224&times;224&times;3)</h4>
+
+<pre><code>Conv1:     11&times;11, 96 filters,  stride=4, padding=2   → 55&times;55&times;96
+MaxPool1:  3&times;3, stride=2                           → 27&times;27&times;96
+
+Conv2:     5&times;5,   256 filters, stride=1, padding=2   → 27&times;27&times;256
+MaxPool2:  3&times;3, stride=2                           → 13&times;13&times;256
+
+Conv3:     3&times;3,   384 filters, stride=1, padding=1   → 13&times;13&times;384
+Conv4:     3&times;3,   384 filters, stride=1, padding=1   → 13&times;13&times;384
+Conv5:     3&times;3,   256 filters, stride=1, padding=1   → 13&times;13&times;256
+MaxPool3:  3&times;3, stride=2                           → 6&times;6&times;256
+
+FC6:  4096 neurons
+FC7:  4096 neurons
+FC8:  1000 neurons (ImageNet classes)
+</code></pre>
+
+<h4>Parameter Distribution</h4>
+
+<pre><code>Total parameters: 60.9 MB
+├── Convolutional layers: 2.3 MB  (only 3.8%)
+└── Fully-connected layers: 58.6 MB (96.2%)
+</code></pre>
+
+<div class="warning-box">
+<strong>Critical observation:</strong> 96.2% of AlexNet's parameters reside in just 3 fully-connected layers. This motivated subsequent architectures (NiN, GoogLeNet) to replace FC layers with Global Average Pooling.
+</div>
+
+<h4>Dropout Mechanism</h4>
+
+<p>
+During training, each neuron is randomly "dropped" (set to zero) with probability \(p\) (typically 0.5). At test time, all neurons are active but weights are scaled by \((1-p)\).
+</p>
+
+<ul>
+    <span class="en"><li>A network with \(N\) neurons effectively trains \(2^N\) different sub-networks</li></span><span class="cn">FC6:    4096 neurons FC7:    4096 neurons FC8:    1000 neurons (ImageNet 类别数) ```</span>
+    <span class="en"><li>Acts as a cheap <strong>ensemble approximation</strong></li></span><span class="cn">**观察**：目标可以出现在图像的不同位置、不同尺度。基于固定位置、大小的"单元格"(Cell-based) 方法有局限性。</span>
+    <li>Reduces co-adaptation between neurons, improving generalization</li>
+</ul>
+
+<h4>Data Augmentation</h4>
+
+<p>Used to artificially expand the training set:</p>
+<ul>
+    <li>Color jittering: saturation, brightness, contrast adjustments</li>
+    <span class="en"><li>Adding Gaussian noise</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+    <li>Horizontal/vertical flipping</li>
+    <li>Random rotation and random cropping</li>
+</ul>
+
+<h3 id="sec10-3">10.5 VGG (2014)</h3>
+
+<span class="en"><p>
+<strong>Core philosophy:</strong> <em>Deeper is better</em>, using only 3&times;3 convolutions.
+</p></span><span class="cn">- 输入通道 = $C_{in}$ - Depthwise 卷积核个数 = $C_{in}$，每个尺寸 $k \times k \times 1$ - 输出通道 = $C_{in}$（先保持通道数不变）</span>
+
+<blockquote>
+VGG's greatest strength is its <strong>extreme simplicity and regularity</strong>: from start to finish, every block uses only 3&times;3 convolutions + 2&times;2 max pooling. No multi-branch modules (Inception), no skip connections (ResNet). This makes VGG-16 the <strong>best network for beginners to implement from scratch</strong>.
+</blockquote>
+
+<h4>Why 3&times;3?</h4>
+
+<p>
+3&times;3 is the smallest kernel that can capture "up, down, left, right, center" &mdash; the minimal meaningful spatial pattern.
+</p>
+
+<h4>Receptive Field <span class="cn">感受野</span> Equivalence Proof</h4>
+
+<table>
+<thead><tr><th>Configuration</th><th>Effective Receptive Field</th><th>Parameters (per channel pair)</th></tr></thead>
+<tbody>
+<tr><td>1 &times; 5&times;5</td><td>5&times;5</td><td>\(25C^2\)</td></tr>
+<tr><td>2 &times; 3&times;3</td><td>2&times;(3&minus;1)+1 = 5&times;5</td><td>\(2 \times 9C^2 = 18C^2\)</td></tr>
+<tr><td>1 &times; 7&times;7</td><td>7&times;7</td><td>\(49C^2\)</td></tr>
+<tr><td>3 &times; 3&times;3</td><td>3&times;(3&minus;1)+1 = 7&times;7</td><td>\(3 \times 9C^2 = 27C^2\)</td></tr>
+</tbody>
+</table>
+
+<p>
+<strong>Conclusion:</strong> Stacked small kernels achieve the same receptive field with fewer parameters <em>and</em> more non-linear activations (each layer has its own ReLU).
+</p>
+
+<h4>VGG-16 Full Block Structure</h4>
+
+<p>VGG-16 has <strong>16 weight layers</strong>: 13 convolutional + 3 fully-connected.</p>
+<span class="en"><p>Input: 224&times;224&times;3 (ImageNet standard)</p></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+
+<pre><code>Block 1
+  Conv1-1:  3&times;3, 64,  stride=1, padding=1   → 224&times;224&times;64
+  Conv1-2:  3&times;3, 64,  stride=1, padding=1   → 224&times;224&times;64
+  MaxPool:  2&times;2, stride=2                   → 112&times;112&times;64
+
+Block 2
+  Conv2-1:  3&times;3, 128, stride=1, padding=1   → 112&times;112&times;128
+  Conv2-2:  3&times;3, 128, stride=1, padding=1   → 112&times;112&times;128
+  MaxPool:  2&times;2, stride=2                   → 56&times;56&times;128
+
+Block 3
+  Conv3-1:  3&times;3, 256, stride=1, padding=1   → 56&times;56&times;256
+  Conv3-2:  3&times;3, 256, stride=1, padding=1   → 56&times;56&times;256
+  Conv3-3:  3&times;3, 256, stride=1, padding=1   → 56&times;56&times;256
+  MaxPool:  2&times;2, stride=2                   → 28&times;28&times;256
+
+Block 4
+  Conv4-1:  3&times;3, 512, stride=1, padding=1   → 28&times;28&times;512
+  Conv4-2:  3&times;3, 512, stride=1, padding=1   → 28&times;28&times;512
+  Conv4-3:  3&times;3, 512, stride=1, padding=1   → 28&times;28&times;512
+  MaxPool:  2&times;2, stride=2                   → 14&times;14&times;512
+
+Block 5
+  Conv5-1:  3&times;3, 512, stride=1, padding=1   → 14&times;14&times;512
+  Conv5-2:  3&times;3, 512, stride=1, padding=1   → 14&times;14&times;512
+  Conv5-3:  3&times;3, 512, stride=1, padding=1   → 14&times;14&times;512
+  MaxPool:  2&times;2, stride=2                   → 7&times;7&times;512
+
+Fully Connected
+  FC6:  7&times;7&times;512 = 25088 → 4096
+  FC7:  4096 → 4096
+  FC8:  4096 → 1000 (Softmax)
+</code></pre>
+
+<h4>VGG-16 Parameter Distribution</h4>
+
+<pre><code>Total parameters: ~138M
+├── Convolutional layers: ~14.7M
+└── Fully-connected layers: ~123M  (FC6 alone: ~102M)
+</code></pre>
+
+<p>
+Storage: ~93 MB for structure + ~526 MB for parameters (32-bit float). During training, memory consumption is several times larger due to gradients, momentum, and other optimizer states.
+</p>
+
+<h3 id="sec10-4">10.6 Inception / GoogLeNet (2014)</h3>
+
+<span class="en"><p><strong>Core ideas:</strong> Multi-scale parallel processing + 1&times;1 bottleneck + GAP replacing FC.</p></span><span class="cn">**核心思想：多尺度并行 + Bottleneck + GAP 替代 FC**</span>
+
+<h4>The Inception Module</h4>
+
+<span class="en"><p>
+While VGG uses a single kernel size per layer, Inception's insight is that <strong>objects in images appear at many different scales</strong>, so combining features extracted at multiple scales yields better representations.
+</p></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+
+<span class="en"><p>An Inception module runs <strong>four branches in parallel</strong>:</p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+<ol>
+    <span class="en"><li><span class="en">1&times;1 convolution</span><span class="cn">$$ \text{Output Size} = \frac{\text{Input Size} + 2 \times \text{Padding} - \text{Kernel Size}}{\text{Stride}} + 1 $$</span></li></span><span class="cn">若卷积核尺寸为 $k \times k$，则该层的感受野就是 $k \times k$。</span>
+    <span class="en"><li>1&times;1 (reduce) &rarr; 3&times;3 convolution</li></span><span class="cn">若卷积核尺寸为 $k \times k$，则该层的感受野就是 $k \times k$。</span>
+    <span class="en"><li>1&times;1 (reduce) &rarr; 5&times;5 convolution</li></span><span class="cn">若卷积核尺寸为 $k \times k$，则该层的感受野就是 $k \times k$。</span>
+    <span class="en"><li>3&times;3 Max Pooling &rarr; 1&times;1 (reduce)</li></span><span class="cn">最大池化 (Max Pooling)（PDF p73–p77）</span>
+</ol>
+
+<p>
+All branches use appropriate padding (0, 1, 2 for 1&times;1, 3&times;3, 5&times;5 respectively with stride=1) so their spatial dimensions match, then the outputs are <strong>concatenated along the channel dimension</strong>.
+</p>
+
+<h4>Bottleneck Parameter Evaluation</h4>
+
+<pre><code>Input channels = 256, Output channels = 256
+
+Approach A: Direct 3&times;3
+  Params = 256 &times; 3 &times; 3 &times; 256 = 589,824
+
+Approach B: Bottleneck (1&times;1 reduce to 32 → 3&times;3 → 1&times;1 expand to 256)
+  Stage 1: 1&times;1, 256 → 32:   256 &times; 1 &times; 1 &times; 32 = 8,192
+  Stage 2: 3&times;3, 32 → 256:   32 &times; 3 &times; 3 &times; 256 = 73,728
+  Total = 81,920
+
+Compression ratio = 589,824 / 81,920 &asymp; 7.2&times;
+</code></pre>
+
+<h4>GAP Replacing FC &mdash; GoogLeNet's Breakthrough</h4>
+
+<p>
+In AlexNet/VGG, the network ends with expensive FC layers:
+</p>
+<pre><code>Conv → Flatten → FC(4096) → FC(4096) → FC(1000) → Softmax
+</code></pre>
+
+<p>
+GoogLeNet (Inception-v1) made a revolutionary change:
+</p>
+<ol>
+    <span class="en"><li>After the last convolutional layer, apply <strong>Global Average Pooling (GAP)</strong>: average each feature map to a single scalar</li></span><span class="cn">&gt; **使用全局平均池化 (GAP, Global Average Pooling) 连接卷积层和全连接层。**</span>
+    <span class="en"><li>If the channel count equals the number of classes, each channel directly represents a class score</li></span><span class="cn">| 任务 | 粒度 | 输出 | |------|------|------| | 图像分类 (Classification) | 最粗 | 整张图的类别标签 | | 目标检测 (Detection) | 中等 | 类别 + 边界框坐标 | | 语义分割 (Semantic Segmentation) | 精细 | 每个像素的类别 | | 实例分割 (Instance Segmentation) | 最精细 | 每个像素的类别 + 区分不同个体 |</span>
+    <span class="en"><li>If not, use a <strong>1&times;1 convolution</strong> to map channels to class count first, then apply GAP</li></span><span class="cn">| 任务 | 粒度 | 输出 | |------|------|------| | 图像分类 (Classification) | 最粗 | 整张图的类别标签 | | 目标检测 (Detection) | 中等 | 类别 + 边界框坐标 | | 语义分割 (Semantic Segmentation) | 精细 | 每个像素的类别 | | 实例分割 (Instance Segmentation) | 最精细 | 每个像素的类别 + 区分不同个体 |</span>
+    <li>Output: 1&times;1&times;1000, directly fed to Softmax &mdash; <strong>completely eliminating large FC layers</strong></li>
+</ol>
+
+<table>
+<thead><tr><th>Network</th><th>Tail Structure</th><th>FC Parameters</th></tr></thead>
+<tbody>
+<tr><td>VGG-16</td><td>7&times;7&times;512 → FC4096 → FC4096 → FC1000</td><td>~123M</td></tr>
+<tr><td>GoogLeNet</td><td>7&times;7&times;1024 → GAP → 1&times;1&times;1000</td><td><strong>~1M</strong></td></tr>
+</tbody>
+</table>
+
+<div class="info-box">
+<strong>Role of 1&times;1 conv at the network tail:</strong> It acts as a <strong>channel-wise classifier</strong>, recombining channel information at each spatial position into class scores, then GAP averages out the spatial information, completely eliminating the need for flattening and expensive FC layers.
+</div>
+
+<h4>Later Improvements</h4>
+<ul>
+    <span class="en"><li><strong>Inception-v2:</strong> Introduced Batch Normalization, making BN a standard component in all deep networks</li></span><span class="cn">Batch Normalization 在 Inception v2（PDF p113）</span>
+    <span class="en"><li><strong>Inception-v3:</strong> Factorized n&times;n convolutions into 1&times;n + n&times;1 (e.g., 3&times;3 → 1&times;3 + 3&times;1), reducing parameters from 9 to 6 while maintaining similar receptive field</li></span><span class="cn">``` Input Vector:  [1, 2, 3, 4, 5, 6] Kernel:        [2, 2, 2]   (长度 3) Stride:        1 Padding:       0 ```</span>
+</ul>
+
+<h3 id="sec10-5">10.7 ResNet (2015)</h3>
+
+<span class="en"><p><strong>Core idea: Residual Learning</strong></p></span><span class="cn">**核心思想：残差学习 (Residual Learning)**</span>
+
+<h4>The Problem</h4>
+<p>
+When networks grow beyond ~20 layers, training error <em>increases</em> compared to shallower networks. This is <strong>not overfitting</strong> but an <strong>optimization difficulty</strong> &mdash; deeper networks are simply harder to train.
+</p>
+
+<h4>The Residual Block</h4>
+
+<span class="en"><p>
+Instead of learning the direct mapping \(H(x)\), ResNet learns the <strong>residual</strong> \(F(x) = H(x) - x\), then adds the input back via a <strong>skip connection</strong>:
+</p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+
+<div class="math-block">
+$$
+\text{Output} = F(x) + x
+$$
+</div>
+
+<p>
+If the optimal transformation is close to identity, the network only needs to learn \(F(x) \approx 0\) (which is easy). Even in the worst case, the network degrades gracefully to the identity mapping \(y = x\), never performing worse than a shallower network.
+</p>
+
+<h4>ResNet-50 Structure</h4>
+
+<span class="en"><p>ResNet-50 uses <strong>Bottleneck residual blocks</strong>: 1&times;1 → 3&times;3 → 1&times;1.</p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+
+<pre><code>Input: 224&times;224&times;3
+
+Conv1:    7&times;7, 64, stride=2, padding=3   → 112&times;112&times;64
+MaxPool:  3&times;3, stride=2                 → 56&times;56&times;64
+
+Conv2_x: 3 Bottleneck blocks, 64 channels   → 56&times;56&times;256
+Conv3_x: 4 Bottleneck blocks, 128 channels  → 28&times;28&times;512
+Conv4_x: 6 Bottleneck blocks, 256 channels  → 14&times;14&times;1024
+Conv5_x: 3 Bottleneck blocks, 512 channels  → 7&times;7&times;2048
+
+GAP:      7&times;7 → 1&times;1                   → 1&times;1&times;2048
+FC:       2048 → 1000
+</code></pre>
+
+<p>
+Like GoogLeNet, ResNet uses <strong>GAP</strong> to replace FC layers, retaining only a tiny FC (2048→1000) at the very end.
+</p>
+
+<h4>Results</h4>
+<p>
+ResNet-50 has only <strong>25.6M parameters</strong> (~109.7 MB inference memory), yet trains 50+ layers and far outperforms plain networks of equal depth.
+Later variants include ResNet-101, ResNet-152, and experimental versions with 1000+ layers.
+</p>
+
+<h3 id="sec10-6">10.8 DenseNet (2016)</h3>
+
+<span class="en"><p><strong>Core idea: Dense Connectivity</strong></p></span><span class="cn">**核心思想：密集连接 (Dense Connectivity)**</span>
+
+<p>
+Each layer receives the <strong>concatenation</strong> (along the channel dimension) of all preceding layers' outputs &mdash; not just the immediately previous layer.
+</p>
+
+<div class="math-block">
+$$
+\text{ResNet:} \quad x_l = H_l(x_{l-1}) + x_{l-1} \qquad \text{(element-wise addition)}
+$$
+$$
+\text{DenseNet:} \quad x_l = H_l([x_0, x_1, \ldots, x_{l-1}]) \qquad \text{(channel concatenation)}
+$$
+</div>
+
+<p><strong>Advantages:</strong></p>
+<ul>
+    <li><strong>High feature reuse:</strong> Each layer accesses all previously learned features</li>
+    <li><strong>Gradient flow:</strong> Short paths from loss to every layer mitigate vanishing gradients</li>
+    <span class="en"><li><strong>Smoother loss surface:</strong> Visualizations show DenseNet's loss landscape is smoother than VGG's, making optimization easier</li></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+</ul>
+
+<h3 id="sec10-7">10.9 Vision Transformer (ViT, 2020)</h3>
+
+<span class="en"><p><strong>Core idea: Split the image into patches and treat them as a sequence for the Transformer.</strong></p></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+
+<ul>
+    <li>Input image: 224&times;224, split into 16&times;16 patches → 14&times;14 = <strong>196 patches</strong></li>
+    <span class="en"><li>Each patch is flattened and linearly projected into a vector (analogous to a "token" in NLP)</li></span><span class="cn">- 输入图像 224×224，切成 16×16 的 patch，共 14×14 = 196 个 patch。 - 每个 patch 拉平后投影为向量，相当于 NLP 中的一个 token。 - 后续完全使用 Self-Attention 处理，**无卷积操作**。</span>
+    <span class="en"><li>Processing uses <strong>pure Self-Attention</strong> &mdash; no convolution at all</li></span><span class="cn">- 输入图像 224×224，切成 16×16 的 patch，共 14×14 = 196 个 patch。 - 每个 patch 拉平后投影为向量，相当于 NLP 中的一个 token。 - 后续完全使用 Self-Attention 处理，**无卷积操作**。</span>
+    <li>A <code>[CLS]</code> token aggregates global information for classification</li>
+</ul>
+
+<h4>ViT vs. CNN Comparison <span class="cn">对比</span></h4>
+
+<table>
+<thead><tr><th>Aspect</th><th>ViT</th><th>CNN</th></tr></thead>
+<tbody>
+<tr><td>Receptive field</td><td>Instantly global (self-attention connects all positions)</td><td>Local; grows layer by layer</td></tr>
+<tr><td>Data requirements</td><td>Very large (typically needs pre-training on massive datasets)</td><td>More friendly to small datasets</td></tr>
+<tr><td>Structural uniformity</td><td>Generic Transformer blocks; highly transferable</td><td>Architecture is task-specific and hand-tuned</td></tr>
+<tr><td>Interpretability</td><td>Attention maps provide intuitive visualization</td><td>Requires receptive field analysis</td></tr>
+<tr><td>Scalability</td><td>Unified architecture adapts across tasks</td><td>Different tasks need custom convolution structures</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec11">
+<h2>11. CNN Bottleneck vs. VAE Latent Space</h2>
+
+<span class="en"><p>
+The following discussion arose from a post-lecture conversation with the instructor. While CNN Bottleneck (dimensionality reduction via 1&times;1 convolutions) and VAE's Latent Space share structural similarities, their purposes differ fundamentally.
+</p></span><span class="cn">&gt; 以下内容来自课后与老师的讨论整理。老师在课堂上提到 VGG 的简洁性适合手写练习，而在进一步探讨中，引出了一个深刻的问题：**CNN 中的 Bottleneck（降维-升维）与 VAE 的 Latent Space 究竟是什么关系？**</span>
+
+<h3>11.1 Formally Similar, Purposefully Different</h3>
+
+<table>
+<thead><tr><th>Aspect</th><th>CNN Bottleneck</th><th>VAE (Variational Autoencoder)</th></tr></thead>
+<tbody>
+<tr><td><strong>Structure</strong></td><td>Reduce (1&times;1) → Process (3&times;3) → Expand (1&times;1)</td><td>Encoder → Latent Z → Decoder</td></tr>
+<tr><td><strong>Reduce Purpose</strong></td><td><strong>Save computation</strong>: let 3&times;3 conv work on fewer channels</td><td><strong>Extract semantic/generative latent representation</strong>: compress redundant information</td></tr>
+<tr><td><strong>Expand Purpose</strong></td><td>Restore channel count to match downstream layers</td><td>Reconstruct original data</td></tr>
+<tr><td><strong>Middle Layer Nature</strong></td><td><strong>Deterministic</strong> linear transform + ReLU</td><td><strong>Probabilistic</strong> distribution sampling (\(\mu, \sigma \rightarrow Z\))</td></tr>
+<tr><td><strong>Loss</strong></td><td>Task-specific (cross-entropy, Dice, etc.)</td><td>Reconstruction Loss + KL Divergence</td></tr>
+<tr><td><strong>Information Retention</strong></td><td>Retain all task-relevant information</td><td><strong>Allows lossy compression</strong>; KL term encourages information discard</td></tr>
+</tbody>
+</table>
+
+<div class="highlight-box">
+<h4>Key Distinction <span class="cn">关键区别</span></h4>
+<span class="en"><p>CNN Bottleneck reduces dimensions to <strong>save compute</strong>, retaining as much task-relevant information as possible. VAE reduces dimensions to <strong>learn a distribution</strong>, with the KL term actively encouraging information to be compressed into concise statistical regularities.</p></span><span class="cn">| | **CNN Bottleneck** | **VAE (Variational Autoencoder)** | |---|---|---| | **结构** | 降维 (1×1) → 处理 (3×3) → 升维 (1×1) | Encoder → Latent Z → Decoder | | **降维目的** | **减少计算量**，让 3×3 卷积在更少的通道上工作 | **提取语义/生成潜在表示**，压缩冗余信息 | | **升维目的** | 恢复通道数，匹配下游任务 | 重建原始数据 | | **中间层性质** | **确定性**的线性变换 + ReLU | **概率性**的分布采样（μ, σ → Z） | | **Loss** | 任务相关（分类交叉熵、分割 Dice 等） | 重建 Loss + KL 散度 | | **信息保留** | 尽量保留所有任务相关信息 | **允许有损压缩**，KL 项鼓励信息丢弃 |</span>
+</div>
+
+<h3>11.2 "VAE Is Just AE + One Extra Loss" &mdash; Partially True</h3>
+
+<span class="en"><p><strong>From a network structure perspective:</strong> VAE is an Encoder-Decoder with a Bottleneck, almost identical to a standard Autoencoder (AE). Compared to AE, VAE structurally adds only:</p></span><span class="cn">| | **CNN Bottleneck** | **VAE (Variational Autoencoder)** | |---|---|---| | **结构** | 降维 (1×1) → 处理 (3×3) → 升维 (1×1) | Encoder → Latent Z → Decoder | | **降维目的** | **减少计算量**，让 3×3 卷积在更少的通道上工作 | **提取语义/生成潜在表示**，压缩冗余信息 | | **升维目的** | 恢复通道数，匹配下游任务 | 重建原始数据 | | **中间层性质** | **确定性**的线性变换 + ReLU | **概率性**的分布采样（μ, σ → Z） | | **Loss** | 任务相关（分类交叉熵、分割 Dice 等） | 重建 Loss + KL 散度 | | **信息保留** | 尽量保留所有任务相关信息 | **允许有损压缩**，KL 项鼓励信息丢弃 |</span>
+<ul>
+    <li>Two sets of parameters (\(\mu\) and \(\sigma\)) instead of one feature vector</li>
+    <span class="en"><li><span class="en">A reparameterization trick</span><span class="cn">**从网络结构看**：VAE 就是一个带 Bottleneck 的 Encoder-Decoder，和 Autoencoder (AE) 长得几乎一样。VAE 相比 AE，结构上只多了： - 输出两组参数（μ 和 σ）而不是一组特征 - 一个重参数化技巧（Reparameterization Trick） - Loss 里加了一个 KL 散度项</span></li></span><span class="cn">**从网络结构看**：VAE 就是一个带 Bottleneck 的 Encoder-Decoder，和 Autoencoder (AE) 长得几乎一样。VAE 相比 AE，结构上只多了： - 输出两组参数（μ 和 σ）而不是一组特征 - 一个重参数化技巧（Reparameterization Trick） - Loss 里加了一个 KL 散度项</span>
+    <span class="en"><li>A KL divergence term in the loss</li></span><span class="cn">| | **CNN Bottleneck** | **VAE (Variational Autoencoder)** | |---|---|---| | **结构** | 降维 (1×1) → 处理 (3×3) → 升维 (1×1) | Encoder → Latent Z → Decoder | | **降维目的** | **减少计算量**，让 3×3 卷积在更少的通道上工作 | **提取语义/生成潜在表示**，压缩冗余信息 | | **升维目的** | 恢复通道数，匹配下游任务 | 重建原始数据 | | **中间层性质** | **确定性**的线性变换 + ReLU | **概率性**的分布采样（μ, σ → Z） | | **Loss** | 任务相关（分类交叉熵、分割 Dice 等） | 重建 Loss + KL 散度 | | **信息保留** | 尽量保留所有任务相关信息 | **允许有损压缩**，KL 项鼓励信息丢弃 |</span>
+</ul>
+
+<span class="en"><p><strong>From a mathematical perspective:</strong> This "extra loss" changes everything.</p></span><span class="cn">| | **CNN Bottleneck** | **VAE (Variational Autoencoder)** | |---|---|---| | **结构** | 降维 (1×1) → 处理 (3×3) → 升维 (1×1) | Encoder → Latent Z → Decoder | | **降维目的** | **减少计算量**，让 3×3 卷积在更少的通道上工作 | **提取语义/生成潜在表示**，压缩冗余信息 | | **升维目的** | 恢复通道数，匹配下游任务 | 重建原始数据 | | **中间层性质** | **确定性**的线性变换 + ReLU | **概率性**的分布采样（μ, σ → Z） | | **Loss** | 任务相关（分类交叉熵、分割 Dice 等） | 重建 Loss + KL 散度 | | **信息保留** | 尽量保留所有任务相关信息 | **允许有损压缩**，KL 项鼓励信息丢弃 |</span>
+
+<table>
+<thead><tr><th>Aspect</th><th>Autoencoder (AE)</th><th>VAE</th></tr></thead>
+<tbody>
+<tr><td>Latent Space</td><td>Scattered, discontinuous points</td><td>Continuous, structured <strong>probability distribution</strong></td></tr>
+<tr><td>Interpolation</td><td>Points between two codes may be meaningless</td><td>Interpolation generates meaningful transitional samples</td></tr>
+<tr><td>Generation</td><td><strong>No true generative ability</strong></td><td>Can sample from prior \(P(Z)\) to generate new data</td></tr>
+<tr><td>Overfitting Risk</td><td>Encoder may memorize</td><td>KL term forces \(Z\) toward standard normal, preventing overfitting</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+KL Loss is not merely "an extra penalty" &mdash; it transforms the Latent Space <strong>from a set of scattered points into a structured continuous manifold</strong>. Without this constraint, VAE degenerates into a plain AE.
+</blockquote>
+
+<h3>11.3 CNN + VAE Combination Patterns</h3>
+
+<span class="en"><p>In practice, CNN and VAE are fully compatible. Common patterns include:</p></span><span class="cn">``` 图像 → CNN (提取局部特征) → Patch Embedding ↓ Transformer 或 VAE 做全局关系建模 ```</span>
+
+<h4>Pattern 1: CNN as VAE Encoder/Decoder Backbone</h4>
+<pre><code>Input Image [3, 256, 256]
+    ↓
+CNN Encoder (ResNet/VGG backbone)
+    ↓
+Latent Z [128]  ← VAE μ/σ head attached here
+    ↓
+CNN Decoder (transposed convolution / upsampling)
+    ↓
+Reconstructed Image [3, 256, 256]
+</code></pre>
+
+<p>CNN extracts hierarchical spatial features; VAE compresses them into semantic latent variables. Used in: image generation, anomaly detection, style transfer.</p>
+
+<h4>Pattern 2: VAE Bottleneck Built Entirely from CNN</h4>
+<pre><code>VQ-VAE Structure:
+Input [3, 256, 256]
+    ↓
+Encoder (CNN downsample to [512, 16, 16])
+    ↓
+Vector Quantization (Codebook lookup)
+    ↓
+Decoder (CNN upsample back to [3, 256, 256])
+</code></pre>
+
+<h4>Pattern 3: CNN Feature Extraction → Transformer/VAE Global Modeling</h4>
+<pre><code>Image → CNN (local features) → Patch Embedding
+                                  ↓
+                        Transformer or VAE for global modeling
+</code></pre>
+
+<p>Both <strong>DiT (Diffusion Transformer)</strong> and <strong>Stable Diffusion</strong> follow this paradigm: CNN (or Patchify) extracts features, then Diffusion/VAE handles generation.</p>
+
+<h3>11.4 Instructor's Perspective</h3>
+
+<blockquote>
+<strong>Don't get too hung up on VAE's probabilistic form.</strong> From an engineering perspective, VAE's core is simply:
+<ol>
+    <span class="en"><li><span class="en">A Bottleneck (compression)</span><span class="cn">1×1 卷积最早见于 **Network in Network (NIN)**，后在 Inception 中被发扬光大作为 **Bottleneck**。</span></li></span><span class="cn">``` 1998  LeNet-5    (Yann LeCun)       —— CNN 雏形 2012  AlexNet    (Krizhevsky)       —— Deep Learning 爆发 2014  VGG        (Oxford)           —— 小卷积核 + 深度 2014  GoogLeNet/Inception (Google)  —— 多尺度 + 1×1 Bottleneck 2015  ResNet     (Microsoft)        —— 残差连接，可训练 100+ 层 2016  DenseNet   (清华/港中文)       —— 密集连接 2020  ViT        (Google)           —— Transformer 进军视觉 ```</span>
+    <span class="en"><li>A reconstruction objective</li></span><span class="cn">Part 1: 引言（PDF p23–p30）</span>
+    <span class="en"><li>A regularization term (to keep the latent space orderly)</li></span><span class="cn">| | **Autoencoder (AE)** | **VAE** | |---|---|---| | Latent Space | 离散的、不连续的"点" | 连续的、结构化的**概率分布** | | 插值性质 | 两点之间可能是无意义的乱码 | 两点之间插值能生成有意义的过渡样本 | | 生成能力 | **没有**真正的生成能力 | 可以从先验分布 P(Z) 采样生成新样本 | | 过拟合风险 | Encoder 可能死记硬背 | KL 项强制 Z 接近标准正态，防止过拟合 |</span>
+</ol>
+This is <em>directly analogous</em> to CNN's "reduce → process → expand" Bottleneck philosophy. VAE's KL term can be understood as regularization that keeps the Bottleneck's internal representation structured and generalizable &mdash; similar in spirit to Dropout, L2, or BatchNorm.
+</blockquote>
+
+<div class="success-box">
+<strong>One-sentence summary:</strong> CNN Bottleneck and VAE Latent Space are <strong>two sides of the same coin</strong>: CNN Bottleneck is <em>deterministic, task-driven</em> compression for efficiency; VAE is <em>probabilistic, generation-driven</em> compression for learning distributions. VAE truly is "just AE + one extra loss," but that loss (KL divergence) transforms the network from a simple compressor into a <strong>probabilistic generative model</strong>.
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section id="sec12">
+<h2>12. Summary <span class="cn">本讲总结</span> &mdash; Key Takeaways</h2>
+
+<div class="highlight-box">
+<h4>Nine Essential Points</h4>
+<ol>
+    <span class="en"><li><strong>Convolution</strong> is fundamentally a sliding-window element-wise multiply-and-sum operation. The kernel is a learnable pattern detector.</li></span><span class="cn">卷积的过程永远只有四步： 1. **滑动卷积核** (Sliding) 2. **对应元素逐一相乘** (Element-wise multiplication) 3. **将所有乘积结果求和** (Summation) 4. **重复上述步骤** (Repeat)</span>
+    <span class="en"><li><strong>Padding</strong> preserves spatial size, <strong>Stride</strong> controls down-sampling, and <strong>Kernel Size</strong> determines the receptive field. The output size formula: \(\text{Output} = \frac{W + 2P - K}{S} + 1\).</li></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+    <span class="en"><li>In <strong>multi-channel convolution</strong>, input channels = kernel depth, and output channels = number of kernels. The parameter formula is \(C_{out} \times (k_w \times k_h \times C_{in} + 1)\).</li></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+    <span class="en"><li><strong>1&times;1 convolution</strong> is a channel-wise linear transformation. It is the key tool for dimensionality reduction (bottleneck) and, combined with GAP, can completely replace FC layers.</li></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+    <span class="en"><li><strong>Depthwise + Pointwise</strong> (depthwise separable convolution) compresses standard convolution parameters by ~8.7&times;, enabling efficient mobile inference (MobileNet).</li></span><span class="cn">2.6.2 深度可分离卷积 (Depthwise Separable Convolution)（PDF p63）</span>
+    <li><strong>Dilated convolution</strong> enlarges the receptive field without adding parameters or losing spatial resolution &mdash; critical for dense prediction tasks like semantic segmentation.</li>
+    <span class="en"><li><strong>Group convolution</strong> partitions channels into independent groups, reducing parameters by \(1/g\). When \(g = C_{in}\), it becomes depthwise convolution.</li></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+    <span class="en"><li><strong>BatchNorm</strong> normalizes over N&times;H&times;W for each channel. Output shape is identical to input. It stabilizes training, allows higher learning rates, and provides mild regularization.</li></span><span class="cn">1. **卷积操作**的本质是滑动窗口下的逐元素乘加； 2. **Padding** 保尺寸，**Stride** 控下采样，**Kernel Size** 定感受野； 3. **多通道卷积**中，输入通道 = 卷积核深度，输出通道 = 卷积核个数； 4. **1×1 卷积**是通道维度的线性变换，是降维/升维的廉价工具（Bottleneck），在网络尾部配合 GAP 可彻底替代全连接层； 5. **Depthwise + Pointwise** 将标准卷积的参数量压缩约 8-9 倍； 6. **Dilated Convolution** 在不增加参数的前提下扩大感受野； 7. **Group Convolution** 从通道分组角度减少计算量； 8. **BatchNorm** 在 N×H×W 维度上对每个 channel 标准化，输出 shape 与输入完全一致； 9. 从 LeNet 到 ViT，网络设计经历了**手工设计特征 → 加深 → 加宽 → 残差 → 注意力**的演进历程。</span>
+    <li>From <strong>LeNet to ViT</strong>, CNN architecture evolution followed the path: <em>manual feature design → deeper networks → wider/multi-scale → residual connections → attention mechanisms</em>. Each generation addressed the limitations of its predecessor.</li>
+</ol>
+</div>
+
+<div class="info-box">
+<strong>Evolution in one line:</strong> LeNet (prototype) → AlexNet (scale + ReLU + GPU) → VGG (deeper, 3&times;3 only) → GoogLeNet (multi-scale + bottleneck + GAP) → ResNet (skip connections) → DenseNet (dense connections) → ViT (pure attention, no convolution).
+</div>
+
+<div class="info-box">
+<strong>Special convolution types summary:</strong><br>
+&bull; <strong>1&times;1 Conv</strong>: channel-wise linear mix, bottleneck tool<br>
+&bull; <strong>Depthwise Separable</strong>: depthwise + pointwise, ~8.7&times; compression<br>
+&bull; <strong>Dilated</strong>: zero-cost receptive field expansion<br>
+&bull; <strong>Transposed</strong>: up-sampling via learned interpolation<br>
+&bull; <strong>Deformable</strong>: learnable sampling offsets for shape adaptation<br>
+&bull; <strong>Group</strong>: channel partitioning, \(1/g\) parameter reduction
+</div>
+</section>
+
+</main>
+
+<footer>
+    <p>Lecture 10: Convolutional Neural Networks &mdash; In Depth &nbsp;|&nbsp; Introduction to Artificial Intelligence, Fudan University</p>
+    <span class="en"><p>Based on course lectures by Ding Henghui &nbsp;|&nbsp; Notes compiled 2026-05-07</p></span><span class="cn">卷积的过程永远只有四步： 1. **滑动卷积核** (Sliding) 2. **对应元素逐一相乘** (Element-wise multiplication) 3. **将所有乘积结果求和** (Summation) 4. **重复上述步骤** (Repeat)</span>
+</footer>
+</div>
+</div>
+
+    // Language Toggle
+    (function() {
+        var body = document.body;
+        var btnEN = document.getElementById('btn-en');
+        var btnCN = document.getElementById('btn-cn');
+        var saved = localStorage.getItem('lang') || 'en';
+        if (saved === 'cn') {
+            body.classList.add('lang-cn');
+            if (btnCN) btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+        } else {
+            if (btnEN) btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+        }
+        if (btnEN) btnEN.addEventListener('click', function() {
+            body.classList.remove('lang-cn');
+            btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+            localStorage.setItem('lang', 'en');
+        });
+        if (btnCN) btnCN.addEventListener('click', function() {
+            body.classList.add('lang-cn');
+            btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+            localStorage.setItem('lang', 'cn');
+        });
+    })();
+
+</body>
+</html>
