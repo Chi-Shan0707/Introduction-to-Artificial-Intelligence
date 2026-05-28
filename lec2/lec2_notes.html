@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 2: Logic, Knowledge Representation, and Reasoning</title>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #1a252f;
+            --text: #333;
+            --muted: #7f8c8d;
+            --code-bg: #f8f9fa;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --warning: #f39c12;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar header {
+            background: transparent;
+            padding: 2rem 1.5rem 1.5rem;
+            text-align: left;
+        }
+
+        .sidebar header h1 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .sidebar header .subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc {
+            flex: 1;
+            padding: 0 1.5rem 2rem;
+            background: transparent;
+            border: none;
+            overflow-y: auto;
+        }
+
+        .sidebar .toc h2 {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.8rem;
+            border: none;
+            padding: 0;
+        }
+
+        .sidebar .toc ul {
+            columns: 1;
+            list-style: none;
+        }
+
+        .sidebar .toc li {
+            margin-bottom: 0.15rem;
+        }
+
+        .sidebar .toc a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+
+        .sidebar .toc a:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            min-width: 0;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.05);
+        }
+
+        .main-wrapper main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        .main-wrapper footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 3rem;
+        }
+
+        /* Header & TOC now in sidebar */
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        h3 {
+            color: var(--dark);
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        h4 {
+            color: var(--text);
+            font-size: 1.1rem;
+            margin: 1.2rem 0 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Math blocks */
+        .math-block {
+            background: var(--code-bg);
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        /* Code / Pseudocode */
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: var(--primary);
+            color: white;
+        }
+
+        th, td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background: var(--light);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .highlight-box h4 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 1rem 1.2rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Philosophy blockquote */
+        blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--dark);
+            background: var(--light);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 0.5rem;
+            font-style: normal;
+            color: var(--muted);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .sidebar header {
+                width: 100%;
+                padding: 1.5rem;
+            }
+            .sidebar .toc {
+                width: 100%;
+                padding: 0 1.5rem 1rem;
+            }
+            .sidebar .toc ul {
+                columns: 2;
+            }
+            .main-wrapper main {
+                padding: 1.5rem;
+            }
+            .main-wrapper footer {
+                padding: 1.5rem;
+            }
+            table {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Algorithm pseudocode specific */
+        .algorithm {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .algorithm .keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .algorithm .function {
+            color: #dcdcaa;
+        }
+
+        .algorithm .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        /* Anchor offset for fixed header if needed */
+        section[id] {
+            scroll-margin-top: 20px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .sidebar {
+                position: relative;
+                height: auto;
+                width: 200px;
+                min-width: 200px;
+            }
+            .main-wrapper {
+                box-shadow: none;
+            }
+        }
+    
+        /* ===== Bilingual Toggle ===== */
+        .lang-toggle {
+            position: fixed;
+            top: 18px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .lang-toggle button {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .lang-toggle button:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.08);
+        }
+        .lang-toggle button.active {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+        }
+        .cn { display: none; }
+        body.lang-cn .cn { display: inline; }
+        body.lang-cn .en { display: none; }
+        body.lang-cn .cn-block { display: block; }
+        body.lang-cn .en-block { display: none; }
+        .cn-block { display: none; }
+        /* Keep math, code, tables always visible */
+        .cn .MathJax, .cn code, .cn pre, .cn .math-block,
+        .cn .algorithm, .cn table { display: revert; }
+        body.lang-cn .en .MathJax,
+        body.lang-cn .en code,
+        body.lang-cn .en pre { display: revert; }
+        @media (max-width: 768px) {
+            .lang-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .lang-toggle button {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+        <div class="lang-toggle">
+            <button id="btn-en">EN</button>
+            <button id="btn-cn">中文</button>
+        </div>
+
+    <div class="layout">
+        <div class="sidebar">
+        <header>
+            <h1>Lecture 2: Logic and Knowledge Representation <span class="cn">第二讲：形式逻辑与知识表示</span></h1>
+            <p class="subtitle">从形式逻辑到知识图谱推理 &mdash; From Symbolic Reasoning to Knowledge Graphs <span class="cn">从符号推理到知识图谱</span></p>
+            <p class="subtitle">Introduction to Artificial Intelligence <span class="cn">人工智能导论</span> &middot; 复旦大学</p>
+        </header>
+
+        <nav class="toc">
+            <h2>Table of Contents </h2>
+            <ul>
+                <li><a href="#formal-logic">1. Formal Logic Foundations </a></li>
+                <li><a href="#propositional-logic">2. Propositional Logic </a></li>
+                <li><a href="#predicate-logic">3. Predicate Logic / FOL </a></li>
+                <li><a href="#laws-of-logic">4. The Four Laws of Logic </a></li>
+                <li><span class="en"><a href="#curry-howard">5. Curry&ndash;Howard Correspondence</a></li></span>
+                <li><a href="#mathematical-logic">6. Mathematical Logic &amp; Boolean Algebra</a></li>
+                <li><a href="#information-theory">7. Information Entropy &amp; Information Gain</a></li>
+                <li><a href="#digital-logic">8. Digital Logic &amp; Hardware Realization</a></li>
+                <li><a href="#knowledge-graphs">9. Knowledge Graphs </a></li>
+                <li><span class="en"><a href="#foil">10. FOIL Algorithm (FOIL 算法)</a></li></span>
+                <li><a href="#pra">11. Path Ranking Algorithm </a></li>
+                <li><a href="#pgm">12. Probabilistic Graphical Models </a></li>
+                <li><a href="#summary">13. Summary </a></li>
+            </ul>
+        </nav>
+
+        </div>
+        <div class="main-wrapper">
+        <main>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 1: Formal Logic Foundations -->
+            <!-- ============================================================ -->
+            <section id="formal-logic">
+                <h2>1. Formal Logic Foundations (<span class="cn">形式逻辑</span>)</h2>
+
+                <p>Formal logic <span class="cn">(形式逻辑)</span> is the discipline that studies the <strong>general laws of thought</strong>. Rather than focusing on the <em>content</em> of knowledge, it examines whether the <strong>structure of reasoning</strong> is sound. This is precisely the rigorous framework that machines need in order to "reason."</p>
+
+                <blockquote>
+                    <strong>Core Idea <span class="cn">(核心理念)</span>:</strong> Logic does not merely study what we know; more importantly, it studies <em>whether the structure of thought, the process of inference, and the conclusions drawn are rigorous and valid</em>.
+                </blockquote>
+
+                <div class="info-box">
+                    <strong>The Three Pillars of Formal Logic <span class="cn">(三个关键词)</span>:</strong>
+                    <ol>
+                        <li><strong>Laws (规律):</strong> All things develop according to inherent logic; behind the complex phenomena of the world, there are often rules to follow.</li>
+                        <li><strong>Inference (推理):</strong> Drawing conclusions from premises. The most famous form is the <strong>Syllogism <span class="cn">(三段论)</span></strong>.</li>
+                        <li><strong>Judgment (判断):</strong> The ability to analyze, judge, and distinguish the truth of given information.</li>
+                    </ol>
+                </div>
+
+                <h3>The Classic Syllogism (<span class="cn">经典三段论</span>)</h3>
+                <span class="en"><p>A syllogism is a fundamental form of deductive reasoning consisting of a major premise, a minor premise, and a conclusion:</p></span><span class="cn">**符号化例子**： - "lucy和lily是姐妹" → $\text{Sister}(\text{lucy}, \text{lily})$ - "北京是中国的首都" → $\text{CapitalOf}(\text{Beijing}, \text{China})$</span>
+                <blockquote>
+                    1. All men are mortal. &nbsp; (Major Premise / 大前提)<br>
+                    2. Socrates is a man. &nbsp; (Minor Premise / 小前提)<br>
+                    3. <strong>Therefore, Socrates is mortal.</strong> &nbsp; (Conclusion / 结论)
+                </blockquote>
+                <p>While this looks trivial, the challenge for AI is: <em>how do we formalize this so a machine can perform the same reasoning?</em> This leads us to propositional logic and, ultimately, predicate logic.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 2: Propositional Logic -->
+            <!-- ============================================================ -->
+            <section id="propositional-logic">
+                <h2>2. Propositional Logic (<span class="cn">命题逻辑</span>)</h2>
+
+                <h3>2.1 What Is a Proposition? (<span class="cn">命题的定义</span>)</h3>
+                <p>A <strong>proposition (命题)</strong> is a declarative sentence that can be judged to be either <strong>true (真, 1)</strong> or <strong>false (假, 0)</strong>. Propositional logic treats full sentences as atomic units &mdash; it does not look inside them.</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Example</th><th>Type</th><th>Verdict</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>"Beijing is the capital of China."</td><td>Declarative</td><td>&#10003; True proposition</td></tr>
+                        <tr><td>"2 + 2 = 5"</td><td>Declarative</td><td>&#10003; False proposition</td></tr>
+                        <tr><td>"Are you in a meeting?"</td><td>Interrogative</td><td>&#10007; Not a proposition</td></tr>
+                        <tr><td>"Please leave."</td><td>Imperative</td><td>&#10007; Not a proposition</td></tr>
+                        <tr><td>"I am lying right now."</td><td>Paradox</td><td>&#10007; Not a proposition (self-contradiction)</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>2.2 Atomic vs. Compound Propositions</h3>
+                <p><strong>Atomic propositions <span class="cn">(原子命题)</span></strong> are indivisible units, denoted \(P, Q, R, \ldots\). <strong>Compound propositions <span class="cn">(复合命题)</span></strong> are formed by combining atomic propositions with <strong>logical connectives <span class="cn">(逻辑连接词)</span></strong>.</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Connective</th><th>Symbol</th><th>Form</th><th>Truth Condition</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AND (Conjunction / 合取)</td>
+                            <td>\(\land\)</td>
+                            <td>\(P \land Q\)</td>
+                            <td>True only if <em>both</em> are true</td>
+                        </tr>
+                        <tr>
+                            <td>OR (Disjunction / 析取)</td>
+                            <td>\(\lor\)</td>
+                            <td>\(P \lor Q\)</td>
+                            <td>True if <em>at least one</em> is true</td>
+                        </tr>
+                        <tr>
+                            <td>NOT (Negation / 否定)</td>
+                            <td>\(\lnot\)</td>
+                            <td>\(\lnot P\)</td>
+                            <td>Inverts the truth value</td>
+                        </tr>
+                        <tr>
+                            <td>Implication (蕴含)</td>
+                            <td>\(\rightarrow\)</td>
+                            <td>\(P \rightarrow Q\)</td>
+                            <td>False <em>only</em> when \(P\) is true and \(Q\) is false</td>
+                        </tr>
+                        <tr>
+                            <td>Biconditional <span class="cn">(双向蕴含)</span></td>
+                            <td>\(\leftrightarrow\)</td>
+                            <td>\(P \leftrightarrow Q\)</td>
+                            <td>True if both have the same truth value</td>
+                        </tr>
+                        <tr>
+                            <td>XOR (Exclusive OR / 异或)</td>
+                            <td>\(\oplus\)</td>
+                            <td>\(P \oplus Q\)</td>
+                            <td>True if <em>exactly one</em> is true</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>2.3 Complete Truth Table for \(P \rightarrow Q\)</h3>
+                <p>The implication connective is often the most confusing. Think of it as a <strong>promise</strong>: "If it rains (\(P\)), I will pick you up (\(Q\))." Only one scenario breaks the promise &mdash; raining but not picking up.</p>
+
+                <table>
+                    <thead>
+                        <tr><th>\(P\)</th><th>\(Q\)</th><th>\(P \rightarrow Q\)</th><th>Interpretation</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>T</td><td>T</td><td><strong>T</strong></td><td>Rained, picked up &mdash; promise kept</td></tr>
+                        <tr><td>T</td><td>F</td><td><strong>F</strong></td><td>Rained, did NOT pick up &mdash; promise <em>broken</em></td></tr>
+                        <tr><td>F</td><td>T</td><td><strong>T</strong></td><td>Did not rain, picked up anyway &mdash; no violation</td></tr>
+                        <tr><td>F</td><td>F</td><td><strong>T</strong></td><td>Did not rain, did not pick up &mdash; no violation</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Why is "F &rarr; T" true?</strong> The promise was "if it rains, I'll pick you up." It didn't rain, so the promise was never tested. Picking someone up voluntarily does not violate the promise. In logic, an implication with a false antecedent is <strong>vacuously true</strong>.
+                </div>
+
+                <h3>2.4 Worked Example <span class="cn">例子</span>s</h3>
+                <ul>
+                    <span class="en"><li>"If the weather is sunny, Class 2 of Grade 3 will go on a spring outing." &rarr; \(P \rightarrow Q\) (conditional / 条件命题)</li></span><span class="cn">**3. 量词（Quantifier）** - **全称量词** $\forall$（对所有、任意）：$\forall x. P(x)$ = 对所有的x，都有性质P - **存在量词** $\exists$（存在某个）：$\exists x. P(x)$ = 存在某个x，具有性质P</span>
+                    <span class="en"><li>"Turing was not only a mathematician but also a logician." &rarr; \(P \land Q\) (conjunction / 合取命题)</li></span><span class="cn">| 连接词 | 符号 | 形式 | 真值条件 | |--------|------|------|---------| | 与（合取）| $\land$ | $P \land Q$ | 两个都真才真 | | 或（析取）| $\lor$ | $P \lor Q$ | 至少一个真就真 | | 非（否定）| $\lnot$ | $\lnot P$ | 原命题假则结果真 | | 蕴含 | $\rightarrow$ | $P \rightarrow Q$ | 前真后假时为假，其余为真 | | 双向蕴含 | $\leftrightarrow$ | $P \leftrightarrow Q$ | 同真或同假时为真 |</span>
+                    <span class="en"><li>"This number is either greater than 3 or less than or equal to 3." &rarr; \(P \lor \lnot P\) (tautology / 永真式)</li></span><span class="cn">| 连接词 | 符号 | 形式 | 真值条件 | |--------|------|------|---------| | 与（合取）| $\land$ | $P \land Q$ | 两个都真才真 | | 或（析取）| $\lor$ | $P \lor Q$ | 至少一个真就真 | | 非（否定）| $\lnot$ | $\lnot P$ | 原命题假则结果真 | | 蕴含 | $\rightarrow$ | $P \rightarrow Q$ | 前真后假时为假，其余为真 | | 双向蕴含 | $\leftrightarrow$ | $P \leftrightarrow Q$ | 同真或同假时为真 |</span>
+                </ul>
+
+                <h3>2.5 Application: Expert Systems</h3>
+                <p>Propositional logic was widely used in early <strong>expert systems <span class="cn">(专家系统)</span></strong>. Rules are expressed as propositional combinations:</p>
+                <div class="math-block">
+                    \(\text{IF } \textit{PowerOutage} \text{ THEN } \textit{ExperimentCannotProceed}\)
+                </div>
+                <span class="en"><p>This is simply \(P \rightarrow Q\) in disguise.</p></span><span class="cn">| 连接词 | 符号 | 形式 | 真值条件 | |--------|------|------|---------| | 与（合取）| $\land$ | $P \land Q$ | 两个都真才真 | | 或（析取）| $\lor$ | $P \lor Q$ | 至少一个真就真 | | 非（否定）| $\lnot$ | $\lnot P$ | 原命题假则结果真 | | 蕴含 | $\rightarrow$ | $P \rightarrow Q$ | 前真后假时为假，其余为真 | | 双向蕴含 | $\leftrightarrow$ | $P \leftrightarrow Q$ | 同真或同假时为真 |</span>
+
+                <h3>2.6 Limitations of Propositional Logic <span class="cn">命题逻辑</span></h3>
+                <div class="warning-box">
+                    <strong>Key Limitation <span class="cn">(局限性)</span>:</strong> Propositional logic cannot look <em>inside</em> a sentence. It treats "Socrates is a man" as a single symbol \(P\), and "All men are mortal" as another symbol \(Q\). It cannot express the relationship between "Socrates" (individual) and "Man" (category).
+                    <br><br>
+                    Consider the Syllogism:
+                    <div class="math-block">
+                        \(\alpha:\) All men are mortal &nbsp;&nbsp; \(\beta:\) Socrates is a man &nbsp;&nbsp; \(\gamma:\) Socrates is mortal
+                    </div>
+                    We can write \(\alpha \land \beta \Rightarrow \gamma\), but this <strong>fails to explain <em>why</em> the conclusion follows</strong>. The real reason is the shared concept of "Human" &mdash; something propositional logic cannot capture.
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 3: Predicate Logic (FOL) -->
+            <!-- ============================================================ -->
+            <section id="predicate-logic">
+                <h2>3. Predicate Logic &mdash; First-Order Logic (<span class="cn">谓词逻辑 </span>/ FOL)</h2>
+
+                <p>Predicate logic <span class="cn">(谓词逻辑)</span>, also called <strong>First-Order Logic (一阶逻辑, FOL)</strong>, extends propositional logic by breaking sentences into <strong>individuals (个体)</strong>, <strong>predicates (谓词)</strong>, and <strong>quantifiers (量词)</strong>. This enables the expression of properties of objects and relationships between them.</p>
+
+                <h3>3.1 Core Components</h3>
+
+                <h4>3.1.1 Individuals (<span class="cn">个体</span>)</h4>
+                <span class="en"><p>Objects that exist independently. They can be concrete or abstract:</p></span><span class="cn">**3. 量词（Quantifier）** - **全称量词** $\forall$（对所有、任意）：$\forall x. P(x)$ = 对所有的x，都有性质P - **存在量词** $\exists$（存在某个）：$\exists x. P(x)$ = 存在某个x，具有性质P</span>
+                <ul>
+                    <li>Concrete: <code>lucy</code>, <code>Socrates</code>, <code>Beijing</code></li>
+                    <li>Abstract: <code>3</code>, <code>the number &pi;</code></li>
+                </ul>
+
+                <h4>3.1.2 Predicates (<span class="cn">谓词</span>)</h4>
+                <span class="en"><p>A predicate describes an <strong>attribute</strong> of an individual or a <strong>relationship</strong> between individuals.</p></span><span class="cn">| 连接词 | 符号 | 形式 | 真值条件 | |--------|------|------|---------| | 与（合取）| $\land$ | $P \land Q$ | 两个都真才真 | | 或（析取）| $\lor$ | $P \lor Q$ | 至少一个真就真 | | 非（否定）| $\lnot$ | $\lnot P$ | 原命题假则结果真 | | 蕴含 | $\rightarrow$ | $P \rightarrow Q$ | 前真后假时为假，其余为真 | | 双向蕴含 | $\leftrightarrow$ | $P \leftrightarrow Q$ | 同真或同假时为真 |</span>
+
+                <table>
+                    <thead>
+                        <tr><th>Type</th><th>Form</th><th>Example</th><th>Meaning</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Unary <span class="cn">(一元谓词)</span></td>
+                            <td>\(P(x)\)</td>
+                            <td><code>Human(Socrates)</code></td>
+                            <td>Socrates is human</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td><code>King(Richard)</code></td>
+                            <td>Richard is a king</td>
+                        </tr>
+                        <tr>
+                            <td>Binary <span class="cn">(二元谓词)</span></td>
+                            <td>\(R(x,y)\)</td>
+                            <td><code>Sister(lucy, lily)</code></td>
+                            <td>lucy and lily are sisters</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td><code>CapitalOf(Beijing, China)</code></td>
+                            <td>Beijing is the capital of China</td>
+                        </tr>
+                        <tr>
+                            <td>Ternary <span class="cn">(多元谓词)</span></td>
+                            <td>\(R(x,y,z)\)</td>
+                            <td><code>Between(x, y, z)</code></td>
+                            <td>x is between y and z</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>3.1.3 Quantifiers (<span class="cn">量词</span>)</h4>
+                <span class="en"><p>Quantifiers bind variables to express statements over <em>all</em> or <em>some</em> elements of a domain.</p></span><span class="cn">**3. 量词（Quantifier）** - **全称量词** $\forall$（对所有、任意）：$\forall x. P(x)$ = 对所有的x，都有性质P - **存在量词** $\exists$（存在某个）：$\exists x. P(x)$ = 存在某个x，具有性质P</span>
+
+                <table>
+                    <thead>
+                        <tr><th>Quantifier</th><th>Symbol</th><th>Reading</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Universal <span class="cn">(全称量词)</span></td>
+                            <td>\(\forall\)</td>
+                            <td>"For all \(x\)&hellip;"</td>
+                            <td>\(\forall x.\; \text{Human}(x) \rightarrow \text{Mortal}(x)\)</td>
+                        </tr>
+                        <tr>
+                            <td>Existential <span class="cn">(存在量词)</span></td>
+                            <td>\(\exists\)</td>
+                            <td>"There exists an \(x\)&hellip;"</td>
+                            <td>\(\exists x.\; \text{Prime}(x) \land \text{Even}(x)\)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>3.2 The Ambiguity of Natural Language (<span class="cn">自然语言的歧义性</span>)</h3>
+                <div class="highlight-box">
+                    <h4>Case Study: "All people love some person"</h4>
+                    <p>This single English sentence has <strong>two completely different</strong> formalizations depending on quantifier order:</p>
+                    <span class="en"><p><strong>Interpretation 1:</strong> \(\forall x\; \exists y.\; \text{Love}(x, y)\)<br>
+                    "For every person, there exists someone they love." &mdash; Each person may love a <em>different</em> person.</p></span><span class="cn">**3. 量词（Quantifier）** - **全称量词** $\forall$（对所有、任意）：$\forall x. P(x)$ = 对所有的x，都有性质P - **存在量词** $\exists$（存在某个）：$\exists x. P(x)$ = 存在某个x，具有性质P</span>
+                    <span class="en"><p><strong>Interpretation 2:</strong> \(\exists y\; \forall x.\; \text{Love}(x, y)\)<br>
+                    "There exists a person whom <em>everyone</em> loves." &mdash; One universally beloved individual.</p></span><span class="cn">**符号化例子**： - "lucy和lily是姐妹" → $\text{Sister}(\text{lucy}, \text{lily})$ - "北京是中国的首都" → $\text{CapitalOf}(\text{Beijing}, \text{China})$</span>
+                    <span class="en"><p><strong>The order of quantifiers matters!</strong> This is a major source of ambiguity in natural language that FOL resolves precisely.</p></span><span class="cn">**符号化例子**： - "lucy和lily是姐妹" → $\text{Sister}(\text{lucy}, \text{lily})$ - "北京是中国的首都" → $\text{CapitalOf}(\text{Beijing}, \text{China})$</span>
+                </div>
+
+                <h3>3.3 The Syllogism in FOL</h3>
+                <p>Now we can formalize the classic syllogism <em>and explain why the conclusion follows</em>:</p>
+                <div class="math-block">
+                    $$\forall x.\; \text{Human}(x) \rightarrow \text{Mortal}(x)$$
+                    $$\text{Human}(\text{Socrates})$$
+                    $$\therefore\; \text{Mortal}(\text{Socrates})$$
+                </div>
+                <p>The reasoning is now transparent: Socrates satisfies the predicate \(\text{Human}()\), and <em>everything</em> satisfying \(\text{Human}()\) also satisfies \(\text{Mortal}()\). This is a direct application of <strong>Universal Instantiation <span class="cn">(全称实例化)</span></strong> followed by <strong>Modus Ponens <span class="cn">(假言推理)</span></strong>.</p>
+
+                <div class="info-box">
+                    <strong>Modus Ponens <span class="cn">(假言推理)</span>:</strong> If \(P \rightarrow Q\) is true and \(P\) is true, then \(Q\) must be true. This is the single most important inference rule in logic.
+                    <div class="math-block">
+                        \(\frac{P \rightarrow Q, \quad P}{\therefore\; Q}\)
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 4: Four Laws of Logic -->
+            <!-- ============================================================ -->
+            <section id="laws-of-logic">
+                <h2>4. The Four Laws of Logic (<span class="cn">逻辑四大规律</span>)</h2>
+
+                <p>Formal logic demands that the process of thought obey certain inviolable laws. These are the foundational constraints on rational reasoning:</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Law</th><th>Chinese</th><th>Content</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Law of Identity <span class="cn">(同一律)</span></strong></td>
+                            <td>同一律</td>
+                            <td>In the same process of thought, a concept must remain consistent throughout.</td>
+                            <td>You cannot say "Apple is a fruit" in one sentence and "Apple is a phone brand" in the next <em>within the same argument</em>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Law of Non-Contradiction <span class="cn">(矛盾律)</span></strong></td>
+                            <td>矛盾律</td>
+                            <td>A proposition and its negation cannot both be true at the same time.</td>
+                            <td>You cannot assert "I ate" and "I did not eat" simultaneously.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Law of Excluded Middle <span class="cn">(排中律)</span></strong></td>
+                            <td>排中律</td>
+                            <td>Of two contradictory propositions, one must be true. There is no middle ground.</td>
+                            <td>A crime is either intentional or not intentional; it cannot be both or neither.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Law of Sufficient Reason <span class="cn">(充足理由律)</span></strong></td>
+                            <td>充足理由律</td>
+                            <td>Any judgment must be supported by sufficient reasons or evidence.</td>
+                            <td>"Smart kids are always good at playing" &mdash; this conclusion lacks sufficient logical grounds.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Why do these matter for AI?</strong> These laws ensure <em>consistency</em> in knowledge bases. A knowledge base that violates the Law of Non-Contradiction (containing both \(P\) and \(\lnot P\)) can derive <em>any</em> statement, a problem known as <strong>ex falso quodlibet</strong> (principle of explosion). Automated reasoners must detect and resolve contradictions.
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 5: Curry-Howard Correspondence -->
+            <!-- ============================================================ -->
+            <section id="curry-howard">
+                <h2>5. Curry&ndash;Howard Correspondence (Curry-Howard <span class="cn">对应</span>)</h2>
+
+                <blockquote>
+                    "Is this related to lambda calculus and the underlying theory of computation?" &mdash; Yes, deeply!
+                </blockquote>
+
+                <p>There is a profound and beautiful connection between formal logic and computation, known as the <strong>Curry&ndash;Howard Correspondence (Curry-Howard 对应)</strong>. It reveals that logic and programming are, at their core, the <em>same thing</em>.</p>
+
+                <div class="highlight-box">
+                    <h4>The Curry&ndash;Howard Dictionary</h4>
+                    <table style="color: white; background: transparent; box-shadow: none;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.15);">
+                                <th style="color: white; border-bottom: 1px solid rgba(255,255,255,0.3);">Logic (逻辑)</th>
+                                <th style="color: white; border-bottom: 1px solid rgba(255,255,255,0.3);">Programming (编程)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Proposition (命题)</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Type (类型)</td></tr>
+                            <tr><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Proof (证明)</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Program (程序)</td></tr>
+                            <tr><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">\(A \rightarrow B\) (implication)</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">\(A \to B\) (function type)</td></tr>
+                            <tr><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">A proof of \(A\)</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">A value of type <code>A</code></td></tr>
+                            <tr><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Proving \(A \rightarrow B\)</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Implementing function <code>A -> B</code></td></tr>
+                            <tr><td style="color: white;">Using a proof <span class="cn">(使用证明)</span></td><td style="color: white;">Function application <span class="cn">(函数应用)</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Intuition</h3>
+                <ul>
+                    <li><strong>Logic</strong> = symbolic manipulation + inference rules (how to derive new knowledge from old)</li>
+                    <span class="en"><li><strong>Lambda Calculus</strong> = function abstraction + application mechanism (how to represent computation)</li></span><span class="cn">**关键区别**： - 谓词逻辑：关注**可量化的对象与关系**（what exists） - Lambda演算：关注**函数与计算步骤**（how to compute） - 要把FOL完全编码成$\lambda$演算需要**高阶逻辑**或**类型论**</span>
+                    <li>Both are doing <em>formalization, symbolization, and rule-based transformation</em>.</li>
+                </ul>
+
+                <h3>Key Distinction <span class="cn">关键区别</span></h3>
+                <table>
+                    <thead>
+                        <tr><th>Framework</th><th>Focus</th><th>Question</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Predicate Logic (FOL)</td><td>Quantifiable objects &amp; relations</td><td><em>What exists?</em></td></tr>
+                        <tr><td>Lambda Calculus</td><td>Functions &amp; computation steps</td><td><em>How to compute?</em></td></tr>
+                    </tbody>
+                </table>
+                <p>Encoding full FOL into \(\lambda\)-calculus requires <strong>higher-order logic <span class="cn">(高阶逻辑)</span></strong> or <strong>type theory <span class="cn">(类型论)</span></strong>.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 6: Mathematical Logic & Boolean Algebra -->
+            <!-- ============================================================ -->
+            <section id="mathematical-logic">
+                <h2>6. Mathematical Logic &amp; Boolean Algebra (<span class="cn">数理逻辑</span>)</h2>
+
+                <p>Mathematical logic <span class="cn">(数理逻辑)</span> builds on formal logic and uses <strong>mathematical symbols and truth tables</strong> to formalize reasoning completely. In Boolean algebra, propositions take only two values: \(1\) (true) or \(0\) (false).</p>
+
+                <h3>6.1 Complete Truth Tables</h3>
+
+                <h4>Conjunction (AND / <span class="cn">与</span>)</h4>
+                <table>
+                    <thead><tr><th>\(A\)</th><th>\(B\)</th><th>\(A \land B\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>0</td><td><strong>0</strong></td></tr>
+                        <tr><td>0</td><td>1</td><td><strong>0</strong></td></tr>
+                        <tr><td>1</td><td>0</td><td><strong>0</strong></td></tr>
+                        <tr><td>1</td><td>1</td><td><strong>1</strong></td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Disjunction (OR / <span class="cn">或</span>)</h4>
+                <table>
+                    <thead><tr><th>\(A\)</th><th>\(B\)</th><th>\(A \lor B\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>0</td><td><strong>0</strong></td></tr>
+                        <tr><td>0</td><td>1</td><td><strong>1</strong></td></tr>
+                        <tr><td>1</td><td>0</td><td><strong>1</strong></td></tr>
+                        <tr><td>1</td><td>1</td><td><strong>1</strong></td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Exclusive OR (XOR / <span class="cn">异或</span>)</h4>
+                <table>
+                    <thead><tr><th>\(A\)</th><th>\(B\)</th><th>\(A \oplus B\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>0</td><td><strong>0</strong></td></tr>
+                        <tr><td>0</td><td>1</td><td><strong>1</strong></td></tr>
+                        <tr><td>1</td><td>0</td><td><strong>1</strong></td></tr>
+                        <tr><td>1</td><td>1</td><td><strong>0</strong></td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Implication (<span class="cn">蕴含</span>)</h4>
+                <table>
+                    <thead><tr><th>\(A\)</th><th>\(B\)</th><th>\(A \rightarrow B\)</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>0</td><td><strong>1</strong></td></tr>
+                        <tr><td>0</td><td>1</td><td><strong>1</strong></td></tr>
+                        <tr><td>1</td><td>0</td><td><strong>0</strong></td></tr>
+                        <tr><td>1</td><td>1</td><td><strong>1</strong></td></tr>
+                    </tbody>
+                </table>
+
+                <h3>6.2 The "Promise" Interpretation of Implication</h3>
+                <blockquote>
+                    "If it rains today (\(P\)), I will pick you up (\(Q\))." &mdash; This corresponds to \(P \rightarrow Q\).<br><br>
+                    Only one scenario violates the promise: it rains but I do <em>not</em> pick you up. The other three scenarios are all "no violation" and therefore <strong>true</strong>.
+                </blockquote>
+
+                <h3>6.3 Inference Rules</h3>
+                <p>Mathematical logic provides a toolkit of formal inference rules that form the backbone of automated reasoning:</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Rule</th><th>Chinese</th><th>Form</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Modus Ponens <span class="cn">(假言推理)</span></td><td>假言推理</td><td>\(P \rightarrow Q,\; P \;\vdash\; Q\)</td></tr>
+                        <tr><td>Modus Tollens <span class="cn">(拒取式)</span></td><td>拒取式</td><td>\(P \rightarrow Q,\; \lnot Q \;\vdash\; \lnot P\)</td></tr>
+                        <tr><td>Conjunction Introduction <span class="cn">(与导入)</span></td><td>与导入</td><td>\(P,\; Q \;\vdash\; P \land Q\)</td></tr>
+                        <tr><td>Conjunction Elimination <span class="cn">(与消去)</span></td><td>与消去</td><td>\(P \land Q \;\vdash\; P\)</td></tr>
+                        <tr><td>Disjunction Introduction <span class="cn">(或导入)</span></td><td>或导入</td><td>\(P \;\vdash\; P \lor Q\)</td></tr>
+                        <tr><td>Double Negation <span class="cn">(双重否定)</span></td><td>双重否定</td><td>\(\lnot\lnot P \;\vdash\; P\)</td></tr>
+                        <tr><td>Resolution (归结)</td><td>归结</td><td>\(P \lor Q,\; \lnot Q \lor R \;\vdash\; P \lor R\)</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 7: Information Entropy & Gain -->
+            <!-- ============================================================ -->
+            <section id="information-theory">
+                <h2>7. Information Entropy &amp; Information Gain (<span class="cn">信息熵与信息增益</span>)</h2>
+
+                <p>Information theory provides a quantitative tool for measuring uncertainty &mdash; <strong>entropy (熵)</strong>. This is the bridge where logic meets machine learning.</p>
+
+                <h3>7.1 Shannon Entropy (<span class="cn">香农熵</span>)</h3>
+                <div class="math-block">
+                    $$H(X) = - \sum_{x} p(x)\, \log_2\, p(x)$$
+                </div>
+
+                <ul>
+                    <li>When the distribution is <em>uniform</em> (maximum uncertainty), entropy is <strong>maximized</strong>.</li>
+                    <li>When the distribution is <em>concentrated</strong> (near-certain), entropy is <strong>minimized</strong> (approaches 0).</li>
+                    <span class="en"><li>Using \(\log_2\), the unit is <strong>bits (比特)</strong>.</li></span><span class="cn">&gt; **符号小贴士：`:-` 是什么？** &gt; 在接下来的推理推导过程中，你会看到类似 `Father(x,y) :- Couple(x,z)` 的写法。 &gt; 这里的 `:-` 是逻辑编程语言（如经典的 Prolog）中表示“**如果**”（if）或“**被……蕴含**”（等同于数学符号 $\leftarrow$）的专用符号。 &gt; `结论 :- 条件` 也就是前面讲的霍恩子句结构，等价于“如果满足右边的条件，左边的结论就成立”。</span>
+                </ul>
+
+                <div class="info-box">
+                    <strong>Intuition:</strong> Entropy measures "how surprised you are on average." A fair coin flip (\(p = 0.5\)) gives \(H = 1\) bit of surprise. A loaded coin (\(p = 0.99\)) gives \(H \approx 0.08\) bits &mdash; almost no surprise.
+                </div>
+
+                <h3>7.2 Information Gain (<span class="cn">信息增益</span>)</h3>
+                <span class="en"><p>In supervised learning, <strong>information gain</strong> measures how much a feature reduces uncertainty about the label:</p></span><span class="cn">- **节点（Entity / 实体）**：图中的圆圈。代表具体的对象。比如图中的 `James`, `David`, `Ann`, `Mike`。 - **边（Relation / 关系）**：连接圆圈的黑线/红线。代表实体之间的关系。比如 `Father`, `Mother`, `Couple`（夫妻）, `Sibling`（兄弟姐妹）。</span>
+                <div class="math-block">
+                    $$IG(Y, A) = H(Y) - H(Y \mid A)$$
+                </div>
+                <ul>
+                    <li>\(H(Y)\): entropy of the label before knowing feature \(A\).</li>
+                    <li>\(H(Y \mid A)\): conditional entropy &mdash; entropy of the label <em>after</em> observing \(A\).</li>
+                    <li>The feature that maximizes \(IG\) is the one that "splits the data most purely."</li>
+                </ul>
+
+                <h3>7.3 Connection to Logic and FOIL</h3>
+                <div class="success-box">
+                    <strong>Key Insight:</strong>
+                    <ul>
+                        <li><strong>Decision Trees:</strong> Choose the feature with the highest \(IG\) as the splitting criterion &mdash; the fastest entropy reduction.</li>
+                        <li><strong>FOIL Algorithm:</strong> Uses the same information-gain idea, but the "features" are now <strong>logical literals <span class="cn">(谓词条件)</span></strong> rather than table columns. The goal is the same: make the covered examples as pure as possible.</li>
+                    </ul>
+                    <p>This is the <em>first junction</em> where logical reasoning and information-theoretic learning converge.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 8: Digital Logic -->
+            <!-- ============================================================ -->
+            <section id="digital-logic">
+                <h2>8. Digital Logic &amp; Hardware Realization (<span class="cn">数字逻辑</span>)</h2>
+
+                <p>Digital logic <span class="cn">(数字逻辑)</span> answers the question: <em>How do we implement Boolean algebra with electronic circuits, so that computers can truly "execute" logic?</em></p>
+
+                <h3>8.1 Logic Gates (<span class="cn">逻辑门</span>)</h3>
+                <p>Using <strong>high voltage / low voltage</strong> to represent \(1 / 0\), logical operations become physical switching circuits. The fundamental gates are:</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Gate</th><th>Symbol</th><th>Function</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>AND Gate (与门)</td><td>\(\land\)</td><td>Output 1 only if both inputs are 1</td></tr>
+                        <tr><td>OR Gate (或门)</td><td>\(\lor\)</td><td>Output 1 if at least one input is 1</td></tr>
+                        <tr><td>NOT Gate (非门)</td><td>\(\lnot\)</td><td>Invert the input</td></tr>
+                        <tr><td>NAND Gate <span class="cn">(与非门)</span></td><td>\(\lnot(A \land B)\)</td><td>Inverted AND &mdash; <em>universal</em> (can build everything)</td></tr>
+                        <tr><td>NOR Gate <span class="cn">(或非门)</span></td><td>\(\lnot(A \lor B)\)</td><td>Inverted OR &mdash; also universal</td></tr>
+                        <tr><td>XOR Gate <span class="cn">(异或门)</span></td><td>\(\oplus\)</td><td>Output 1 if inputs differ</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>Universality of NAND:</strong> Every logic function &mdash; AND, OR, NOT, XOR &mdash; can be built from NAND gates alone. Real CPUs are built primarily from NAND/NOR gates for manufacturing efficiency.
+                </div>
+
+                <h3>8.2 Binary Representation</h3>
+                <p>Computers encode all data in <strong>binary <span class="cn">(二进制)</span></strong>:</p>
+                <div class="math-block">
+                    \(1001_2 = 1 \cdot 2^3 + 0 \cdot 2^2 + 0 \cdot 2^1 + 1 \cdot 2^0 = 9_{10}\)
+                </div>
+                <p>Addition, multiplication &mdash; all ultimately decompose into bitwise Boolean operations with carry propagation.</p>
+
+                <h3>8.3 Half Adder (<span class="cn">半加器</span>)</h3>
+                <span class="en"><p>A half adder takes two single-bit inputs \(A, B\) and produces:</p></span><span class="cn">用命题逻辑：$\alpha \land \beta \Rightarrow \gamma$</span>
+                <div class="math-block">
+                    $$S = A \oplus B \qquad \text{(Sum)}$$
+                    $$C = A \land B \qquad \text{(Carry)}$$
+                </div>
+
+                <table>
+                    <thead><tr><th>\(A\)</th><th>\(B\)</th><th>\(S\) (Sum)</th><th>\(C\) (Carry)</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                        <tr><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+                        <tr><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+                        <tr><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>8.4 Full Adder (<span class="cn">全加器</span>)</h3>
+                <span class="en"><p>A full adder extends the half adder by including a carry-in bit \(C_{in}\) from a lower stage:</p></span><span class="cn">- **节点（Entity / 实体）**：图中的圆圈。代表具体的对象。比如图中的 `James`, `David`, `Ann`, `Mike`。 - **边（Relation / 关系）**：连接圆圈的黑线/红线。代表实体之间的关系。比如 `Father`, `Mother`, `Couple`（夫妻）, `Sibling`（兄弟姐妹）。</span>
+                <div class="math-block">
+                    $$\text{Sum} = A \oplus B \oplus C_{in}$$
+                    $$C_{out} = (A \land B) \lor (C_{in} \land (A \oplus B))$$
+                </div>
+
+                <p>A <strong>multi-bit adder <span class="cn">(多位加法器)</span></strong> chains full adders in series: each stage's \(C_{out}\) feeds into the next stage's \(C_{in}\), forming a <strong>ripple-carry adder <span class="cn">(行波进位加法器)</span></strong>.</p>
+
+                <div class="highlight-box">
+                    <h4>The Engineering Insight</h4>
+                    <p>Simple local units (logic gates &rarr; adders &rarr; ALU &rarr; CPU) combine in layers of increasing complexity to build a machine that can execute any algorithm. Deep neural networks follow the same philosophy: simple modules (matrix multiplications + activation functions) composed into massive architectures &mdash; all ultimately reducible to Boolean circuits at the bottom.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 9: Knowledge Graphs -->
+            <!-- ============================================================ -->
+            <section id="knowledge-graphs">
+                <h2>9. Knowledge Graphs (<span class="cn">知识图谱</span>)</h2>
+
+                <h3>9.1 What Is a Knowledge Graph?</h3>
+                <p>A <strong>Knowledge Graph (知识图谱, KG)</strong> represents real-world facts as a network of entities and relations. In the computer, we store each edge as a <strong>triple <span class="cn">(三元组)</span></strong>:</p>
+                <div class="math-block">
+                    $$\langle \text{Subject <span class="cn">(头实体)</span>},\; \text{Predicate (关系)},\; \text{Object <span class="cn">(尾实体)</span>} \rangle$$
+                </div>
+
+                <span class="en"><p>For example, from a family-tree knowledge graph:</p></span><span class="cn">结合上面的 `familytree.png`，知识图谱其实就是用**图（Graph）网络**来表示现实世界万事万物及其相互关系的一种数据结构。在这个图里：</span>
+                <ul>
+                    <li><span class="en">\(\langle \text{David},\; \text{Father},\; \text{Ann} \rangle\)</span><span class="cn">在计算机中，我们通常用**三元组（Triples）**来记录图中的每一条边。公式是：$\langle \text{头实体},\ \text{关系},\ \text{尾实体} \rangle$。 看图我们可以写出很多三元组，比如： - $\langle David,\ Father,\ Ann \rangle$ - $\langle James,\ Mother,\ Mike \rangle$ - $\langle James,\ Couple,\ David \rangle$</span></li>
+                    <li><span class="en">\(\langle \text{James},\; \text{Mother},\; \text{Ann} \rangle\)</span><span class="cn">在计算机中，我们通常用**三元组（Triples）**来记录图中的每一条边。公式是：$\langle \text{头实体},\ \text{关系},\ \text{尾实体} \rangle$。 看图我们可以写出很多三元组，比如： - $\langle David,\ Father,\ Ann \rangle$ - $\langle James,\ Mother,\ Mike \rangle$ - $\langle James,\ Couple,\ David \rangle$</span></li>
+                    <li><span class="en">\(\langle \text{James},\; \text{Couple},\; \text{David} \rangle\)</span><span class="cn">在计算机中，我们通常用**三元组（Triples）**来记录图中的每一条边。公式是：$\langle \text{头实体},\ \text{关系},\ \text{尾实体} \rangle$。 看图我们可以写出很多三元组，比如： - $\langle David,\ Father,\ Ann \rangle$ - $\langle James,\ Mother,\ Mike \rangle$ - $\langle James,\ Couple,\ David \rangle$</span></li>
+                </ul>
+                <p>In first-order logic, these are simply predicates: <code>Father(David, Ann)</code>, <code>Mother(James, Ann)</code>, etc.</p>
+
+                <h3>9.2 Nodes and Edges</h3>
+                <table>
+                    <thead>
+                        <tr><th>Graph Component</th><th>KG Term</th><th>Examples</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Nodes (圆圈)</td><td>Entities (实体)</td><td><code>James</code>, <code>David</code>, <code>Ann</code>, <code>Mike</code></td></tr>
+                        <tr><td>Edges (连线)</td><td>Relations (关系)</td><td><code>Father</code>, <code>Mother</code>, <code>Couple</code>, <code>Sibling</code></td></tr>
+                    </tbody>
+                </table>
+
+                <h3>9.3 Core Task: Link Prediction (<span class="cn">关系推理</span>)</h3>
+                <div class="highlight-box">
+                    <h4>The Missing-Edge Problem</h4>
+                    <span class="en"><p>Suppose the triple \(\langle \text{David}, \text{Father}, \text{Ann} \rangle\) is <strong>missing</strong> from the graph (the red dashed edge). Humans can infer it immediately: <em>"James is Ann's mother, and David is James' husband, so David must be Ann's father."</em></p></span><span class="cn">在计算机中，我们通常用**三元组（Triples）**来记录图中的每一条边。公式是：$\langle \text{头实体},\ \text{关系},\ \text{尾实体} \rangle$。 看图我们可以写出很多三元组，比如： - $\langle David,\ Father,\ Ann \rangle$ - $\langle James,\ Mother,\ Mike \rangle$ - $\langle James,\ Couple,\ David \rangle$</span>
+                    <p>The challenge for AI: <strong>How can a machine learn to reason like this from the graph structure alone?</strong> This is where FOIL and Path Ranking come in.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 10: FOIL Algorithm -->
+            <!-- ============================================================ -->
+            <section id="foil">
+                <h2>10. FOIL Algorithm (FOIL <span class="cn">算法</span>)</h2>
+
+                <p><strong>FOIL (First-Order Inductive Learner)</strong> is a classic algorithm for learning logical rules from facts. It automatically discovers human-readable inference rules from a knowledge graph using a <strong>sequential covering</strong> strategy guided by <strong>information gain</strong>.</p>
+
+                <h3>10.1 What FOIL Produces</h3>
+                <p>FOIL learns rules in the form of <strong>Horn clauses <span class="cn">(霍恩子句)</span></strong>:</p>
+                <div class="math-block">
+                    $$\text{Father}(x, y) \leftarrow \text{Couple}(x, z) \land \text{Mother}(z, y)$$
+                </div>
+                <span class="en"><p>Read: <em>"If \(x\) and \(z\) are a couple, and \(z\) is the mother of \(y\), then \(x\) is the father of \(y\)."</em></p></span><span class="cn">最终它要学出的规则长这样（霍恩子句）： $$Father(x,y) \leftarrow Couple(x,z) \land Mother(z,y)$$ *(读作：如果 x 和 z 是夫妻，且 z 是 y 的妈妈，则推导出 x 是 y 的爸爸)*</span>
+
+                <div class="info-box">
+                    <strong>Symbol Guide: What does <code>:-</code> mean?</strong><br>
+                    In logic programming languages like Prolog, <code>:-</code> means "if" (i.e., \(\leftarrow\)). The notation<br>
+                    <code>Father(x,y) :- Couple(x,z), Mother(z,y)</code><br>
+                    is equivalent to the Horn clause above: "the conclusion holds if all conditions on the right are satisfied."
+                </div>
+
+                <h3>10.2 Problem Setup: The Detective's Board</h3>
+                <table>
+                    <thead>
+                        <tr><th>Component</th><th>Description</th><th>Examples</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Target (目标)</strong></td>
+                            <td>The relation to learn rules for</td>
+                            <td><code>Father(x, y)</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Positive Examples (正例)</strong></td>
+                            <td>Known true instances</td>
+                            <td><code>Father(David, Mike)</code>, <code>Father(David, Ann)</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Negative Examples (反例)</strong></td>
+                            <td>Known false instances</td>
+                            <td><code>Father(James, Ann)</code> (James is female), <code>Father(Ann, Mike)</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Background Knowledge <span class="cn">(背景知识)</span></strong></td>
+                            <td>Other known relations in the graph</td>
+                            <td><code>Couple(x,z)</code>, <code>Mother(z,y)</code>, <code>Sibling(x,y)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>10.3 Step-by-Step Derivation (<span class="cn">侦探推理过程</span>)</h3>
+
+                <h4>Step 0: Initial "Empty" Rule</h4>
+                <div class="algorithm">
+                    <span class="function">Father(x, y)</span> :- <span class="keyword">true</span>.<br>
+                    <span class="comment">// "Any pair of entities could be Father(x, y)."</span><br>
+                    <span class="comment">// Covers ALL positive examples, but also ALL negative examples.</span><br>
+                    <span class="comment">// Precision is terrible. We must add constraints!</span>
+                </div>
+
+                <h4>Step 1: First Round &mdash; Find the Best Predicate</h4>
+                <p>FOIL tries adding each candidate predicate from the background knowledge and measures <strong>information gain</strong>:</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Candidate</th><th>Effect</th><th>Information Gain</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Sibling(x, y)</code></td>
+                            <td>Cannot distinguish fathers from non-fathers well</td>
+                            <td>Low</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>Couple(x, z)</code></strong></td>
+                            <td>Eliminates entities with no spouse (e.g., <code>Ann</code>, <code>Mike</code>). Negative examples drop sharply. <strong>Purity increases significantly.</strong></td>
+                            <td><strong>Highest</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <span class="en"><p>The rule becomes:</p></span><span class="cn">**应用**：专家系统的规则库常由这种命题组合而成 &gt; 如：IF 机房停电 THEN 实验无法进行</span>
+                <div class="algorithm">
+                    <span class="function">Father(x, y)</span> :- <span class="function">Couple(x, z)</span>.<br>
+                    <span class="comment">// "x must have a spouse z to be a candidate father."</span><br>
+                    <span class="comment">// Remaining positives: {Father(David, Mike), Father(David, Ann), ...}</span><br>
+                    <span class="comment">// Remaining negatives: e.g., Father(James, Ann) &mdash; James IS in Couple, so still false positive!</span>
+                </div>
+
+                <h4>Step 2: Second Round &mdash; Refine Further</h4>
+                <p>The rule still covers some false positives (e.g., <code>Father(James, Ann)</code> since James is in a Couple relation). FOIL tries adding another predicate:</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Candidate</th><th>Effect</th><th>Result</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Sibling(x, y)</code></td>
+                            <td>Does not help disambiguate</td>
+                            <td>Low gain</td>
+                        </tr>
+                        <tr>
+                            <td><strong><code>Mother(z, y)</code></strong></td>
+                            <td>Now the rule says: <em>x's spouse z must be y's mother.</em><br>
+                            Testing: David + James &rarr; Couple OK, Mother(James, Ann) OK &check;<br>
+                            James as father? Couple(James, David) OK, but Mother(David, Ann)? <strong>NO</strong> &cross;<br>
+                            <strong>All false positives eliminated!</strong></td>
+                            <td><strong>Highest</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="algorithm">
+                    <span class="function">Father(x, y)</span> :- <span class="function">Couple(x, z)</span>, <span class="function">Mother(z, y)</span>.<br>
+                    <span class="comment">// "If x and z are couple, and z is y's mother, then x is y's father."</span><br>
+                    <span class="comment">// Positive examples covered: ALL &check;</span><br>
+                    <span class="comment">// Negative examples covered: ZERO &check;</span><br>
+                    <span class="comment">// PURITY = 100%. STOP.</span>
+                </div>
+
+                <h4>Step 3: Final Learned Rule</h4>
+                <div class="math-block">
+                    $$\boxed{\text{Father}(x, y) \leftarrow \text{Couple}(x, z) \land \text{Mother}(z, y)}$$
+                </div>
+                <p>Using this machine-discovered rule, we can now predict the missing red edge: <code>Father(David, Ann)</code>.</p>
+
+                <div class="success-box">
+                    <strong>Analogy:</strong> Decision trees find the "most informative column split" in a table. FOIL finds the <strong>"most informative relation path"</strong> in a knowledge graph. Both use information gain &mdash; they just operate on different data structures.
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 11: Path Ranking Algorithm -->
+            <!-- ============================================================ -->
+            <section id="pra">
+                <h2>11. Path Ranking Algorithm (PRA, <span class="cn">路径排序算法</span>)</h2>
+
+                <span class="en"><p>Beyond learning explicit logical rules, there is a more "statistical ML" approach to knowledge graph reasoning: the <strong>Path Ranking Algorithm (路径排序算法, PRA)</strong>.</p></span><span class="cn">除了显式学逻辑规则外，还有一种更“统计学习式”的知识图谱关系推理方法：**路径排序算法（Path Ranking / Path Ranking Algorithm, PRA）**。</span>
+
+                <h3>11.1 Core Idea</h3>
+                <span class="en"><p>Treat the <strong>paths</strong> between two entities in the graph as <strong>features</strong>, and train a classifier to predict whether a target relation holds.</p></span><span class="cn">- **节点（Entity / 实体）**：图中的圆圈。代表具体的对象。比如图中的 `James`, `David`, `Ann`, `Mike`。 - **边（Relation / 关系）**：连接圆圈的黑线/红线。代表实体之间的关系。比如 `Father`, `Mother`, `Couple`（夫妻）, `Sibling`（兄弟姐妹）。</span>
+
+                <h3>11.2 Pipeline</h3>
+                <table>
+                    <thead>
+                        <tr><th>Stage</th><th>Description</th><th>Details</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1. Feature Extraction <span class="cn">(特征抽取)</span></strong></td>
+                            <td>Enumerate paths from entity \(s\) to entity \(t\)</td>
+                            <td>Using random walk, BFS, DFS. Each unique path pattern \(P_i\) is a feature.<br>
+                            e.g., \(s \xrightarrow{\text{Couple}} z \xrightarrow{\text{Mother}} t\)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2. Feature Computation <span class="cn">(特征计算)</span></strong></td>
+                            <td>For each \((s,t)\) pair, compute feature values</td>
+                            <td>Binary (path exists: 0/1), count, or transition probability. Produce feature vector \(\mathbf{x}_{s,t}\).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3. Model Training <span class="cn">(模型训练)</span></strong></td>
+                            <td>Train a classifier on feature vectors + labels</td>
+                            <td>Logistic regression, linear model, etc.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>4. Inference (推理)</strong></td>
+                            <td>For a new \((s,t)\) pair, extract features and predict</td>
+                            <td>Output: probability that the target relation exists.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>11.3 PRA vs. FOIL</h3>
+                <table>
+                    <thead>
+                        <tr><th>Aspect</th><th>FOIL</th><th>PRA</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Output</td><td>Explicit logical rules (Horn clauses)</td><td>Statistical model (weighted features)</td></tr>
+                        <tr><td>Interpretability</td><td><strong>High</strong> &mdash; rules are human-readable</td><td>Moderate &mdash; feature weights less intuitive</td></tr>
+                        <tr><td>Scalability</td><td>Slower on large graphs</td><td>More scalable with sampling</td></tr>
+                        <tr><td>Handles uncertainty</td><td>No (deterministic rules)</td><td>Yes (probabilistic scores)</td></tr>
+                        <tr><td>Commonality</td><td colspan="2">Both exploit <strong>path structure</strong> in the graph for relational reasoning.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 12: Probabilistic Graphical Models -->
+            <!-- ============================================================ -->
+            <section id="pgm">
+                <h2>12. Probabilistic Graphical Models (<span class="cn">概率图模型</span>)</h2>
+
+                <p>In the real world, many relationships are <strong>uncertain</strong>: sensors are noisy, observations are incomplete, and causal relations are probabilistic rather than absolute. <strong>Probabilistic Graphical Models (PGMs, 概率图模型)</strong> combine <strong>graph theory</strong> with <strong>probability theory</strong> to handle this uncertainty.</p>
+
+                <h3>12.1 Two Families of PGMs</h3>
+
+                <table>
+                    <thead>
+                        <tr><th>Property</th><th>Bayesian Network <span class="cn">(贝叶斯网络)</span></th><th>Markov Network <span class="cn">(马尔可夫网络)</span></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Graph type</td><td>Directed Acyclic Graph (DAG, 有向无环图)</td><td>Undirected Graph <span class="cn">(无向图)</span></td></tr>
+                        <tr><td>Edge meaning</td><td>Causal / generative dependency</td><td>Symmetric correlation / constraint</td></tr>
+                        <tr><td>Parameterization</td><td>Conditional Probability Tables (CPT, 条件概率表)</td><td>Potential functions <span class="cn">(势函数)</span></td></tr>
+                        <tr><td>Best for</td><td>Causal reasoning (cause &rarr; effect)</td><td>Pixel-level smoothness, spatial constraints</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>12.2 Bayesian Networks: Structure and Semantics</h3>
+                <span class="en"><p>A classic example: the <strong>Grass Wetness</strong> network.</p></span><span class="cn">- **贝叶斯网络（Bayesian Network）**： - 有向无环图（DAG）； - 节点 = 随机变量（如“是否下雨”、“是否洒水”、“草坪是否湿”）； - 边 = 条件依赖关系； - 每个节点配一个**条件概率表(CPT)**，如 $P(\text{WetGrass} \mid \text{Rain}, \text{Sprinkler})$。</span>
+                <div class="math-block">
+                    $$\text{Cloudy} \rightarrow \text{Sprinkler} \rightarrow \text{WetGrass}$$
+                    $$\text{Cloudy} \rightarrow \text{Rain} \rightarrow \text{WetGrass}$$
+                </div>
+                <span class="en"><p>Each node has a <strong>Conditional Probability Table (CPT)</strong>. For instance:</p></span><span class="cn">**3. 量词（Quantifier）** - **全称量词** $\forall$（对所有、任意）：$\forall x. P(x)$ = 对所有的x，都有性质P - **存在量词** $\exists$（存在某个）：$\exists x. P(x)$ = 存在某个x，具有性质P</span>
+                <div class="math-block">
+                    $$P(\text{WetGrass} = \text{true} \mid \text{Sprinkler}, \text{Rain})$$
+                </div>
+
+                <h3>12.3 Local Markov Property (<span class="cn">局部马尔可夫性</span>)</h3>
+                <div class="info-box">
+                    <strong>Key Property:</strong> Given a node's <strong>parents</strong>, it is conditionally independent of all its <strong>non-descendants</strong>.
+                    <br><br>
+                    <strong>Intuition:</strong> Once you know the direct causes, distant ancestors or unrelated nodes provide no additional information about the current variable.
+                </div>
+
+                <p>This property allows the joint probability to factorize compactly:</p>
+                <div class="math-block">
+                    $$P(X_1, X_2, \ldots, X_n) = \prod_{i=1}^{n} P(X_i \mid \text{Parents}(X_i))$$
+                </div>
+
+                <h3>12.4 Bayesian Inference (<span class="cn">贝叶斯推理</span>)</h3>
+                <p>The most common task: given observed evidence, compute the posterior probability of a cause.</p>
+
+                <div class="math-block">
+                    $$P(\text{Cause} \mid \text{Effect}) = \frac{P(\text{Effect} \mid \text{Cause})\; P(\text{Cause})}{P(\text{Effect})}$$
+                </div>
+
+                <span class="en"><p><strong>Worked Example:</strong> Given that "the grass is wet," what is more likely: rain or sprinkler?</p></span><span class="cn">- **贝叶斯网络（Bayesian Network）**： - 有向无环图（DAG）； - 节点 = 随机变量（如“是否下雨”、“是否洒水”、“草坪是否湿”）； - 边 = 条件依赖关系； - 每个节点配一个**条件概率表(CPT)**，如 $P(\text{WetGrass} \mid \text{Rain}, \text{Sprinkler})$。</span>
+                <div class="math-block">
+                    $$P(\text{Rain} \mid \text{WetGrass}) = \frac{P(\text{WetGrass} \mid \text{Rain})\; P(\text{Rain})}{P(\text{WetGrass})}$$
+                </div>
+                <p>Using the graph structure to decompose the joint probability and summing over hidden variables (e.g., Sprinkler, Cloudy), we can perform efficient inference even in complex networks.</p>
+
+                <h3>12.5 The Spectrum of Reasoning in AI</h3>
+                <div class="highlight-box">
+                    <h4>From Deterministic to Probabilistic</h4>
+                    <table style="color: white; background: transparent; box-shadow: none;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.15);">
+                                <th style="color: white; border-bottom: 1px solid rgba(255,255,255,0.3);">Method</th>
+                                <th style="color: white; border-bottom: 1px solid rgba(255,255,255,0.3);">Type</th>
+                                <th style="color: white; border-bottom: 1px solid rgba(255,255,255,0.3);">Handles Uncertainty?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">FOIL (logical rules)</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Symbolic</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">No</td></tr>
+                            <tr><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">PRA (path features)</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Statistical</td><td style="color: white; border-bottom: 1px solid rgba(255,255,255,0.15);">Partially</td></tr>
+                            <tr><td style="color: white;">Bayesian Networks</td><td style="color: white;">Probabilistic</td><td style="color: white;">Yes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- SECTION 13: Summary -->
+            <!-- ============================================================ -->
+            <section id="summary">
+                <h2>13. Summary (<span class="cn">本讲总结</span>)</h2>
+
+                <div class="success-box">
+                    <h4>Core Takeaways (<span class="cn">核心要点</span>)</h4>
+                    <ol>
+                        <li><strong>Formal Logic <span class="cn">(形式逻辑)</span></strong> provides the syntax and semantics for rigorous reasoning &mdash; the foundation of AI's ability to "think."</li>
+                        <li><strong>Propositional Logic <span class="cn">(命题逻辑)</span></strong> treats sentences as atomic truth values; it is simple but cannot express internal structure or relationships.</li>
+                        <li><strong>First-Order Logic (一阶逻辑 / FOL)</strong> introduces individuals, predicates, and quantifiers, enabling the expression of <em>why</em> a conclusion follows &mdash; a major leap in expressiveness.</li>
+                        <li><strong>The Four Laws of Logic</strong> (Identity, Non-Contradiction, Excluded Middle, Sufficient Reason) ensure consistency in reasoning systems.</li>
+                        <li><strong>Curry&ndash;Howard Correspondence</strong> reveals a deep unity: propositions are types, proofs are programs, and logical reasoning is computation.</li>
+                        <li><strong>Boolean Algebra &amp; Digital Logic</strong> implement symbolic reasoning in hardware &mdash; from NAND gates to full adders to CPUs.</li>
+                        <li><strong>Information Entropy</strong> provides a quantitative bridge between logic and learning: decision trees use information gain to split features, and FOIL uses the same principle to select predicates.</li>
+                        <li><strong>Knowledge Graphs <span class="cn">(知识图谱)</span></strong> operationalize logic into large-scale factual networks stored as triples \(\langle S, P, O \rangle\).</li>
+                        <li><strong>FOIL</strong> learns explicit logical rules (Horn clauses) from knowledge graphs via sequential covering and information gain.</li>
+                        <span class="en"><li><strong>Path Ranking Algorithm (PRA)</strong> uses graph paths as statistical features for relation prediction &mdash; a complementary, more scalable approach.</li></span><span class="cn">除了显式学逻辑规则外，还有一种更“统计学习式”的知识图谱关系推理方法：**路径排序算法（Path Ranking / Path Ranking Algorithm, PRA）**。</span>
+                        <span class="en"><li><strong>Probabilistic Graphical Models</strong> (Bayesian Networks, Markov Networks) handle uncertain reasoning by combining graph structure with probability theory.</li></span><span class="cn">概率图模型（Probabilistic Graphical Models）把**图结构**与**概率论**结合，用来刻画这种不确定性。</span>
+                    </ol>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>The Big Picture (<span class="cn">全景图</span>)</h4>
+                    <p>This lecture traces two parallel trajectories:</p>
+                    <p><strong>Trajectory 1 &mdash; From Symbols to Circuits:</strong><br>
+                    Formal Logic &rarr; Mathematical Logic &rarr; Digital Logic &rarr; Hardware (CPU)<br>
+                    <em>"Making reasoning executable."</em></p>
+                    <p><strong>Trajectory 2 &mdash; From Facts to Inference:</strong><br>
+                    Knowledge Graphs &rarr; FOIL / PRA &rarr; Probabilistic Graphical Models<br>
+                    <em>"Making AI reason with both logic and uncertainty."</em></p>
+                    <p>Together, they show that AI reasoning can be <strong>interpretable and symbolic</strong> (FOIL), <strong>statistical and scalable</strong> (PRA), or <strong>probabilistic and robust</strong> (PGMs) &mdash; and that all three rest on the logical and mathematical foundations laid out in this lecture.</p>
+                </div>
+            </section>
+
+        </main>
+
+        <footer>
+            <p>Lecture 2 Notes &mdash; Introduction to Artificial Intelligence</p>
+            <p>Topics: Propositional/Predicate Logic, Four Laws, Curry-Howard, Boolean Algebra, Information Entropy, Digital Logic, Knowledge Graphs, FOIL, PRA, PGMs</p>
+        </footer>
+        </div>
+        </div>
+
+    // Language Toggle
+    (function() {
+        var body = document.body;
+        var btnEN = document.getElementById('btn-en');
+        var btnCN = document.getElementById('btn-cn');
+        var saved = localStorage.getItem('lang') || 'en';
+        if (saved === 'cn') {
+            body.classList.add('lang-cn');
+            if (btnCN) btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+        } else {
+            if (btnEN) btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+        }
+        if (btnEN) btnEN.addEventListener('click', function() {
+            body.classList.remove('lang-cn');
+            btnEN.classList.add('active');
+            if (btnCN) btnCN.classList.remove('active');
+            localStorage.setItem('lang', 'en');
+        });
+        if (btnCN) btnCN.addEventListener('click', function() {
+            body.classList.add('lang-cn');
+            btnCN.classList.add('active');
+            if (btnEN) btnEN.classList.remove('active');
+            localStorage.setItem('lang', 'cn');
+        });
+    })();
+
+</body>
+</html>
