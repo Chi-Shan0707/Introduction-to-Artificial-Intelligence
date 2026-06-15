@@ -2,3 +2,25 @@
 
 
 pj12_cartpole/
+__pycache__/
+*.pyc
+*.zip
+*.pptx
+lec9/course_materials/data/
+pj12_extracted/
+test_dollars.md
+think.md
+add_translations.py
+bilingual_*.py
+check_dollars.py
+polish_notes.py
+# Local audio transcription files; do not publish.
+transcript.*
+**/transcript.*
+*转写*.txt
+*时间轴*.txt
+*录音*.txt
+*会议*.txt
+*meeting*.txt
+*record*.txt
+*audio*.txt

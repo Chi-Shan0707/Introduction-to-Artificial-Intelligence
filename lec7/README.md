@@ -1,138 +1,67 @@
-# 第7讲：深度学习（一）—— 神经网络基础知识
+# 第 7 讲：深度学习（一）：神经网络基础
 
-> 丁恒辉，2026/4/16 | 基于 PDF 课件 + 课堂转录 + 补充推导整理
+> 课程：Introduction to Artificial Intelligence · 复旦大学  
+> 日期：2026-04-16  
+> 资料：人工智能-7-深度学习（一）.pdf、本讲 Markdown/实践材料
 
----
+## 本讲定位
 
-## 本讲概览
+从线性分类器扩展到多层神经网络，理解反向传播、正则化与优化。
 
-本讲是深度学习的入门课，围绕三条主线展开：
+## 学习目标
 
-1. **神经网络**：从线性分类器到多层非线性网络
-2. **反向传播**：计算图 + 链式法则高效求梯度
-3. **正则化与优化**：防止过拟合，找到更好的解
-
----
+- 理解神经网络是“线性变换 + 非线性激活”的层级组合。
+- 掌握反向传播利用链式法则高效计算梯度。
+- 知道 Dropout、Weight Decay、BatchNorm、学习率调度等训练稳定化方法。
 
 ## 知识地图
 
-```
-神经网络基础
-├── 从线性分类器 → 两层网络 → 深层网络
-│   └── 非线性激活函数（ReLU 最好）
-├── 反向传播
-│   ├── 计算图 + 链式法则
-│   ├── 门电路规则（加法、乘法、复制、Max）
-│   └── PyTorch 中的 forward / backward
-├── 正则化
-│   ├── L1 / L2 / Elastic Net
-│   ├── Dropout（随机丢弃神经元）
-│   ├── Batch Normalization（副产品正则化）
-│   ├── Stochastic Depth / DropPath（随机丢弃残差分支）
-│   └── Fractional Pooling（随机池化切分）
-├── 优化方法
-│   ├── SGD → SGD+Momentum → RMSProp → Adam
-│   ├── 学习率调度（step / cosine / warmup / inverse sqrt）
-│   └── Batch Size 与学习率的关系
-├── 数学深入
-│   ├── Hessian 矩阵（二阶曲率与条件数）
-│   ├── Robbins-Monro 条件（∑α=∞, ∑α²<∞）
-│   └── Dvoretzky 定理（一般收敛框架）
-└── 池化（Pooling）
-    ├── Max / Average / Global Average
-    └── 现代 trend：stride 卷积替代显式池化
-```
+| 模块 | 内容 |
+| --- | --- |
+| 网络结构 | 输入层、隐藏层、输出层；深度来自多层非线性组合。 |
+| 反向传播 | 前向计算损失，反向传播梯度，优化器更新参数。 |
+| 训练技巧 | 正则化防过拟合，优化策略提升收敛速度和稳定性。 |
 
----
+## 核心概念
 
-## 核心公式速查
+- 没有非线性激活，多层线性网络仍等价于单层线性模型。
+- 反向传播不是一个新损失，而是计算梯度的动态规划过程。
+- 训练深度网络时要同时关注欠拟合、过拟合、梯度消失/爆炸和数据归一化。
 
-| 主题 | 公式 |
-|---|---|
-| 两层网络 | $s = W_2 \sigma(W_1 x + b_1) + b_2$ |
-| 链式法则 | $\frac{\partial f}{\partial x} = \frac{\partial f}{\partial q} \cdot \frac{\partial q}{\partial x}$ |
-| 全损失 | $L = L_{\text{data}} + \lambda R(W)$ |
-| SGD+Momentum | $v_t = \rho v_{t-1} + \nabla L;\; W \leftarrow W - \alpha v_t$ |
-| RMSProp | $v_t = \rho v_{t-1} + (1-\rho)(\nabla L)^2;\; W \leftarrow W - \frac{\alpha}{\sqrt{v_t}+\epsilon}\nabla L$ |
-| Adam | Momentum + RMSProp 的结合，加偏差校正 |
-| Batch Norm | $\hat{x} = \frac{x - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}};\; y = \gamma\hat{x} + \beta$ |
-| Hessian 条件数 | $\kappa = \lambda_{\max} / \lambda_{\min}$ |
-| RM 条件 | $\sum\alpha_t = \infty;\; \sum\alpha_t^2 < \infty$ |
+## 课堂讲解补充
 
----
+神经网络基础是后续 CNN、Transformer 和深度强化学习的共同底座。反向传播让复杂网络可以端到端训练，正则化和优化技巧决定模型能否稳定泛化。学习本讲时要始终追踪张量形状、梯度流和训练/验证曲线。
 
-## 正则化方法统一视角
+### 复习组织方式
 
-所有正则化方法共享一个哲学：**用随机性打破确定性计算路径**。
+- **问题背景**：这节课为什么要引入这个概念。
+- **方法主线**：算法或模型按什么步骤工作。
+- **公式/代码**：至少抓住一个能落地计算的表达。
+- **局限性**：说明它在哪些场景下会失效或需要改进。
 
-| 方法 | 随机化对象 | 粒度 |
-|---|---|---|
-| Dropout | 单个神经元 | 细（神经元级） |
-| Stochastic Depth | 整条残差分支 | 粗（层/块级） |
-| Fractional Pooling | 空间池化切分位置 | 结构（空间级） |
-| Batch Normalization | mini-batch 统计量 | 批次级 |
+## 公式与记忆点
 
----
+- 链式法则：∂L/∂x = ∂L/∂y · ∂y/∂x。
+- ReLU(x)=max(0,x)。
+- Weight Decay: L_total=L_data+λ||θ||²。
 
-## 归一化方法统一谱系
+## 易错点
 
-所有归一化方法都在做"让数据保持好范围"，区别仅在于**按什么维度统计**：
+- 只增加层数不一定更好：数据量、正则化和优化都会限制效果。
+- 忘记 `optimizer.zero_grad()` 会导致梯度累积，训练行为异常。
 
-| 方法 | 统计维度 | 依赖 batch | 主要场景 |
-|---|---|---|---|
-| Batch Norm | (N, H, W) per channel | 是 | CNN |
-| Layer Norm | (C, H, W) per sample | 否 | Transformer |
-| Group Norm | (C/G, H, W) per group | 否 | 小 batch CV |
-| Instance Norm | (H, W) per (sample, channel) | 否 | 风格迁移 |
-| RMS Norm | 同 LN，只算方差 | 否 | LLaMA 等大模型 |
+## 课后巩固
 
-> $G=1$ 时 Group Norm = Layer Norm；$G=C$ 时 = Instance Norm。
-
----
-
-## Batch Size 与学习率
-
-**线性缩放规则**：$B$ 增大 $k$ 倍 → $\alpha$ 增大 $k$ 倍（$B \leq 512$ 时有效）
-
-本质推导：
-- 每 epoch 步数 $= N/B$，总信号 $= (N/B) \cdot \alpha$，令其不变得 $\alpha \propto B$
-- 每 epoch 总噪声方差 $= N\alpha^2\sigma^2/B^2$，代入 $\alpha = cB$ 得 $= Nc^2\sigma^2$（也与 $B$ 无关）
-
-线性缩放保持"每个 epoch 的总推动量和总噪声方差不变"，但噪声频率降低导致泛化变差。
-
-| Batch Size | 推荐学习率 | 策略 |
-|---|---|---|
-| 32 | 0.1 | 基准 |
-| 64~256 | 0.2~0.8 | 线性缩放 |
-| 512~1024 | 1.0~1.5 | 线性缩放 + warmup |
-| 2048+ | 1.0~2.0 | 平方根缩放 + warmup + 可能 LARS |
-
----
-
-## 关键定理
-
-**Robbins-Monro (1951)**：$\sum\alpha_t=\infty$ 保证能走到最优解；$\sum\alpha_t^2<\infty$ 保证噪声不累积。$\alpha_t = 1/t$ 恰好同时满足。
-
-**Dvoretzky (1956)**：RM 的一般化。核心递推 $d_{t+1} \leq (1+\tilde{a}_t)d_t + \tilde{b}_t$，通过无穷乘积引理（$\prod(1+a_s) < \infty \iff \sum a_s < \infty$）和鞅收敛定理证明几乎必然收敛。
-
-**实践中用常数学习率**：因为深度学习的非凸性使噪声有益（逃逸鞍点、倾向平坦最优解）。常数 $\alpha$ 的 SGD 在强凸情况下收敛到最优解附近半径为 $O(\alpha\sigma^2/2\mu)$ 的邻域。
-
----
-
-## 课堂原话摘录
-
-> "不要因为大模型容易过拟合就刻意去选参数量小的模型，可以用正则化的方法来避免过拟合。"
->
-> "我们升维度，永远都是为了……"（将非线性不可分的数据变换到可分空间）
->
-> "如果没有非线性激活函数会怎样？我们还是得到了一个线性分类器。"
-
----
+- 手写一个两层 MLP 的前向维度变化。
+- 解释训练集损失下降但验证集变差时该怎么办。
 
 ## 文件索引
 
-| 文件 | 内容 |
+| 文件 | 说明 |
 |---|---|
-| `lec7.md` | 完整笔记，含数学推导、伪代码、证明、深度分析 |
-| `人工智能-7-深度学习（一）.pdf` | 145 页课件原文 |
-| `transcript.md` | 课堂转录 |
+| `lec7_notes.html` | 详细课程笔记网页 |
+| `lec7.md` | 本讲补充材料 |
+
+## 关键词
+
+`MLP`, `Backprop`, `Activation`, `Regularization`, `Optimization`

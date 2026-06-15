@@ -1,0 +1,17 @@
+Favorite Quotes Collection
+===========================
+
+"The best time to plant a tree was 20 years ago. The second best time is now."
+  - Chinese Proverb
+
+"Simplicity is the ultimate sophistication."
+  - Leonardo da Vinci
+
+"Talk is cheap. Show me the code."
+  - Linus Torvalds
+
+"In the middle of difficulty lies opportunity."
+  - Albert Einstein
+
+"Not all those who wander are lost."
+  - J.R.R. Tolkien

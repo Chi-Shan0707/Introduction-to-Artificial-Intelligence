@@ -176,9 +176,9 @@ else:
 
 | 指标 | perturb=0 |
 |------|-----------|
-| mean | 233.1 |
-| median | 231 |
-| std | 11.6 |
+| mean | 232.5 |
+| median | 230 |
+| std | 13.7 |
 | max_ratio | 0% |
 
 ---

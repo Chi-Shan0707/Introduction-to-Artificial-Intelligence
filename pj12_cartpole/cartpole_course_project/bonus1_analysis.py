@@ -55,7 +55,7 @@ def main():
 
     # Run MCTS evaluation
     print("Running MCTS evaluation (this takes a while)...")
-    mcts_results = eval_mcts(n_seeds=20)  # 20 seeds for MCTS (slow)
+    mcts_results = eval_mcts(n_seeds=100)  # 100 seeds, unified with Q/REINFORCE
     mcts_steps = [r["steps"] for r in mcts_results]
 
     mcts_report = {
@@ -92,7 +92,7 @@ def main():
     for patch, color in zip(bp["boxes"], colors):
         patch.set_facecolor(color)
     ax.set_ylabel("Steps")
-    ax.set_title("CartPole Algorithm Comparison (100 seeds for Q/REINFORCE, 20 seeds for MCTS)")
+    ax.set_title("CartPole Algorithm Comparison (100 seeds each)")
     ax.grid(axis="y", alpha=0.3)
 
     # 添加定量信息
