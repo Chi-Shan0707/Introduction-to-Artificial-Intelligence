@@ -1,4 +1,4 @@
-# 第 13 讲：强化学习：从 MDP 到深度强化学习
+# 第 13 讲：前沿 CV 与生成模型：GAN、VAE、Diffusion
 
 > 课程：Introduction to Artificial Intelligence · 复旦大学  
 > 日期：2026-05-28 前后  
@@ -6,7 +6,7 @@
 
 ## 本讲定位
 
-把智能体置于环境中，通过奖励信号学习序列决策策略，并连接 CartPole 项目实践。
+本讲材料聚焦前沿 CV 生成模型：GAN 的极小极大博弈、WGAN 对 JS 散度问题的修正、VAE 的 ELBO、DDPM/Stable Diffusion 的逐步去噪，以及它们和视觉生成任务的关系。
 
 ## 学习目标
 
@@ -66,4 +66,4 @@
 
 ## 关键词
 
-`RL`, `MDP`, `Bellman`, `Q-Learning`, `Policy Gradient`, `DQN`, `CartPole`
+`CV`, `GAN`, `VAE`, `Diffusion`, `WGAN`, `Stable Diffusion`, `Generative Models`
