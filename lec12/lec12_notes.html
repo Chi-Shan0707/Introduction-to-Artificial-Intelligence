@@ -89,4 +89,9 @@ L({p_i}, {t_i}) =  1/N_cls · Σ L_cls(p_i, p_i*)   +   λ · 1/N_reg · Σ p_i*
 t_x* = (x* - x_a) / w_a          ← 中心点 x 的偏移（除以宽做归一化）
 t_y* = (y* - y_a) / h_a          ← 中心点 y 的偏移（除以高做归一化）
 t_w* = log(w* / w_a)              ← 宽的对数缩放
-t_</pre></div></section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
+t_</pre></div></section><section id="deep-expansion"><div class="section-title"><span class="num">★</span><h2>CV/NLP 深度补充：检测、分割、生成与指标</h2></div>
+<p>图像分类只回答“图里主要是什么”；目标检测回答“哪里有什么”；语义分割回答“每个像素属于什么类”；实例分割还要区分同类不同个体；视频分割进一步要求跨帧身份一致。</p>
+<div class="formula">IoU = area(B_pred ∩ B_gt) / area(B_pred ∪ B_gt)</div>
+<table><tr><th>任务</th><th>输出</th><th>指标</th><th>难点</th></tr><tr><td>Detection</td><td>box + label + score</td><td>mAP</td><td>小目标、遮挡、多尺度、框偏移</td></tr><tr><td>Semantic Segmentation</td><td>pixel class</td><td>mIoU</td><td>边界精细度与上下文语义</td></tr><tr><td>Instance Segmentation</td><td>object mask</td><td>mask AP</td><td>同类实例粘连与遮挡</td></tr><tr><td>Video Segmentation</td><td>temporal masks</td><td>J&F</td><td>遮挡、消失再现、镜头切换</td></tr></table>
+<p>R-CNN 系列主线是共享计算：R-CNN 每个 proposal 单独跑 CNN；Fast R-CNN 共享整图特征；Faster R-CNN 用 RPN 学候选框。YOLO/SSD 直接 dense prediction，速度更快但小目标与精细定位更难。</p>
+</section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>

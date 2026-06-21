@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Introduction to Artificial Intelligence · 深度笔记地图</title>
+  <title>Introduction to Artificial Intelligence · 逐讲深度笔记地图</title>
   <style>
     :root {
       --paper: #f4ead8;
@@ -242,7 +242,6 @@
       <nav>
         <a href="#mission">为什么重写</a>
         <a href="#method">复习方法</a>
-        <a href="#deep">深度笔记入口</a>
         <a href="#lectures">每讲页面</a>
         <a href="#exam">考试题型锚点</a>
       </nav>
@@ -251,7 +250,7 @@
     <main>
       <header class="hero" id="mission">
         <div class="kicker">Introduction to Artificial Intelligence</div>
-        <h1>人工智能导论<br>深度笔记地图</h1>
+        <h1>人工智能导论<br>逐讲深度笔记地图</h1>
         <p>这不是“把 PPT 复述一遍”的目录页。新版 GitHub Pages 以考试题型、数学表达、工程实现和模型局限为主线，把每讲串成可复习、可推导、可汇报的课程地图。</p>
         <div class="stamp-row">
           <span class="stamp">PDF grounded</span>
@@ -270,12 +269,6 @@
           <div class="card"><h3>最后讲局限</h3><p>专业笔记要说明何时失效：启发函数高估、Accuracy 被类别不平衡欺骗、CNN 不天然全局建模、Transformer 计算量随序列平方增长。</p></div>
         </div>
         <p class="callout">判断笔记是否“有价值”的标准：能不能让你从一道题反推出概念、从一个公式解释模型行为、从一个错误答案定位错在维度/假设/指标。</p>
-      </section>
-
-      <section id="deep">
-        <div class="title"><span class="num">02</span><h2>统一深度笔记</h2></div>
-        <p>新增统一复习页把 13 讲按“符号推理 → 搜索 → 机器学习 → 深度学习 → CV/NLP/Transformer → 强化学习”组织，重点加入 Hinge 损失、SVM 软间隔、Transformer 张量尺寸、CNN 参数量/输出尺寸、检测与分割指标等考试常见题。</p>
-        <p><a class="button gold" href="deep_notes.html">Open Deep Notes</a></p>
       </section>
 
       <section id="lectures">
@@ -300,9 +293,9 @@
         <table>
           <thead><tr><th>题型</th><th>位置</th><th>核心判断</th></tr></thead>
           <tbody>
-            <tr><td>Hinge 损失表</td><td><code>lec5/README.md</code>、<code>lec5/keypoints.md</code>、<code>deep_notes.html</code></td><td>先算 <code>z=yf(x)</code>，再用 <code>max(0,1-z)</code>；分对但 margin 不足仍有损失。</td></tr>
-            <tr><td>Transformer 张量尺寸</td><td><code>lec11/README.md</code>、<code>deep_notes.html</code></td><td>每头维度 <code>d_model/h</code>；注意力权重是 <code>B×n×n</code>，每头输出是 <code>B×n×d_v</code>。</td></tr>
-            <tr><td>CNN 输出尺寸</td><td><code>deep_notes.html</code>、<code>lec8/README.md</code></td><td><code>⌊(H+2P-K)/S⌋+1</code>；参数量和 FLOPs 不是同一个概念。</td></tr>
+            <tr><td>Hinge 损失表</td><td><code>lec5/README.md</code>、<code>lec5/keypoints.md</code></td><td>先算 <code>z=yf(x)</code>，再用 <code>max(0,1-z)</code>；分对但 margin 不足仍有损失。</td></tr>
+            <tr><td>Transformer 张量尺寸</td><td><code>lec11/README.md</code></td><td>每头维度 <code>d_model/h</code>；注意力权重是 <code>B×n×n</code>，每头输出是 <code>B×n×d_v</code>。</td></tr>
+            <tr><td>CNN 输出尺寸</td><td><code>lec8/README.md</code></td><td><code>⌊(H+2P-K)/S⌋+1</code>；参数量和 FLOPs 不是同一个概念。</td></tr>
           </tbody>
         </table>
       </section>

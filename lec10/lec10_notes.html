@@ -107,4 +107,9 @@ Output size = (6 - 3)/1 + 1 = 4×4
 \text{Output Size} = \frac{\text{Input Size} + 2 \times \text{Padding} - \text{Kernel Size}}{\text{Stride}} + 1
 &gt; **注意**：必须确保分子能被 Stride 整除，否则会出现非整数输出尺寸，PyTorch 等框架通常会报错或取整。
 **例题 2.4**（Stride = 2 的下采样效果，PDF p50）：
-\text{Output Size} = \fra</pre></div></section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
+\text{Output Size} = \fra</pre></div></section><section id="deep-expansion"><div class="section-title"><span class="num">★</span><h2>序列建模深度补充：RNN/LSTM 到注意力的动机</h2></div>
+<p>序列数据的核心是当前位置依赖历史上下文。RNN 用共享参数递归更新隐藏状态，适合可变长度序列，但长距离依赖会受到梯度消失/爆炸影响。LSTM/GRU 用门控机制控制信息写入、遗忘和输出，缓解但没有彻底消除串行计算瓶颈。</p>
+<div class="formula">h_t = f(W_xx_t + W_hh_{t-1}+b)</div>
+<table><tr><th>结构</th><th>解决什么</th><th>仍有什么问题</th></tr><tr><td>RNN</td><td>可变长度序列建模</td><td>长程依赖弱，难并行</td></tr><tr><td>LSTM</td><td>用门控保留长期记忆</td><td>计算更重，仍按时间步串行</td></tr><tr><td>GRU</td><td>简化门控结构</td><td>表达与稳定性依任务而定</td></tr><tr><td>Attention</td><td>让当前位置直接读取相关位置</td><td>需要处理位置和计算复杂度</td></tr></table>
+<p><strong>通向 Transformer：</strong>RNN 的顺序偏置强但难并行；注意力弱化顺序递归，允许任意 token 直接交互。位置关系不再由递归天然提供，必须靠位置编码或相对位置机制补回。</p>
+</section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
