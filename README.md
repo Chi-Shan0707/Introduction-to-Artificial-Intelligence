@@ -15,6 +15,8 @@
 
 ## 课程目录
 
+> GitHub Pages 首页已改为统一深度笔记地图；完整高密度复习页见 [`deep_notes.html`](deep_notes.html)。该页按考试题型、数学表达、张量尺寸、模型取舍和局限性重组 13 讲内容。
+
 | 周次 | README | HTML 笔记 | 关键词 |
 |---|---|---|---|
 | 第 1 讲 | [绪论：人工智能是什么](lec1/README.md) | [HTML notes](lec1/lec1_notes.html) | AI定义, 课程考核, 发展阶段, CV研究案例 |
