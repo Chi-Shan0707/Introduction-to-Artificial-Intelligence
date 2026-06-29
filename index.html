@@ -1,3 +1,307 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Introduction to Artificial Intelligence · Expanded Field Atlas</title><style>
-:root{--paper:#f6efe1;--paper-2:#fffaf0;--ink:#17130e;--muted:#6d6256;--line:#24170d;--red:#c23b22;--blue:#1f5c8f;--green:#3f7d54;--gold:#c79a32;--charcoal:#24201a;--shadow:14px 14px 0 #17130e;--soft:0 18px 70px rgba(25,18,10,.14)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:radial-gradient(circle at 8% 10%,rgba(194,59,34,.18),transparent 26%),radial-gradient(circle at 92% 0,rgba(31,92,143,.18),transparent 28%),linear-gradient(90deg,rgba(36,23,13,.04) 1px,transparent 1px),linear-gradient(180deg,rgba(36,23,13,.035) 1px,transparent 1px),var(--paper);background-size:auto,auto,34px 34px,34px 34px,auto;font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua","Songti SC",serif;line-height:1.72}body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(rgba(23,19,14,.13) .55px,transparent .55px);background-size:6px 6px;mix-blend-mode:multiply;opacity:.35}.shell{display:grid;grid-template-columns:310px minmax(0,1fr);min-height:100vh}.rail{position:sticky;top:0;height:100vh;padding:28px 22px;border-right:2px solid var(--line);background:rgba(246,239,225,.88);backdrop-filter:blur(18px);overflow:auto}.brandmark{width:78px;height:78px;border:2px solid var(--line);border-radius:50%;display:grid;place-items:center;font-family:"Bodoni 72","Didot",serif;font-size:32px;font-weight:900;background:var(--red);color:var(--paper-2);box-shadow:7px 7px 0 var(--line);transform:rotate(-6deg);margin-bottom:24px}.rail h2{font-family:"Bodoni 72","Didot",serif;letter-spacing:.04em;text-transform:uppercase;font-size:18px;margin:0 0 14px}.rail a{display:block;color:var(--charcoal);text-decoration:none;padding:9px 0;border-top:1px solid rgba(36,23,13,.2);font-size:14px}.rail a:hover{color:var(--red);padding-left:8px}.wrap{max-width:1220px;padding:42px clamp(18px,5vw,64px) 80px}.hero{position:relative;border:2px solid var(--line);background:linear-gradient(135deg,var(--paper-2),#f1dfbf);box-shadow:var(--shadow);padding:clamp(28px,5vw,58px);margin-bottom:38px;overflow:hidden}.hero:after{content:"";position:absolute;right:-70px;top:-70px;width:220px;height:220px;border:34px solid rgba(194,59,34,.18);border-radius:50%}.kicker{font-family:"Courier New",monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--red);font-weight:800;font-size:12px}.hero h1{font-family:"Bodoni 72","Didot","Songti SC",serif;font-size:clamp(46px,8vw,92px);line-height:.9;letter-spacing:-.055em;margin:18px 0 20px;max-width:980px}.hero p{font-size:clamp(18px,2vw,24px);max-width:920px}.stamp-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}.stamp{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1.6px solid var(--line);background:#fff4d8;color:var(--ink);font-family:"Courier New",monospace;font-size:12px;text-transform:uppercase;box-shadow:3px 3px 0 var(--line)}section{margin:34px 0;padding:clamp(22px,3vw,34px);border:2px solid var(--line);background:rgba(255,250,240,.84);box-shadow:var(--soft)}.section-title{display:flex;align-items:flex-end;gap:16px;border-bottom:2px solid var(--line);padding-bottom:14px;margin-bottom:20px}.section-title .num{font-family:"Bodoni 72","Didot",serif;font-size:48px;color:var(--red);line-height:.8}.section-title h2{font-family:"Bodoni 72","Didot","Songti SC",serif;font-size:clamp(28px,4vw,46px);letter-spacing:-.035em;margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.cards-3{grid-template-columns:repeat(3,minmax(0,1fr))}.card{position:relative;border:1.8px solid var(--line);background:#fff8e8;padding:20px;box-shadow:6px 6px 0 rgba(36,23,13,.9);transition:transform .18s ease,box-shadow .18s ease}.card:hover{transform:translate(-3px,-3px);box-shadow:10px 10px 0 rgba(36,23,13,.95)}.card h3{font-family:"Bodoni 72","Didot","Songti SC",serif;font-size:24px;line-height:1.08;margin:0 0 10px}.card p{color:var(--muted);margin:8px 0}.callout{border-left:10px solid var(--red);background:#f8e9c8;padding:18px 20px;font-size:18px}.tag{display:inline-block;margin:5px 7px 0 0;padding:4px 9px;border:1px solid var(--line);background:#f2dca8;font-family:"Courier New",monospace;font-size:12px}.toc-row{display:grid;grid-template-columns:88px 1fr auto;gap:18px;align-items:center;border-top:1.6px solid var(--line);padding:16px 0}.toc-row strong{font-family:"Bodoni 72","Didot",serif;font-size:28px}.button{display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--line);background:var(--ink);color:var(--paper-2)!important;text-decoration:none;padding:10px 14px;box-shadow:4px 4px 0 var(--red);font-family:"Courier New",monospace;font-size:12px;text-transform:uppercase}.button.alt{background:#fff4d8;color:var(--ink)!important;box-shadow:4px 4px 0 var(--blue)}ul,ol{padding-left:1.2rem}li{margin:8px 0}table{width:100%;border-collapse:collapse;background:#fff8e8}th,td{border:1.6px solid var(--line);padding:12px;vertical-align:top}th{background:var(--ink);color:var(--paper-2);font-family:"Courier New",monospace;text-transform:uppercase;font-size:12px}pre{white-space:pre;overflow:auto;background:#17130e;color:#fff4d8;border:2px solid var(--line);padding:18px;box-shadow:8px 8px 0 var(--gold)}code{font-family:"Courier New","Noto Sans Mono",monospace}.split{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}.footer{font-family:"Courier New",monospace;color:var(--muted);font-size:12px;margin-top:36px}.pin{position:absolute;right:14px;top:14px;width:16px;height:16px;border-radius:50%;background:var(--red);border:2px solid var(--line)}.flow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;margin:18px 0}.node{border:2px solid var(--line);background:#fff4d8;padding:12px 14px;min-width:150px;box-shadow:5px 5px 0 var(--blue);font-weight:800}.arrow{display:grid;place-items:center;font-family:"Courier New",monospace;font-weight:900;color:var(--red)}.formula{border:2px solid var(--line);background:#17130e;color:#fff4d8;padding:16px;margin:12px 0;font-family:"Courier New",monospace;box-shadow:6px 6px 0 var(--gold)}.derivation{counter-reset:step}.derivation li{list-style:none;position:relative;margin-left:34px}.derivation li:before{counter-increment:step;content:counter(step);position:absolute;left:-34px;top:2px;width:24px;height:24px;border:1.5px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--red);color:#fff;font-family:"Courier New",monospace;font-size:12px}.excerpt{max-height:360px;overflow:auto;border:1.5px dashed var(--line);background:#fffdf5;padding:16px;color:#4b4035}.metric{font-family:"Bodoni 72","Didot",serif;font-size:34px;color:var(--blue)}@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}.hero,section{animation:rise .55s ease both}.hero{animation-delay:.02s}section:nth-of-type(1){animation-delay:.08s}section:nth-of-type(2){animation-delay:.14s}section:nth-of-type(3){animation-delay:.2s}@media(max-width:900px){.shell{display:block}.rail{position:relative;height:auto}.grid,.cards-3,.split{grid-template-columns:1fr}.toc-row{grid-template-columns:1fr}.hero{box-shadow:8px 8px 0 var(--line)}.flow{display:block}.arrow{padding:6px}}
-</style></head><body><div class="shell"><aside class="rail"><div class="brandmark">AI</div><h2>Course Index</h2><a href="#overview">Overview</a><a href="#audit">Expansion Audit</a><a href="#lectures">All HTML Notes</a><a href="#lec1">Lecture 01</a><a href="#lec2">Lecture 02</a><a href="#lec3">Lecture 03</a><a href="#lec4">Lecture 04</a><a href="#lec5">Lecture 05</a><a href="#lec6">Lecture 06</a><a href="#lec7">Lecture 07</a><a href="#lec8">Lecture 08</a><a href="#lec9">Lecture 09</a><a href="#lec10">Lecture 10</a><a href="#lec11">Lecture 11</a><a href="#lec12">Lecture 12</a><a href="#lec13">Lecture 13</a><p class="footer">GitHub Pages ready</p></aside><main class="wrap"><header class="hero" id="overview"><div class="kicker">Introduction to Artificial Intelligence</div><h1>人工智能导论<br>Expanded Field Atlas</h1><p>这版首页直接通向每一讲的扩充 HTML。每个页面都补上重点难点、流程图、公式推导、代码锚点和原始 Markdown 对照，重点加强 CNN 张量维度、LSTM 门控流程、R-CNN/Fast/Faster R-CNN 差异、PyTorch 训练闭环与前沿 CV 生成模型。</p><div class="stamp-row"><span class="stamp">13 HTML links</span><span class="stamp">2× length audit</span><span class="stamp">formulas + diagrams</span><span class="stamp">no PJ folder</span></div></header><section id="audit"><div class="section-title"><span class="num">01</span><h2>扩充审计目标</h2></div><div class="grid cards-3"><div class="card"><h3>文章长度</h3><p>每个 lecture HTML 的正文长度至少达到改版前的 2 倍，且有脚本审计。</p></div><div class="card"><h3>流程示意图</h3><p>每讲都有流程图；CNN、LSTM、检测、生成模型有专题图。</p></div><div class="card"><h3>公式推导</h3><p>每讲都有公式和从目标到结论的推导链。</p></div><div class="card"><h3>重点难点</h3><p>每讲列出易错点、失败模式和汇报时必须讲清的部分。</p></div><div class="card"><h3>设计方向</h3><p>延续 frontend-design 的 editorial field atlas 风格，但内容密度显著提升。</p></div><div class="card"><h3>发布约束</h3><p>无 transcript、无 0312、无 PJ/CartPole 发布文件。</p></div></div></section><section id="lectures"><div class="section-title"><span class="num">02</span><h2>全部课程 HTML 入口</h2></div><div class="toc-row" id="lec1"><strong>01</strong><div><h3>第 1 讲：绪论与人工智能课程地图</h3><p>这一讲把课程从“AI 热词”拉回到任务、数据、模型、评估和历史脉络。课件开头用授课教师的视觉感知、视觉生成与具身智能研究案例说明：人工智能不是单一模型，而是一套把现实问题形式化、计算化、工程化的系统方法。</p></div><div><a class="button" href="lec1/lec1_notes.html">Open HTML</a><br><br><a class="button alt" href="lec1/README.md">README</a></div></div><div class="toc-row" id="lec2"><strong>02</strong><div><h3>第 2 讲：逻辑、知识表示与推理</h3><p>本讲是符号主义 AI 的入口：把自然语言世界拆成命题、谓词、实体、关系和概率依赖，使机器可以做可解释推理。</p></div><div><a class="button" href="lec2/lec2_notes.html">Open HTML</a><br><br><a class="button alt" href="lec2/README.md">README</a></div></div><div class="toc-row" id="lec3"><strong>03</strong><div><h3>第 3 讲：搜索求解与启发式算法</h3><p>搜索是把问题变成状态空间并在其中找路径。课件用罗马尼亚旅游等例子说明：先建模状态、动作、代价和目标，再讨论 BFS、DFS、UCS、A* 的性质。</p></div><div><a class="button" href="lec3/lec3_notes.html">Open HTML</a><br><br><a class="button alt" href="lec3/README.md">README</a></div></div><div class="toc-row" id="lec4"><strong>04</strong><div><h3>第 4 讲：线性模型、损失函数与梯度下降</h3><p>线性模型是机器学习和神经网络的共同底座。无论后面是 CNN 还是 Transformer，训练时仍离不开预测函数、损失函数、梯度和优化器。</p></div><div><a class="button" href="lec4/lec4_notes.html">Open HTML</a><br><br><a class="button alt" href="lec4/README.md">README</a></div></div><div class="toc-row" id="lec5"><strong>05</strong><div><h3>第 5 讲：SVM、最大间隔与模型评估</h3><p>SVM 把分类问题改写成“找最大几何间隔的超平面”，同时本讲引入模型选择和评估指标，帮助判断模型是否可靠。</p></div><div><a class="button" href="lec5/lec5_notes.html">Open HTML</a><br><br><a class="button alt" href="lec5/README.md">README</a></div></div><div class="toc-row" id="lec6"><strong>06</strong><div><h3>第 6 讲：无监督学习、K-Means、PCA 与 GMM</h3><p>无监督学习处理没有标签的数据，目标不是直接预测 y，而是发现结构、压缩表示或估计数据分布。</p></div><div><a class="button" href="lec6/lec6_notes.html">Open HTML</a><br><br><a class="button alt" href="lec6/README.md">README</a></div></div><div class="toc-row" id="lec7"><strong>07</strong><div><h3>第 7 讲：神经网络基础、反向传播与优化</h3><p>本讲把线性分类器扩展为多层非线性网络，并用计算图和链式法则解释反向传播。它是 CNN、RNN、Transformer 和深度强化学习的共同底座。</p></div><div><a class="button" href="lec7/lec7_notes.html">Open HTML</a><br><br><a class="button alt" href="lec7/README.md">README</a></div></div><div class="toc-row" id="lec8"><strong>08</strong><div><h3>第 8 讲：卷积神经网络 CNN 与图像评估指标</h3><p>这一讲是计算机视觉主线的核心：图像不是普通向量，而是带有空间局部性、通道结构和局部不变性的张量。CNN 用局部感受野、参数共享和下采样解决全连接网络在图像上的参数爆炸问题。</p></div><div><a class="button" href="lec8/lec8_notes.html">Open HTML</a><br><br><a class="button alt" href="lec8/README.md">README</a></div></div><div class="toc-row" id="lec9"><strong>09</strong><div><h3>第 9 讲：PyTorch 实践与图像分类训练闭环</h3><p>本讲把深度学习落成代码：Tensor 表示数据，Autograd 记录计算图，nn.Module 组织模型，DataLoader 组织批量训练，FashionMNIST/CIFAR 实验把 CV 训练闭环跑通。</p></div><div><a class="button" href="lec9/lec9_notes.html">Open HTML</a><br><br><a class="button alt" href="lec9/README.md">README</a></div></div><div class="toc-row" id="lec10"><strong>10</strong><div><h3>第 10 讲：CNN 课堂讲义补充：卷积、池化与经典架构</h3><p>本讲材料继续围绕 CNN 展开，比第 8 讲更像手算和工程细节讲义：从 1D/2D 卷积例子、padding/stride 尺寸变化，到 LeNet、AlexNet、VGG、ResNet 等架构演进。</p></div><div><a class="button" href="lec10/lec10_notes.html">Open HTML</a><br><br><a class="button alt" href="lec10/README.md">README</a></div></div><div class="toc-row" id="lec11"><strong>11</strong><div><h3>第 11 讲：RNN、LSTM、注意力与 Transformer</h3><p>这一讲从循环网络处理序列开始，解释长期依赖难题，再引出注意力、自注意力和 Transformer 架构。RNN/LSTM 让模型逐步读序列，Transformer 则让所有 token 两两交互。</p></div><div><a class="button" href="lec11/lec11_notes.html">Open HTML</a><br><br><a class="button alt" href="lec11/README.md">README</a></div></div><div class="toc-row" id="lec12"><strong>12</strong><div><h3>第 12 讲：目标检测、图像分割、视频分割与 NLP 基础</h3><p>前沿 CV 从分类走向“在哪里、是哪类、像素属于谁、视频中是否连续”。课件重点讲目标检测、图像分割、视频分割、图像生成和 NLP 基础，其中 R-CNN 系列是理解检测发展的主线。</p></div><div><a class="button" href="lec12/lec12_notes.html">Open HTML</a><br><br><a class="button alt" href="lec12/README.md">README</a></div></div><div class="toc-row" id="lec13"><strong>13</strong><div><h3>第 13 讲：前沿 CV 与生成模型：GAN、VAE、Diffusion</h3><p>本讲材料聚焦前沿 CV 生成模型：GAN 的极小极大博弈、WGAN 对 JS 散度问题的修正、VAE 的 ELBO、DDPM/Stable Diffusion 的逐步去噪，以及它们和视觉生成任务的关系。</p></div><div><a class="button" href="lec13/lec13_notes.html">Open HTML</a><br><br><a class="button alt" href="lec13/README.md">README</a></div></div></section><p class="footer">Expanded course atlas: direct HTML links, rich lecture notes, formulas, diagrams, and auditability.</p></main></div></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Introduction to Artificial Intelligence · 逐讲深度笔记地图</title>
+  <style>
+    :root {
+      --paper: #f4ead8;
+      --paper-2: #fffaf0;
+      --ink: #18130d;
+      --muted: #675d51;
+      --line: #24170d;
+      --red: #bb3328;
+      --blue: #245a89;
+      --green: #38704f;
+      --gold: #b98524;
+      --shadow: 12px 12px 0 var(--ink);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 12%, rgba(187, 51, 40, .18), transparent 28%),
+        radial-gradient(circle at 92% 0%, rgba(36, 90, 137, .18), transparent 30%),
+        linear-gradient(90deg, rgba(36, 23, 13, .05) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(36, 23, 13, .04) 1px, transparent 1px),
+        var(--paper);
+      background-size: auto, auto, 34px 34px, 34px 34px, auto;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Songti SC", serif;
+      line-height: 1.72;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(24, 19, 13, .14) .6px, transparent .6px);
+      background-size: 6px 6px;
+      mix-blend-mode: multiply;
+      opacity: .28;
+    }
+    a { color: inherit; }
+    .layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 28px 24px;
+      border-right: 2px solid var(--line);
+      background: rgba(244, 234, 216, .88);
+      backdrop-filter: blur(18px);
+    }
+    .mark {
+      width: 78px;
+      height: 78px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: var(--red);
+      color: var(--paper-2);
+      box-shadow: 7px 7px 0 var(--line);
+      transform: rotate(-7deg);
+      font-family: "Bodoni 72", "Didot", serif;
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 24px;
+    }
+    aside h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-family: "Courier New", monospace;
+    }
+    aside nav a {
+      display: block;
+      padding: 10px 0;
+      border-top: 1px solid rgba(36, 23, 13, .22);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    aside nav a:hover { color: var(--red); padding-left: 8px; }
+    main { max-width: 1260px; padding: 42px clamp(18px, 5vw, 66px) 88px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(30px, 6vw, 68px);
+      border: 2px solid var(--line);
+      background: linear-gradient(135deg, var(--paper-2), #efdcb8);
+      box-shadow: var(--shadow);
+      margin-bottom: 38px;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -74px;
+      top: -74px;
+      width: 230px;
+      height: 230px;
+      border: 34px solid rgba(187, 51, 40, .17);
+      border-radius: 50%;
+    }
+    .kicker {
+      color: var(--red);
+      font: 800 12px/1 "Courier New", monospace;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 18px 0 22px;
+      max-width: 980px;
+      font-family: "Bodoni 72", "Didot", "Songti SC", serif;
+      font-size: clamp(44px, 8vw, 94px);
+      line-height: .9;
+      letter-spacing: -.055em;
+    }
+    .hero p { max-width: 920px; font-size: clamp(18px, 2vw, 24px); }
+    .stamp-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .stamp {
+      display: inline-flex;
+      padding: 7px 12px;
+      border: 1.6px solid var(--line);
+      background: #fff4d8;
+      box-shadow: 3px 3px 0 var(--line);
+      font: 800 12px/1.2 "Courier New", monospace;
+      text-transform: uppercase;
+    }
+    section {
+      margin: 34px 0;
+      padding: clamp(22px, 3vw, 36px);
+      border: 2px solid var(--line);
+      background: rgba(255, 250, 240, .86);
+      box-shadow: 0 18px 70px rgba(25, 18, 10, .14);
+    }
+    .title {
+      display: flex;
+      gap: 16px;
+      align-items: flex-end;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--line);
+    }
+    .num {
+      font-family: "Bodoni 72", "Didot", serif;
+      font-size: 48px;
+      line-height: .8;
+      color: var(--red);
+    }
+    h2 {
+      margin: 0;
+      font-family: "Bodoni 72", "Didot", "Songti SC", serif;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1;
+      letter-spacing: -.035em;
+    }
+    h3 {
+      margin: 0 0 10px;
+      font-family: "Bodoni 72", "Didot", "Songti SC", serif;
+      font-size: 24px;
+      line-height: 1.12;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .card {
+      position: relative;
+      padding: 20px;
+      border: 1.8px solid var(--line);
+      background: #fff8e8;
+      box-shadow: 6px 6px 0 rgba(36, 23, 13, .92);
+    }
+    .card p { color: var(--muted); margin: 8px 0; }
+    .callout {
+      border-left: 10px solid var(--red);
+      background: #f8e9c8;
+      padding: 18px 20px;
+      font-size: 18px;
+    }
+    .toc-row {
+      display: grid;
+      grid-template-columns: 86px 1fr 190px;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 0;
+      border-top: 1.6px solid var(--line);
+    }
+    .toc-row strong {
+      font-family: "Bodoni 72", "Didot", serif;
+      font-size: 31px;
+      color: var(--blue);
+    }
+    .buttons { display: grid; gap: 10px; }
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 14px;
+      border: 2px solid var(--line);
+      background: var(--ink);
+      color: var(--paper-2);
+      text-decoration: none;
+      box-shadow: 4px 4px 0 var(--red);
+      font: 800 12px/1.2 "Courier New", monospace;
+      text-transform: uppercase;
+    }
+    .button.alt {
+      background: #fff4d8;
+      color: var(--ink);
+      box-shadow: 4px 4px 0 var(--blue);
+    }
+    .button.gold {
+      background: var(--gold);
+      color: var(--ink);
+      box-shadow: 4px 4px 0 var(--green);
+    }
+    code {
+      padding: 2px 5px;
+      border: 1px solid rgba(36, 23, 13, .25);
+      background: #fff4d8;
+      font-family: "Courier New", monospace;
+    }
+    table { width: 100%; border-collapse: collapse; background: #fff8e8; }
+    th, td { border: 1.5px solid var(--line); padding: 12px; vertical-align: top; }
+    th { background: var(--ink); color: var(--paper-2); font: 800 12px "Courier New", monospace; text-transform: uppercase; }
+    .footer { margin-top: 36px; color: var(--muted); font: 12px "Courier New", monospace; }
+    @media (max-width: 940px) {
+      .layout { display: block; }
+      aside { position: relative; height: auto; }
+      .grid, .toc-row { grid-template-columns: 1fr; }
+      .hero { box-shadow: 8px 8px 0 var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="mark">AI</div>
+      <h2>Unified Notes</h2>
+      <nav>
+        <a href="#mission">为什么重写</a>
+        <a href="#method">复习方法</a>
+        <a href="#lectures">每讲页面</a>
+        <a href="#exam">考试题型锚点</a>
+      </nav>
+      <p class="footer">GitHub Pages · high-density course atlas</p>
+    </aside>
+    <main>
+      <header class="hero" id="mission">
+        <div class="kicker">Introduction to Artificial Intelligence</div>
+        <h1>人工智能导论<br>逐讲深度笔记地图</h1>
+        <p>这不是“把 PPT 复述一遍”的目录页。新版 GitHub Pages 以考试题型、数学表达、工程实现和模型局限为主线，把每讲串成可复习、可推导、可汇报的课程地图。</p>
+        <div class="stamp-row">
+          <span class="stamp">PDF grounded</span>
+          <span class="stamp">exam drills</span>
+          <span class="stamp">tensor shapes</span>
+          <span class="stamp">model trade-offs</span>
+          <span class="stamp">no transcript dumping</span>
+        </div>
+      </header>
+
+      <section id="method">
+        <div class="title"><span class="num">01</span><h2>统一复习框架</h2></div>
+        <div class="grid">
+          <div class="card"><h3>先定义任务</h3><p>每讲先回答输入是什么、输出是什么、性能指标是什么；避免把算法名当成知识点。</p></div>
+          <div class="card"><h3>再写数学对象</h3><p>状态空间、三元组、损失函数、梯度、卷积核、Q/K/V、Bellman 方程都必须能落到符号。</p></div>
+          <div class="card"><h3>最后讲局限</h3><p>专业笔记要说明何时失效：启发函数高估、Accuracy 被类别不平衡欺骗、CNN 不天然全局建模、Transformer 计算量随序列平方增长。</p></div>
+        </div>
+        <p class="callout">判断笔记是否“有价值”的标准：能不能让你从一道题反推出概念、从一个公式解释模型行为、从一个错误答案定位错在维度/假设/指标。</p>
+      </section>
+
+      <section id="lectures">
+        <div class="title"><span class="num">03</span><h2>每讲 HTML 与 README</h2></div>
+        <div class="toc-row"><strong>01</strong><div><h3>绪论：AI 课程地图</h3><p>任务、数据、模型、评价与发展脉络；理解 AI 不是单一模型，而是一套问题形式化方法。</p></div><div class="buttons"><a class="button" href="lec1/lec1_notes.html">HTML</a><a class="button alt" href="lec1/README.md">README</a></div></div>
+        <div class="toc-row"><strong>02</strong><div><h3>逻辑与知识表示</h3><p>命题逻辑、谓词逻辑、知识图谱、FOIL、PRA 与概率图：把现实世界转成可推理结构。</p></div><div class="buttons"><a class="button" href="lec2/lec2_notes.html">HTML</a><a class="button alt" href="lec2/README.md">README</a></div></div>
+        <div class="toc-row"><strong>03</strong><div><h3>搜索求解</h3><p>状态、动作、目标测试、路径代价；比较 BFS、DFS、UCS、Greedy、A* 的完备性、最优性和复杂度。</p></div><div class="buttons"><a class="button" href="lec3/lec3_notes.html">HTML</a><a class="button alt" href="lec3/README.md">README</a></div></div>
+        <div class="toc-row"><strong>04</strong><div><h3>线性模型</h3><p>机器学习三要素、线性回归、Logistic 回归、交叉熵与梯度下降，是后续神经网络的底层语言。</p></div><div class="buttons"><a class="button" href="lec4/lec4_notes.html">HTML</a><a class="button alt" href="lec4/README.md">README</a></div></div>
+        <div class="toc-row"><strong>05</strong><div><h3>SVM 与模型选择评估</h3><p>最大间隔、Hinge 损失、软间隔、核技巧、交叉验证、混淆矩阵与不平衡数据评价。</p></div><div class="buttons"><a class="button" href="lec5/lec5_notes.html">HTML</a><a class="button alt" href="lec5/README.md">README</a></div></div>
+        <div class="toc-row"><strong>06</strong><div><h3>无监督学习</h3><p>K-Means、PCA、GMM、EM：从无标签数据中发现聚类结构、低维表示和概率分布。</p></div><div class="buttons"><a class="button" href="lec6/lec6_notes.html">HTML</a><a class="button alt" href="lec6/README.md">README</a></div></div>
+        <div class="toc-row"><strong>07</strong><div><h3>神经网络基础</h3><p>MLP、激活函数、反向传播、正则化与优化；重点是计算图、链式法则和梯度流。</p></div><div class="buttons"><a class="button" href="lec7/lec7_notes.html">HTML</a><a class="button alt" href="lec7/README.md">README</a></div></div>
+        <div class="toc-row"><strong>08</strong><div><h3>卷积神经网络</h3><p>局部连接、参数共享、padding/stride/pooling、感受野、参数量、FLOPs 与经典 CNN。</p></div><div class="buttons"><a class="button" href="lec8/lec8_notes.html">HTML</a><a class="button alt" href="lec8/README.md">README</a></div></div>
+        <div class="toc-row"><strong>09</strong><div><h3>PyTorch 实践</h3><p>Tensor、Autograd、nn.Module、DataLoader、训练循环；把理论模型落成可运行实验。</p></div><div class="buttons"><a class="button" href="lec9/lec9_notes.html">HTML</a><a class="button alt" href="lec9/README.md">README</a></div></div>
+        <div class="toc-row"><strong>10</strong><div><h3>序列建模与注意力</h3><p>RNN/LSTM/GRU、注意力机制、长程依赖与并行化动机，为 Transformer 做铺垫。</p></div><div class="buttons"><a class="button" href="lec10/lec10_notes.html">HTML</a><a class="button alt" href="lec10/README.md">README</a></div></div>
+        <div class="toc-row"><strong>11</strong><div><h3>Transformer 与大模型基础</h3><p>Q/K/V、缩放点积注意力、多头机制、位置编码、mask、encoder/decoder 与 LLM 家族。</p></div><div class="buttons"><a class="button" href="lec11/lec11_notes.html">HTML</a><a class="button alt" href="lec11/README.md">README</a></div></div>
+        <div class="toc-row"><strong>12</strong><div><h3>CV 与 NLP：检测、分割、生成</h3><p>R-CNN 系列、YOLO、IoU/mAP、语义/实例分割、视频分割、扩散模型与 NLP 基础。</p></div><div class="buttons"><a class="button" href="lec12/lec12_notes.html">HTML</a><a class="button alt" href="lec12/README.md">README</a></div></div>
+        <div class="toc-row"><strong>13</strong><div><h3>强化学习与前沿模型</h3><p>MDP、Bellman、Q-learning、策略梯度，以及从智能体角度理解序列决策。</p></div><div class="buttons"><a class="button" href="lec13/lec13_notes.html">HTML</a><a class="button alt" href="lec13/README.md">README</a></div></div>
+      </section>
+
+      <section id="exam">
+        <div class="title"><span class="num">04</span><h2>已加入的考试题型锚点</h2></div>
+        <table>
+          <thead><tr><th>题型</th><th>位置</th><th>核心判断</th></tr></thead>
+          <tbody>
+            <tr><td>Hinge 损失表</td><td><code>lec5/README.md</code>、<code>lec5/keypoints.md</code></td><td>先算 <code>z=yf(x)</code>，再用 <code>max(0,1-z)</code>；分对但 margin 不足仍有损失。</td></tr>
+            <tr><td>Transformer 张量尺寸</td><td><code>lec11/README.md</code></td><td>每头维度 <code>d_model/h</code>；注意力权重是 <code>B×n×n</code>，每头输出是 <code>B×n×d_v</code>。</td></tr>
+            <tr><td>CNN 输出尺寸</td><td><code>lec8/README.md</code></td><td><code>⌊(H+2P-K)/S⌋+1</code>；参数量和 FLOPs 不是同一个概念。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <p class="footer">Course notes rebuilt as a GitHub Pages study atlas: detailed, examinable, and grounded in the provided PDFs.</p>
+    </main>
+  </div>
+</body>
+</html>

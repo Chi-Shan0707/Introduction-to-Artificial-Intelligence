@@ -89,4 +89,9 @@
 - 例如最短路径、背包问题、序列问题都常依赖这种“当前状态决定未来”的性质
 ## 启发式搜索
 **启发式搜索**（Heuristic Search）是在搜索过程中利用问题特有的领域知识来加速解的搜索，通过**启发函数** $h(n)$ 估计从当前节点到目标的"距离"或"代价"。核心思想是：**不再全盲地搜索，而是有方向地指向目标**。
-### 评估函数与启发函数的基础</pre></div></section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
+### 评估函数与启发函数的基础</pre></div></section><section id="deep-expansion"><div class="section-title"><span class="num">★</span><h2>搜索求解深度补充：算法性质来自状态空间定义</h2></div>
+<p>搜索题的第一步永远不是直接写 BFS、DFS 或 A*，而是定义状态、动作、状态转移、初始状态、目标测试和路径代价。罗马尼亚旅游例子中，城市是状态，道路是动作/边，距离是代价，Bucharest 是目标。若这些对象没有定义清楚，完备性、最优性和复杂度都无从谈起。</p>
+<table><tr><th>算法</th><th>展开策略</th><th>适合场景</th><th>关键性质</th></tr><tr><td>BFS</td><td>按深度层层展开</td><td>边权相同且解较浅</td><td>完备；单位代价下最优；空间开销大</td></tr><tr><td>DFS</td><td>沿单一路径深入</td><td>内存紧张或只需找到任意解</td><td>不保证最优，可能陷入深分支</td></tr><tr><td>UCS</td><td>按累计代价 g(n) 最小</td><td>边权不同的最短路</td><td>非负代价下最优</td></tr><tr><td>Greedy</td><td>按启发 h(n) 最小</td><td>追求速度，不强求最优</td><td>可能被局部估计误导</td></tr><tr><td>A*</td><td>按 f(n)=g(n)+h(n) 最小</td><td>有可靠启发的最短路</td><td>h 可采纳且一致时最优</td></tr></table>
+<div class="formula">A*: f(n)=g(n)+h(n); 可采纳启发: 0 ≤ h(n) ≤ h*(n)</div>
+<p><strong>有价值的思考：</strong>启发函数不是越大越好。高估会让搜索更贪心、更快，但可能破坏最优性；低估更安全，但搜索会接近 UCS。专业答案必须同时说清速度、内存和最优性的 trade-off。</p>
+</section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>

@@ -15,6 +15,8 @@
 
 ## 课程目录
 
+> GitHub Pages 首页已改为逐讲深度笔记地图；深度内容直接写入每一讲 `lec*_notes.html`，而不是单独集中到统一页面。
+
 | 周次 | README | HTML 笔记 | 关键词 |
 |---|---|---|---|
 | 第 1 讲 | [绪论：人工智能是什么](lec1/README.md) | [HTML notes](lec1/lec1_notes.html) | AI定义, 课程考核, 发展阶段, CV研究案例 |

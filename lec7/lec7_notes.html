@@ -81,4 +81,9 @@ def backward(self, upstream_grad):
 # 上游梯度与局部梯度相乘
 return upstream_grad * self.y, upstream_grad * self.x
 def backward(self, upstream_grad):
-return </pre></div></section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
+return </pre></div></section><section id="deep-expansion"><div class="section-title"><span class="num">★</span><h2>神经网络深度补充：表达力来自非线性，训练依赖梯度流</h2></div>
+<p>多层线性网络如果没有激活函数，本质仍等价于一个线性层。因此神经网络表达复杂决策边界的关键，是“线性变换 + 非线性激活”的反复组合。反向传播不是新的模型或损失，而是用链式法则高效计算所有参数梯度的方法。</p>
+<div class="formula">h = σ(W₁x+b₁), y = W₂h+b₂<br>∂L/∂x = ∂L/∂y · ∂y/∂x</div>
+<table><tr><th>现象</th><th>可能原因</th><th>处理思路</th></tr><tr><td>训练集和验证集都差</td><td>欠拟合或优化未收敛</td><td>增大模型、训练更久、调学习率</td></tr><tr><td>训练好验证差</td><td>过拟合</td><td>正则化、数据增强、早停</td></tr><tr><td>梯度接近 0</td><td>梯度消失或激活饱和</td><td>ReLU、残差、归一化、合理初始化</td></tr><tr><td>loss 震荡或 NaN</td><td>学习率过大或梯度爆炸</td><td>降低学习率、梯度裁剪、检查数据</td></tr></table>
+<p><strong>工程锚点：</strong>PyTorch 训练循环是 <code>zero_grad → forward → loss → backward → step</code>。忘记 <code>optimizer.zero_grad()</code> 会让梯度跨 batch 累积，训练行为会偏离预期。</p>
+</section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>

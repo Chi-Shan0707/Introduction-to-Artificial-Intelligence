@@ -96,4 +96,9 @@ $$IG(Y, A) = H(Y) - H(Y\mid A)$$
 ## 数字逻辑
 数字逻辑关心的是：**如何把布尔代数用电子电路实现出来**，让计算机真正“执行”逻辑。
 ### 逻辑门与二进制
-- 用</pre></div></section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
+- 用</pre></div></section><section id="deep-expansion"><div class="section-title"><span class="num">★</span><h2>逻辑与知识表示深度补充：从事实到可推理结构</h2></div>
+<p>符号主义 AI 的目标不是“存很多事实”，而是把事实组织成可组合、可查询、可推出新结论的结构。命题逻辑处理整体真假，谓词逻辑引入对象、谓词和量词，知识图谱把现实关系写成三元组，概率图则在确定规则之外显式处理不确定性。</p>
+<div class="formula">(head entity, relation, tail entity), 例如 (Socrates, isA, Human)</div>
+<table><tr><th>表示方法</th><th>核心对象</th><th>优势</th><th>局限</th></tr><tr><td>命题逻辑</td><td>真假命题</td><td>规则清晰，推理可验证</td><td>难表达对象内部结构与量词</td></tr><tr><td>谓词逻辑</td><td>个体、谓词、量词</td><td>能表达“所有/存在”和对象关系</td><td>自动推理成本高，知识工程困难</td></tr><tr><td>知识图谱</td><td>实体、关系、路径</td><td>适合问答、补全、关系推断</td><td>知识不完整、关系冲突会影响推理</td></tr><tr><td>概率图</td><td>随机变量依赖</td><td>能处理噪声和不确定证据</td><td>精确推断常常计算困难</td></tr></table>
+<p><strong>考试锚点：</strong>FOIL 偏归纳规则学习，从正负例中学习 Horn 子句；PRA 偏路径排序，把图上的关系路径作为特征来预测缺失关系。知识图谱不是普通数据库表，关键在“路径能否成为推理证据”。</p>
+</section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>

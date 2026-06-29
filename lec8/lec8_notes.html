@@ -101,4 +101,9 @@ print(f"CLIP Score: {clip_score:.4f}")
 - **图像编辑**：评估编辑后图像与目标描述的对齐程度
 ### 与其他图像质量指标的对比
 | 指标 | 评估维度 | 是否需要参考图 | 依赖预训练模型 |
-|---</pre></div></section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
+|---</pre></div></section><section id="deep-expansion"><div class="section-title"><span class="num">★</span><h2>CNN 深度补充：维度、参数量、FLOPs 与感受野</h2></div>
+<p>图像不是普通向量，而是带有空间局部性、通道结构和平移规律的张量。CNN 的三个核心归纳偏置是局部连接、参数共享和平移等变性。它们让模型在图像任务上比全连接网络更高效、更稳定。</p>
+<div class="formula">H_out = floor((H+2P-K)/S)+1<br>Params = C_out × (C_in×K_h×K_w + bias)</div>
+<p>例：<code>Conv2d(3,64,3,padding=1)</code> 处理 <code>224×224</code> 彩色图，输出空间尺寸仍为 <code>224×224</code>，输出通道为 64，参数量为 <code>64×(3×3×3+1)=1792</code>。FLOPs 还要乘以所有输出空间位置，因此参数少不一定计算少。</p>
+<table><tr><th>概念</th><th>专业解释</th><th>常见误区</th></tr><tr><td>NCHW</td><td>PyTorch 图像输入维度</td><td>把 channel 和 height 写反</td></tr><tr><td>Padding</td><td>控制边界信息和输出尺寸</td><td>以为只是“补零美化”</td></tr><tr><td>Stride</td><td>控制滑动步长和下采样</td><td>过大导致空间信息过早丢失</td></tr><tr><td>1×1 卷积</td><td>跨通道线性组合</td><td>误以为空间核小就没有表达力</td></tr></table>
+</section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>

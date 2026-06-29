@@ -99,4 +99,8 @@ y_i = w^T \tilde{x}_i, \quad \|w\|=1
 S = \frac{1}{n} X_c^T X_c
 这就是一个标准的 Rayleigh quotient 最大化问题。
 #### 4.2.1 拉格朗日乘子法
-\mathcal{L}(w, \lambda) =</pre></div></section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
+\mathcal{L}(w, \lambda) =</pre></div></section><section id="deep-expansion"><div class="section-title"><span class="num">★</span><h2>无监督学习深度补充：没有标签时学习结构</h2></div>
+<p>无监督学习不是没有目标，而是目标不由人工标签直接给出。K-Means 假设样本可由若干中心代表，PCA 假设主要信息集中在高方差方向，GMM 假设数据由多个高斯分布混合生成，EM 在隐变量未知时交替估计分配和参数。</p>
+<table><tr><th>方法</th><th>优化对象</th><th>输出</th><th>局限</th></tr><tr><td>K-Means</td><td>类内平方距离</td><td>簇中心与簇标签</td><td>偏好球形簇，需指定 K</td></tr><tr><td>PCA</td><td>最大方差/最小重构误差</td><td>低维主成分</td><td>只能捕捉线性结构</td></tr><tr><td>GMM</td><td>数据似然</td><td>软聚类概率</td><td>对初始化敏感，可能局部最优</td></tr><tr><td>EM</td><td>含隐变量似然下界</td><td>E 步后验、M 步参数</td><td>不是全局最优保证</td></tr></table>
+<p><strong>深层联系：</strong>K-Means 可看作一种硬分配聚类；GMM 是软分配概率模型；EM 是处理隐变量优化的通用思想。PCA 则不是聚类器，而是表示压缩方法。降维不一定提升分类准确率，因为低方差方向也可能有高判别信息。</p>
+</section><section id="audit"><div class="section-title"><span class="num">11</span><h2>本讲自查清单</h2></div><div class="grid cards-3"><div class="card"><h3>流程图</h3><p>能否不看笔记画出本讲流程？</p></div><div class="card"><h3>公式</h3><p>能否说明每个变量含义和约束条件？</p></div><div class="card"><h3>难点</h3><p>能否指出至少两个常见误区？</p></div></div></section><p class="footer">Expanded with PDF/Markdown material, external course knowledge, flow diagrams, derivations, and frontend-design visual direction.</p></main></div></body></html>
