@@ -1,0 +1,86 @@
+{
+  "all_dims_p0.0": {
+    "tag": "all_dims",
+    "perturb": 0.0,
+    "mean": 320.09,
+    "median": 203.0,
+    "ratio_2000": 0.0
+  },
+  "all_dims_p0.05": {
+    "tag": "all_dims",
+    "perturb": 0.05,
+    "mean": 241.95,
+    "median": 143.5,
+    "ratio_2000": 0.0
+  },
+  "no_adapt_p0.0": {
+    "tag": "no_adapt",
+    "perturb": 0.0,
+    "mean": 301.05,
+    "median": 285.5,
+    "ratio_2000": 0.0
+  },
+  "no_adapt_p0.05": {
+    "tag": "no_adapt",
+    "perturb": 0.05,
+    "mean": 266.22,
+    "median": 264.5,
+    "ratio_2000": 0.0
+  },
+  "dim0_pos_p0.0": {
+    "tag": "dim0_pos",
+    "perturb": 0.0,
+    "mean": 386.22,
+    "median": 260.5,
+    "ratio_2000": 0.01
+  },
+  "dim0_pos_p0.05": {
+    "tag": "dim0_pos",
+    "perturb": 0.05,
+    "mean": 272.56,
+    "median": 236.0,
+    "ratio_2000": 0.0
+  },
+  "dim1_vel_p0.0": {
+    "tag": "dim1_vel",
+    "perturb": 0.0,
+    "mean": 1096.23,
+    "median": 780.5,
+    "ratio_2000": 0.29
+  },
+  "dim1_vel_p0.05": {
+    "tag": "dim1_vel",
+    "perturb": 0.05,
+    "mean": 938.67,
+    "median": 745.0,
+    "ratio_2000": 0.2
+  },
+  "dim2_angle_p0.0": {
+    "tag": "dim2_angle",
+    "perturb": 0.0,
+    "mean": 228.14,
+    "median": 215.0,
+    "ratio_2000": 0.0
+  },
+  "dim2_angle_p0.05": {
+    "tag": "dim2_angle",
+    "perturb": 0.05,
+    "mean": 180.96,
+    "median": 162.5,
+    "ratio_2000": 0.0
+  },
+  "dim3_angvel_p0.0": {
+    "tag": "dim3_angvel",
+    "perturb": 0.0,
+    "mean": 1232.45,
+    "median": 1206.5,
+    "ratio_2000": 0.36
+  },
+  "dim3_angvel_p0.05": {
+    "tag": "dim3_angvel",
+    "perturb": 0.05,
+    "mean": 1292.48,
+    "median": 1640.5,
+    "ratio_2000": 0.48
+  }
+}

@@ -1,0 +1,59 @@
+PJ12 / cartpole_course_project 说明
+
+1. vis_mcts.py 做了一处导入修正
+
+原来这里导入的是 train_mcts_backup：
+  from train_mcts_backup import Agent as MCTSAgent
+
+现在改成了：
+  from train_mcts import Agent as MCTSAgent
+
+原因：这次真正提交和使用的 MCTS 实现在 train_mcts.py 里。train_mcts_backup 不属于当前提交内容，如果继续用原导入，视频脚本可能无法运行，或者运行的不是本次实现。
+
+（README还有一处小错误，CartPole-v1的角度阈值应该是0.2左右）
+
+2. Bonus 1 里 MCTS 的 JSON 需要单独处理
+
+Bonus 1 的目标是比较 Q-learning、REINFORCE、MCTS 三种算法在四档初始扰动下的表现，并生成对应 JSON、CSV 和图表。
+
+Q-learning 和 REINFORCE 有 checkpoint，可以直接用根目录 evaluate.py。MCTS 是在线规划算法，没有 checkpoint，所以不能完全走 evaluate.py 的加载流程。因此我在 Bonus_1 里单独放了一个 MCTS 评测入口：
+  Bonus_1/evaluate_mcts.py
+
+这个脚本只负责评测流程的适配，MCTS 算法本体仍然来自根目录 train_mcts.py。三种算法的四档扰动结果都保存在：
+  Bonus_1/results/
+
+例如 MCTS 的 baseline 结果是：
+  Bonus_1/results/mcts_eval_ps00.json
+
+3. Bonus 3 是在 Bonus 1 基础上继续做 Q-learning 鲁棒性
+
+Bonus 1 已经完成三种算法的扰动扫描。Bonus 3 在这个基础上选择 Q-learning 继续优化，因为 Q-learning 的离散化状态边界更容易受到扰动影响。
+
+Bonus 3 的主要代码在：
+  Bonus_3/train_qlearning_bonus3.py
+
+这个文件整体复用了基础版 train_qlearning.py 的 Q-learning 训练结构，包括离散化、TD 更新、epsilon-greedy 和 terminal reward shaping。额外加入了两个方向：
+
+- 训练端观测加噪 obsnoise_train
+  这个方向实际效果不好，保留下来主要作为负面对照。
+
+- 推理端置信门控邻域平滑 inference_smooth
+  这是主要有效的改进。它在 Q 值不够确信时参考角度/角速度邻域，减少离散化边界附近的动作跳变。
+
+后续敏感性测试显示，单独平滑 pole_angular_velocity 维度比原先的 angle_angular 组合更稳定。因此当前主方案默认参数写在 train_qlearning_bonus3.py 中：smooth_dims="angular_only"、smooth_radius=1、smooth_alpha=0.9、confidence_tau=0.8。visualize_bonus3.py 会读取这组默认参数；如果需要复现旧方案，也可以用 --smooth-dims angle_angular 指定。
+
+如果只看初始状态扰动，其实只提交 train_qlearning_bonus3.py 就可以让老师用已有 evaluate.py 调用 Agent 完成测试，例如通过 agent-init-kwargs 指定 smooth_mode="confidence"。
+
+不过我的 Bonus 3 还额外做了“每一步观测加噪”的测试。老师原始 evaluate.py 通常只支持 reset 后初始扰动，不能覆盖这个场景，所以我另外保留了：
+  Bonus_3/evaluate_obs_perturb.py
+  Bonus_3/visualize_bonus3.py
+
+另外，为了说明 inference_smooth 不是只靠单组参数偶然有效，我加了一个邻域平滑超参数敏感性测试：
+  Bonus_3/sensitivity_smooth_bonus3.py
+
+它默认在高扰动 0.05 下做两类分析：一类先固定强度后分别比较四个单维度平滑选择（位置、速度、角度、角速度），另一类在选定的 angular_only 上扫描 smooth_alpha / confidence_tau / smooth_radius 这三个平滑强度参数。输出 CSV/JSON/SVG 到：
+  Bonus_3/results/sensitivity_smooth/
+
+4. 报告部分可以后续统一写
+
+现在代码、JSON、CSV 和图都已经基本齐了。报告里主要把基础三算法结果、Bonus 1 对比、Bonus 3 改进逻辑、高扰动提升和超参数敏感性写清楚即可，可以很快写完。

@@ -1,0 +1,67 @@
+# PJ12 / cartpole_course_project 快捷命令（PowerShell）
+
+# 所有命令建议从 PJ12 根目录开始执行。
+cd .\cartpole_course_project
+
+
+# ============================================================
+# 1) 基础任务：训练与评测
+# ============================================================
+
+python .\train_qlearning.py
+python .\train_reinforce.py
+python .\train_mcts.py
+
+python .\evaluate.py --agent-class train_qlearning:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0}' --checkpoint .\checkpoints\q_learning_model.pkl
+python .\evaluate.py --agent-class train_reinforce:Agent --agent-init-kwargs '{\"n_state\":4,\"hidden_c\":16,\"n_action\":2}' --checkpoint .\checkpoints\reinforce_model.pt
+
+
+# ============================================================
+# 2) 基础任务：可视化
+# ============================================================
+
+python .\vis.py --agent-class train_qlearning:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0}' --checkpoint .\checkpoints\q_learning_model.pkl --seed 42 --output .\checkpoints\q_seed42.gif
+python .\vis.py --agent-class train_reinforce:Agent --agent-init-kwargs '{\"n_state\":4,\"hidden_c\":16,\"n_action\":2}' --checkpoint .\checkpoints\reinforce_model.pt --seed 42 --output .\checkpoints\reinforce_seed42.gif
+python .\vis_mcts.py --episodes 1 --iteration_budget 80 --video_basepath .\video
+
+
+# ============================================================
+# 3) Bonus 1：三算法对比复现
+# ============================================================
+
+# 输出 JSON 到 Bonus_1\results\evaluations
+python .\Bonus_1\scripts\run_bonus1_evals.py
+python .\Bonus_1\scripts\run_bonus1_evals.py --force
+
+# 输出图到 Bonus_1\results\figures，表到 Bonus_1\results\tables
+python .\Bonus_1\scripts\plot_bonus1.py
+python .\Bonus_1\scripts\sa_mapping_bonus1.py
+
+# 输出速度结果到 Bonus_1\results\speed
+python .\Bonus_1\scripts\measure_basic_speed.py
+
+# 单独复现 MCTS baseline
+python .\Bonus_1\evaluate_mcts.py --agent-class train_mcts:Agent --seed-base 42 --seed-count 100 --max-episode-steps 2000 --iteration-budget 80 --lookahead-target 200 --start-cp 200 --perturb-scale 0.0 --progress-every 10 --report-json .\Bonus_1\results\evaluations\mcts_eval_ps00.json
+
+
+# ============================================================
+# 4) Bonus 3：Q-learning 鲁棒性复现
+# ============================================================
+
+# 主代码在 Bonus_3\train_qlearning_bonus3.py；其余辅助脚本在 Bonus_3\scripts。
+
+# 训练观测加噪版 Q-learning；模型输出到 results\models，曲线输出到 results\figures
+python .\Bonus_3\train_qlearning_bonus3.py --train-obs-noise-std 0.005 --output-prefix q_bonus3_obsnoise
+
+# 四档初始扰动 + 四档观测噪声评测
+python .\Bonus_3\scripts\visualize_bonus3.py
+python .\Bonus_3\scripts\visualize_bonus3.py --force
+
+# 平滑维度与强度敏感性实验
+python .\Bonus_3\scripts\sensitivity_smooth_bonus3.py
+
+# 失败终止状态诊断
+python .\Bonus_3\scripts\diagnose_failure_states.py
+
+# 只用老师 evaluate.py 复现最终主方法在高初始扰动下的结果
+python .\evaluate.py --agent-class Bonus_3.train_qlearning_bonus3:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0,\"smooth_mode\":\"confidence\",\"smooth_alpha\":0.9,\"smooth_radius\":1,\"smooth_dims\":\"angular_only\",\"confidence_tau\":0.8}' --checkpoint .\checkpoints\q_learning_model.pkl --seed-base 42 --seed-count 100 --max-episode-steps 2000 --perturb-scale 0.05

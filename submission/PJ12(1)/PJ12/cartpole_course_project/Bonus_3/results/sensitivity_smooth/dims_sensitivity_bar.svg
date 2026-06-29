@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="430" viewBox="0 0 820 430">
+<rect width="820" height="430" fill="#fff"/>
+<text x="36" y="42" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#222">Smoothing Dimension Sensitivity</text>
+<text x="36" y="70" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#555">Mean steps at alpha=0.9, tau=0.8, radius=1, perturb_scale=0.05. Higher is better.</text>
+<text x="176" y="116" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333">pos_only</text>
+<rect x="190" y="92" width="502.5" height="36" fill="#61dDAa"/>
+<text x="702.5" y="116" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#222">1316.5</text>
+<text x="176" y="176" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333">velocity_only</text>
+<rect x="190" y="152" width="179.8" height="36" fill="#61dDAa"/>
+<text x="379.8" y="176" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#222">471.1</text>
+<text x="176" y="236" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333">angle_only</text>
+<rect x="190" y="212" width="165.9" height="36" fill="#61dDAa"/>
+<text x="365.9" y="236" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#222">434.7</text>
+<text x="176" y="296" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333">angular_only</text>
+<rect x="190" y="272" width="540.0" height="36" fill="#61dDAa"/>
+<text x="740.0" y="296" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#222">1414.8</text>
+</svg>

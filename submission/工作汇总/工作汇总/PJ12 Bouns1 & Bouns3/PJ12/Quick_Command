@@ -1,0 +1,138 @@
+# PJ12 / cartpole_course_project 快捷命令（PowerShell）
+
+# 说明：
+# - 所有命令建议从 PJ12 根目录开始执行。
+# - 文件结构和提交取舍见 ISSUE_NOTE.txt；Bonus_1 / Bonus_3 命令统一放在这里。
+
+# 0) 进入项目目录
+cd .\cartpole_course_project
+
+
+# ============================================================
+# 1) 基础任务：训练
+# ============================================================
+
+python .\train_qlearning.py
+python .\train_reinforce.py
+python .\train_mcts.py
+
+
+# ============================================================
+# 2) 基础任务：官方口径 100-seed 评测
+#    Q-learning / REINFORCE 使用 evaluate.py。
+#    MCTS 的 100-seed 统计见第 5 节。
+# ============================================================
+
+# Q-learning
+python .\evaluate.py --agent-class train_qlearning:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0}' --checkpoint .\checkpoints\q_learning_model.pkl
+
+# REINFORCE
+python .\evaluate.py --agent-class train_reinforce:Agent --agent-init-kwargs '{\"n_state\":4,\"hidden_c\":16,\"n_action\":2}' --checkpoint .\checkpoints\reinforce_model.pt
+
+# Q-learning：保存 JSON
+python .\evaluate.py --agent-class train_qlearning:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0}' --checkpoint .\checkpoints\q_learning_model.pkl --report-json .\checkpoints\q_eval_report.json
+
+# REINFORCE：保存 JSON
+python .\evaluate.py --agent-class train_reinforce:Agent --agent-init-kwargs '{\"n_state\":4,\"hidden_c\":16,\"n_action\":2}' --checkpoint .\checkpoints\reinforce_model.pt --report-json .\checkpoints\reinforce_eval_report.json
+
+
+# ============================================================
+# 3) 基础任务：可视化
+# ============================================================
+
+# Q-learning 单 seed GIF
+python .\vis.py --agent-class train_qlearning:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0}' --checkpoint .\checkpoints\q_learning_model.pkl --seed 42 --output .\checkpoints\q_seed42.gif
+
+# REINFORCE 单 seed GIF
+python .\vis.py --agent-class train_reinforce:Agent --agent-init-kwargs '{\"n_state\":4,\"hidden_c\":16,\"n_action\":2}' --checkpoint .\checkpoints\reinforce_model.pt --seed 42 --output .\checkpoints\reinforce_seed42.gif
+
+# MCTS 视频，输出到 .\video
+python .\vis_mcts.py --episodes 1 --iteration_budget 80 --video_basepath .\video
+
+
+# ============================================================
+# 4) 快速调试命令
+# ============================================================
+
+# Q-learning 10 seeds
+python .\evaluate.py --agent-class train_qlearning:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0}' --checkpoint .\checkpoints\q_learning_model.pkl --seed-count 10
+
+# REINFORCE 10 seeds
+python .\evaluate.py --agent-class train_reinforce:Agent --agent-init-kwargs '{\"n_state\":4,\"hidden_c\":16,\"n_action\":2}' --checkpoint .\checkpoints\reinforce_model.pt --seed-count 10
+
+
+# ============================================================
+# 5) Bonus 1：三算法对比分析
+#    四档初始状态扰动：0 / 0.01 / 0.02 / 0.05。
+#    Q-learning / REINFORCE 复用 evaluate.py；MCTS 使用 Bonus_1\evaluate_mcts.py。
+# ============================================================
+
+# 批量评测；默认跳过已存在 JSON
+python .\Bonus_1\scripts\run_bonus1_evals.py
+
+# 强制重新评测并覆盖已有 JSON；MCTS 四档会比较慢
+python .\Bonus_1\scripts\run_bonus1_evals.py --force
+
+# 从已有 JSON 生成箱线图、直方图、扰动曲线和定量表
+python .\Bonus_1\scripts\plot_bonus1.py
+
+# 生成状态-动作映射图
+python .\Bonus_1\scripts\sa_mapping_bonus1.py
+
+# 单独测速：basic 三个算法，无扰动、100 seeds，输出到 Bonus_1\results\basic_speed
+python .\Bonus_1\scripts\measure_basic_speed.py
+
+# 只跑 MCTS baseline 100-seed 评测
+python .\Bonus_1\evaluate_mcts.py --agent-class train_mcts:Agent --seed-base 42 --seed-count 100 --max-episode-steps 2000 --iteration-budget 80 --lookahead-target 200 --start-cp 200 --perturb-scale 0.0 --progress-every 10 --report-json .\Bonus_1\results\mcts_eval_ps00.json
+
+
+# ============================================================
+# 6) Bonus 3：Q-learning 鲁棒性研究
+#    三算法基线扰动扫描引用 Bonus 1 结果。
+#    本部分聚焦 Q-learning：baseline / inference_smooth / obsnoise_train。
+# ============================================================
+
+# 训练观测加噪版 Q-learning
+python .\Bonus_3\train_qlearning_bonus3.py --train-obs-noise-std 0.005 --output-prefix q_bonus3_obsnoise
+
+# 四档评测与汇总作图；默认主方案参数来自 train_qlearning_bonus3.py
+# 输出包括 bonus3_robustness_4scales.png 和 bonus3_boxplot_4scales.svg。
+python .\Bonus_3\visualize_bonus3.py
+
+# 强制重新评测；会按 angular_only 覆盖 Bonus_3\results 中对应 JSON/CSV/PNG/SVG
+python .\Bonus_3\visualize_bonus3.py --force
+
+# 如需复现旧的 angle_angular 主方案
+python .\Bonus_3\visualize_bonus3.py --smooth-dims angle_angular --force
+
+# 快速小样本调试
+python .\Bonus_3\visualize_bonus3.py --seed-count 20 --force
+
+# 邻域平滑超参数敏感性测试：默认同时做 strength 与 dims 两组分析
+python .\Bonus_3\sensitivity_smooth_bonus3.py
+
+# 只扫平滑强度：默认在 angular_only 上扫 alpha x tau x radius
+python .\Bonus_3\sensitivity_smooth_bonus3.py --mode strength
+
+# 只比较四个单维度平滑：pos_only / velocity_only / angle_only / angular_only
+python .\Bonus_3\sensitivity_smooth_bonus3.py --mode dims
+
+# 快速小样本敏感性测试
+python .\Bonus_3\sensitivity_smooth_bonus3.py --seed-count 20 --force
+
+# 只用老师 evaluate.py 跑 inference_smooth 的初始状态扰动 0.05
+# 注意：这只能测 reset 后初始扰动，不能测每一步观测噪声。
+python .\evaluate.py --agent-class Bonus_3.train_qlearning_bonus3:Agent --agent-init-kwargs '{\"n_state\":4,\"n_action\":2,\"lr\":0.04,\"gamma\":0.99,\"epsilon\":0.0,\"smooth_mode\":\"confidence\",\"smooth_alpha\":0.9,\"smooth_radius\":1,\"smooth_dims\":\"angular_only\",\"confidence_tau\":0.8}' --checkpoint .\checkpoints\q_learning_model.pkl --seed-base 42 --seed-count 100 --max-episode-steps 2000 --perturb-scale 0.05
+
+# 诊断失败终止状态：输出每个 seed 的 terminal state 和越界原因
+python .\Bonus_3\diagnose_failure_states.py
+
+
+# ============================================================
+# 7) 常见问题
+# ============================================================
+
+# checkpoint 不存在 -> 先运行第 1 节训练。
+# JSON 参数报错 -> 直接复制本文件命令，不要手改引号。
+# 找不到脚本 -> 确认当前目录是 cartpole_course_project。
+# matplotlib / numpy 报错 -> 见 ISSUE_NOTE.txt 第 7 节。

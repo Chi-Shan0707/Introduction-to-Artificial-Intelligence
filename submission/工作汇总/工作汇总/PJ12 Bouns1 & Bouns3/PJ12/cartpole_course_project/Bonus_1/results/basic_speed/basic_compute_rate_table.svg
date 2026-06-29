@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="348" viewBox="0 0 980 348">
+<rect width="980" height="348" fill="#ffffff"/>
+<text x="36" y="46" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#222222">Basic Evaluation Compute Speed</text>
+<text x="36" y="76" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#555555">100 seeds, max_episode_steps=2000, perturb_scale=0.0. Reports are written separately under Bonus_1/results/basic_speed.</text>
+<rect x="36" y="112" width="908" height="46" fill="#263238" rx="4"/>
+<text x="58" y="141" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Algorithm</text>
+<text x="245" y="141" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Elapsed sec</text>
+<text x="425" y="141" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Episodes/sec</text>
+<text x="625" y="141" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Report</text>
+<rect x="36" y="158" width="908" height="46" fill="#f7f9fb"/>
+<text x="58" y="187" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">Q-learning</text>
+<text x="245" y="187" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">9.52</text>
+<text x="425" y="187" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">10.501</text>
+<text x="625" y="187" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#555555">qlearning_basic_speed_eval.json</text>
+<rect x="36" y="204" width="908" height="46" fill="#ffffff"/>
+<text x="58" y="233" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">REINFORCE</text>
+<text x="245" y="233" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">9.95</text>
+<text x="425" y="233" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">10.048</text>
+<text x="625" y="233" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#555555">reinforce_basic_speed_eval.json</text>
+<rect x="36" y="250" width="908" height="46" fill="#f7f9fb"/>
+<text x="58" y="279" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">MCTS</text>
+<text x="245" y="279" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">844.65</text>
+<text x="425" y="279" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#222222">0.118</text>
+<text x="625" y="279" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#555555">mcts_basic_speed_eval.json</text>
+</svg>

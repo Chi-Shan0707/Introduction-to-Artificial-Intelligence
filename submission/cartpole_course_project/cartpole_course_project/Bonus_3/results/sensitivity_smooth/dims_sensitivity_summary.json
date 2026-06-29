@@ -1,0 +1,54 @@
+﻿[
+  {
+    "smooth_alpha": 0.9,
+    "confidence_tau": 0.8,
+    "smooth_radius": 1,
+    "smooth_dims": "pos_only",
+    "perturb_scale": 0.05,
+    "seed_count": 100,
+    "mean_steps": 1316.46,
+    "median_steps": 1480.0,
+    "std_steps": 689.5438843177424,
+    "reached_max_ratio": 0.42,
+    "source": "Bonus_3/results/failure_diagnostics/terminal_states.csv"
+  },
+  {
+    "smooth_alpha": 0.9,
+    "confidence_tau": 0.8,
+    "smooth_radius": 1,
+    "smooth_dims": "velocity_only",
+    "perturb_scale": 0.05,
+    "seed_count": 100,
+    "mean_steps": 471.07,
+    "median_steps": 293.0,
+    "std_steps": 460.14493923110797,
+    "reached_max_ratio": 0.06,
+    "source": "Bonus_3/results/failure_diagnostics/terminal_states.csv"
+  },
+  {
+    "smooth_alpha": 0.9,
+    "confidence_tau": 0.8,
+    "smooth_radius": 1,
+    "smooth_dims": "angle_only",
+    "perturb_scale": 0.05,
+    "seed_count": 100,
+    "mean_steps": 434.7,
+    "median_steps": 255.0,
+    "std_steps": 396.18519659371424,
+    "reached_max_ratio": 0.03,
+    "source": "Bonus_3/results/failure_diagnostics/terminal_states.csv"
+  },
+  {
+    "smooth_alpha": 0.9,
+    "confidence_tau": 0.8,
+    "smooth_radius": 1,
+    "smooth_dims": "angular_only",
+    "perturb_scale": 0.05,
+    "seed_count": 100,
+    "mean_steps": 1414.82,
+    "median_steps": 1743.0,
+    "std_steps": 656.6357343306865,
+    "reached_max_ratio": 0.44,
+    "source": "Bonus_3/results/failure_diagnostics/terminal_states.csv"
+  }
+]

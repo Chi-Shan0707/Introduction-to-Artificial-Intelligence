@@ -1,0 +1,640 @@
+{
+  "agent_class": "Bonus_3.train_qlearning_bonus3:Agent",
+  "init_kwargs": {
+    "n_state": 4,
+    "n_action": 2,
+    "lr": 0.04,
+    "gamma": 0.99,
+    "epsilon": 0.0,
+    "train_obs_noise_std": 0.0,
+    "smooth_mode": "confidence",
+    "smooth_alpha": 0.9,
+    "smooth_radius": 1,
+    "smooth_dims": "angular_only",
+    "confidence_tau": 0.4
+  },
+  "checkpoint": "C:\\Users\\yyccc\\Documents\\VScode\\PJ12\\cartpole_course_project\\checkpoints\\base\\q_learning_model.pkl",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141
+  ],
+  "per_episode": [
+    {
+      "seed": 42,
+      "steps": 1262,
+      "reward": 1262.0
+    },
+    {
+      "seed": 43,
+      "steps": 627,
+      "reward": 627.0
+    },
+    {
+      "seed": 44,
+      "steps": 467,
+      "reward": 467.0
+    },
+    {
+      "seed": 45,
+      "steps": 664,
+      "reward": 664.0
+    },
+    {
+      "seed": 46,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 47,
+      "steps": 1466,
+      "reward": 1466.0
+    },
+    {
+      "seed": 48,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 49,
+      "steps": 297,
+      "reward": 297.0
+    },
+    {
+      "seed": 50,
+      "steps": 1752,
+      "reward": 1752.0
+    },
+    {
+      "seed": 51,
+      "steps": 1408,
+      "reward": 1408.0
+    },
+    {
+      "seed": 52,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 53,
+      "steps": 980,
+      "reward": 980.0
+    },
+    {
+      "seed": 54,
+      "steps": 482,
+      "reward": 482.0
+    },
+    {
+      "seed": 55,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 56,
+      "steps": 181,
+      "reward": 181.0
+    },
+    {
+      "seed": 57,
+      "steps": 278,
+      "reward": 278.0
+    },
+    {
+      "seed": 58,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 59,
+      "steps": 243,
+      "reward": 243.0
+    },
+    {
+      "seed": 60,
+      "steps": 1838,
+      "reward": 1838.0
+    },
+    {
+      "seed": 61,
+      "steps": 526,
+      "reward": 526.0
+    },
+    {
+      "seed": 62,
+      "steps": 1311,
+      "reward": 1311.0
+    },
+    {
+      "seed": 63,
+      "steps": 581,
+      "reward": 581.0
+    },
+    {
+      "seed": 64,
+      "steps": 1250,
+      "reward": 1250.0
+    },
+    {
+      "seed": 65,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 66,
+      "steps": 1825,
+      "reward": 1825.0
+    },
+    {
+      "seed": 67,
+      "steps": 1242,
+      "reward": 1242.0
+    },
+    {
+      "seed": 68,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 69,
+      "steps": 1676,
+      "reward": 1676.0
+    },
+    {
+      "seed": 70,
+      "steps": 797,
+      "reward": 797.0
+    },
+    {
+      "seed": 71,
+      "steps": 1936,
+      "reward": 1936.0
+    },
+    {
+      "seed": 72,
+      "steps": 1141,
+      "reward": 1141.0
+    },
+    {
+      "seed": 73,
+      "steps": 373,
+      "reward": 373.0
+    },
+    {
+      "seed": 74,
+      "steps": 466,
+      "reward": 466.0
+    },
+    {
+      "seed": 75,
+      "steps": 730,
+      "reward": 730.0
+    },
+    {
+      "seed": 76,
+      "steps": 207,
+      "reward": 207.0
+    },
+    {
+      "seed": 77,
+      "steps": 686,
+      "reward": 686.0
+    },
+    {
+      "seed": 78,
+      "steps": 368,
+      "reward": 368.0
+    },
+    {
+      "seed": 79,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 80,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 81,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 82,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 83,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 84,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 85,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 86,
+      "steps": 1040,
+      "reward": 1040.0
+    },
+    {
+      "seed": 87,
+      "steps": 409,
+      "reward": 409.0
+    },
+    {
+      "seed": 88,
+      "steps": 490,
+      "reward": 490.0
+    },
+    {
+      "seed": 89,
+      "steps": 477,
+      "reward": 477.0
+    },
+    {
+      "seed": 90,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 91,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 92,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 93,
+      "steps": 811,
+      "reward": 811.0
+    },
+    {
+      "seed": 94,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 95,
+      "steps": 422,
+      "reward": 422.0
+    },
+    {
+      "seed": 96,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 97,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 98,
+      "steps": 1012,
+      "reward": 1012.0
+    },
+    {
+      "seed": 99,
+      "steps": 514,
+      "reward": 514.0
+    },
+    {
+      "seed": 100,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 101,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 102,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 103,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 104,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 105,
+      "steps": 1734,
+      "reward": 1734.0
+    },
+    {
+      "seed": 106,
+      "steps": 1190,
+      "reward": 1190.0
+    },
+    {
+      "seed": 107,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 108,
+      "steps": 527,
+      "reward": 527.0
+    },
+    {
+      "seed": 109,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 110,
+      "steps": 330,
+      "reward": 330.0
+    },
+    {
+      "seed": 111,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 112,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 113,
+      "steps": 680,
+      "reward": 680.0
+    },
+    {
+      "seed": 114,
+      "steps": 1026,
+      "reward": 1026.0
+    },
+    {
+      "seed": 115,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 116,
+      "steps": 309,
+      "reward": 309.0
+    },
+    {
+      "seed": 117,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 118,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 119,
+      "steps": 1499,
+      "reward": 1499.0
+    },
+    {
+      "seed": 120,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 121,
+      "steps": 1378,
+      "reward": 1378.0
+    },
+    {
+      "seed": 122,
+      "steps": 1254,
+      "reward": 1254.0
+    },
+    {
+      "seed": 123,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 124,
+      "steps": 1928,
+      "reward": 1928.0
+    },
+    {
+      "seed": 125,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 126,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 127,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 128,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 129,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 130,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 131,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 132,
+      "steps": 1923,
+      "reward": 1923.0
+    },
+    {
+      "seed": 133,
+      "steps": 1705,
+      "reward": 1705.0
+    },
+    {
+      "seed": 134,
+      "steps": 449,
+      "reward": 449.0
+    },
+    {
+      "seed": 135,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 136,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 137,
+      "steps": 1494,
+      "reward": 1494.0
+    },
+    {
+      "seed": 138,
+      "steps": 2000,
+      "reward": 2000.0
+    },
+    {
+      "seed": 139,
+      "steps": 1635,
+      "reward": 1635.0
+    },
+    {
+      "seed": 140,
+      "steps": 1183,
+      "reward": 1183.0
+    },
+    {
+      "seed": 141,
+      "steps": 1003,
+      "reward": 1003.0
+    }
+  ],
+  "summary": {
+    "n_episodes": 100,
+    "max_episode_steps": 2000,
+    "steps": {
+      "mean": 1414.82,
+      "median": 1743.0,
+      "std": 656.6357343306865,
+      "min": 181.0,
+      "max": 2000.0,
+      "p25": 719.0,
+      "p75": 2000.0,
+      "reached_max_ratio": 0.44
+    },
+    "rewards": {
+      "mean": 1414.82,
+      "median": 1743.0,
+      "std": 656.6357343306865
+    }
+  }
+}

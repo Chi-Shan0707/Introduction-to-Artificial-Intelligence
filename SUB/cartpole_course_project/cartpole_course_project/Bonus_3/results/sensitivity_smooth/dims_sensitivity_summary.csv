@@ -1,0 +1,6 @@
+﻿smooth_alpha,confidence_tau,smooth_radius,smooth_dims,perturb_scale,seed_count,mean_steps,median_steps,std_steps,reached_max_ratio,source
+0.9,0.8,1,pos_only,0.05,100,1316.46,1480.0,689.5438843177424,0.42,Bonus_3/results/failure_diagnostics/terminal_states.csv
+0.9,0.8,1,velocity_only,0.05,100,471.07,293.0,460.14493923110797,0.06,Bonus_3/results/failure_diagnostics/terminal_states.csv
+0.9,0.8,1,angle_only,0.05,100,434.7,255.0,396.18519659371424,0.03,Bonus_3/results/failure_diagnostics/terminal_states.csv
+0.9,0.8,1,angular_only,0.05,100,1414.82,1743.0,656.6357343306865,0.44,Bonus_3/results/failure_diagnostics/terminal_states.csv
+

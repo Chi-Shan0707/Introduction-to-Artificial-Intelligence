@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="398" viewBox="0 0 900 398">
+<rect width="900" height="398" fill="#fff"/>
+<text x="36" y="42" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#222">Smoothing Strength Sensitivity</text>
+<text x="36" y="70" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#555">Mean steps at perturb_scale=0.05. Each panel is one smooth_radius.</text>
+<text x="104" y="94" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#222">radius=1</text>
+<text x="160.0" y="110" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.8</text>
+<text x="272.0" y="110" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.9</text>
+<text x="384.0" y="110" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.95</text>
+<text x="88" y="151.0" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.4</text>
+<rect x="104" y="116" width="112" height="62" fill="#d74b41" stroke="#fff" stroke-width="2"/>
+<text x="160.0" y="153.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1389</text>
+<rect x="216" y="116" width="112" height="62" fill="#d64541" stroke="#fff" stroke-width="2"/>
+<text x="272.0" y="153.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1415</text>
+<rect x="328" y="116" width="112" height="62" fill="#dc5b41" stroke="#fff" stroke-width="2"/>
+<text x="384.0" y="153.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1316</text>
+<text x="88" y="213.0" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.8</text>
+<rect x="104" y="178" width="112" height="62" fill="#d74b41" stroke="#fff" stroke-width="2"/>
+<text x="160.0" y="215.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1389</text>
+<rect x="216" y="178" width="112" height="62" fill="#d64541" stroke="#fff" stroke-width="2"/>
+<text x="272.0" y="215.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1415</text>
+<rect x="328" y="178" width="112" height="62" fill="#dc5b41" stroke="#fff" stroke-width="2"/>
+<text x="384.0" y="215.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1316</text>
+<text x="88" y="275.0" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">1.2</text>
+<rect x="104" y="240" width="112" height="62" fill="#d74b41" stroke="#fff" stroke-width="2"/>
+<text x="160.0" y="277.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1389</text>
+<rect x="216" y="240" width="112" height="62" fill="#d64541" stroke="#fff" stroke-width="2"/>
+<text x="272.0" y="277.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1415</text>
+<rect x="328" y="240" width="112" height="62" fill="#dc5b41" stroke="#fff" stroke-width="2"/>
+<text x="384.0" y="277.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1316</text>
+<text x="494" y="94" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#222">radius=2</text>
+<text x="550.0" y="110" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.8</text>
+<text x="662.0" y="110" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.9</text>
+<text x="774.0" y="110" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#333">0.95</text>
+<rect x="494" y="116" width="112" height="62" fill="#4782b3" stroke="#fff" stroke-width="2"/>
+<text x="550.0" y="153.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">386</text>
+<rect x="606" y="116" width="112" height="62" fill="#88988a" stroke="#fff" stroke-width="2"/>
+<text x="662.0" y="153.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">577</text>
+<rect x="718" y="116" width="112" height="62" fill="#de6342" stroke="#fff" stroke-width="2"/>
+<text x="774.0" y="153.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1284</text>
+<rect x="494" y="178" width="112" height="62" fill="#4682b4" stroke="#fff" stroke-width="2"/>
+<text x="550.0" y="215.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">382</text>
+<rect x="606" y="178" width="112" height="62" fill="#88988a" stroke="#fff" stroke-width="2"/>
+<text x="662.0" y="215.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">577</text>
+<rect x="718" y="178" width="112" height="62" fill="#de6342" stroke="#fff" stroke-width="2"/>
+<text x="774.0" y="215.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1284</text>
+<rect x="494" y="240" width="112" height="62" fill="#4682b4" stroke="#fff" stroke-width="2"/>
+<text x="550.0" y="277.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">382</text>
+<rect x="606" y="240" width="112" height="62" fill="#88988a" stroke="#fff" stroke-width="2"/>
+<text x="662.0" y="277.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">577</text>
+<rect x="718" y="240" width="112" height="62" fill="#de6342" stroke="#fff" stroke-width="2"/>
+<text x="774.0" y="277.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#1f1f1f">1284</text>
+<text x="467.0" y="374" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#333">smooth_alpha; rows are confidence_tau</text>
+</svg>
